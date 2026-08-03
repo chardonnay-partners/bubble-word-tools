@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bubble Words — Level Generator</title>
+<style>
+  :root{
+    --bg:#0f1420; --panel:#171e2e; --panel2:#1e2740; --line:#2a3552; --line2:#38456b;
+    --txt:#e6ebf5; --muted:#8b97b5; --accent:#5b9dff; --accent2:#3a7bd5;
+    --ok:#57d38c; --warn:#ffcc66; --err:#ff6b7d; --chip:#243050;
+    --radius:9px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--txt);font:13px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  button{font:inherit;cursor:pointer;color:var(--txt);background:var(--panel2);border:1px solid var(--line2);border-radius:7px;padding:6px 11px}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent2);border-color:var(--accent);font-weight:600}
+  button.primary:hover{background:var(--accent)}
+  button.ghost{background:transparent}
+  button.mini{padding:2px 8px;font-size:12px;border-radius:6px}
+  button.danger:hover{border-color:var(--err);color:var(--err)}
+  input,select,textarea{font:inherit;color:var(--txt);background:var(--bg);border:1px solid var(--line2);border-radius:6px;padding:5px 7px}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+  input[type=number]{width:74px}
+  label{color:var(--muted);font-size:12px}
+  a{color:var(--accent)}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .col{display:flex;flex-direction:column;gap:4px}
+  .grow{flex:1}
+  .sp{flex:1}
+  header{display:flex;align-items:center;gap:12px;padding:9px 14px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  header h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.2px}
+  header .badge{font-size:11px;color:var(--muted);border:1px solid var(--line2);border-radius:20px;padding:2px 9px}
+  main{display:grid;grid-template-columns:minmax(420px,1fr) minmax(420px,1fr);gap:0;height:calc(100vh - 51px)}
+  .pane{overflow:auto;padding:14px}
+  .pane.left{border-right:1px solid var(--line)}
+  section.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px}
+  section.card>.head{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;user-select:none}
+  section.card>.head h2{font-size:13px;margin:0;font-weight:600;flex:1}
+  section.card>.head .caret{color:var(--muted);transition:transform .15s}
+  section.card.collapsed>.head .caret{transform:rotate(-90deg)}
+  section.card>.body{padding:0 12px 12px;border-top:1px solid var(--line)}
+  section.card.collapsed>.body{display:none}
+  .pill{font-size:11px;background:var(--chip);border:1px solid var(--line2);border-radius:20px;padding:1px 8px;color:var(--muted)}
+  .field{display:flex;align-items:center;gap:8px;margin:7px 0}
+  .field label{min-width:132px}
+  .hint{color:var(--muted);font-size:11px;margin:4px 0 8px}
+  .swatch{width:14px;height:14px;border-radius:50%;display:inline-block;border:1px solid rgba(255,255,255,.25);flex:none}
+  table{width:100%;border-collapse:collapse}
+  .cat{border:1px solid var(--line2);border-radius:8px;margin:8px 0;background:var(--panel2)}
+  .cat>.ch{display:flex;align-items:center;gap:8px;padding:6px 8px}
+  .cat>.ch input.catname{flex:1;font-weight:600}
+  .words{padding:2px 8px 8px;display:flex;flex-direction:column;gap:4px}
+  .word{display:flex;align-items:center;gap:6px}
+  .word input.w{flex:1}
+  .word .flags{display:flex;gap:4px;align-items:center}
+  .tag{font-size:10px;border-radius:4px;padding:1px 5px;border:1px solid var(--line2);color:var(--muted);cursor:pointer}
+  .tag.on{color:#0f1420;font-weight:700}
+  .tag.cracked.on{background:var(--warn);border-color:var(--warn)}
+  .tag.linked.on{background:#c39bff;border-color:#c39bff}
+  .srow{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;align-items:end;border:1px solid var(--line2);border-radius:7px;padding:7px;margin:6px 0;background:var(--panel2)}
+  .srow .col label{font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+  .special .toolbar{display:flex;gap:8px;align-items:center;margin:6px 0}
+  textarea#json{width:100%;height:320px;font-family:var(--mono);font-size:11.5px;white-space:pre;tab-size:2;resize:vertical}
+  #board{width:100%;background:radial-gradient(120% 120% at 50% 0%,#12294a 0%,#0c1526 70%);border:1px solid var(--line);border-radius:var(--radius)}
+  .val{border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:12px;border:1px solid var(--line2)}
+  .val.ok{border-color:#245b3f;background:#12261c;color:var(--ok)}
+  .val .err{color:var(--err)} .val .warn{color:var(--warn)}
+  .val ul{margin:6px 0 0;padding-left:18px}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:min(440px,92vw);background:var(--panel);border-left:1px solid var(--line);box-shadow:-16px 0 40px rgba(0,0,0,.4);transform:translateX(100%);transition:transform .2s;z-index:40;display:flex;flex-direction:column}
+  .drawer.open{transform:none}
+  .drawer .dh{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .drawer .db{overflow:auto;padding:12px;flex:1}
+  .banklist{display:flex;flex-direction:column;gap:2px}
+  .bankcat{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px}
+  .bankcat:hover{background:var(--panel2)}
+  .bankcat .nm{flex:1;font-weight:600}
+  .bankcat .ws{color:var(--muted);font-size:11px}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:35;display:none}
+  .overlay.open{display:block}
+  .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--accent);border-radius:8px;padding:9px 16px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+  code.k{color:var(--accent);font-family:var(--mono)}
+  .muted{color:var(--muted)}
+  .split2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  details.adv{margin-top:8px;border:1px dashed var(--line2);border-radius:7px;padding:6px 10px}
+  details.adv summary{cursor:pointer;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🫧 Bubble Words · Level Generator</h1>
+  <span class="badge" id="schemaBadge">schema: 9 core keys</span>
+  <span class="sp"></span>
+  <div class="row">
+    <label>Level #</label><input type="number" id="levelNum" value="1" min="1" style="width:70px" />
+    <button id="btnBank">📚 Word Bank</button>
+    <button id="btnLoad">↥ Load JSON</button>
+    <input type="file" id="fileLoad" accept=".json" hidden />
+    <button id="btnExport" class="primary">↧ Export Level_N.json</button>
+    <button id="btnBatch">⇊ Batch…</button>
+  </div>
+</header>
+
+<main>
+  <div class="pane left" id="left"></div>
+  <div class="pane right">
+    <div id="validation"></div>
+    <svg id="board" viewBox="0 0 560 380" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="row" style="margin:10px 0 6px">
+      <strong style="font-size:13px">Level JSON</strong>
+      <span class="pill" id="jsonMeta"></span>
+      <span class="sp"></span>
+      <button class="mini" id="btnCopy">Copy</button>
+      <button class="mini" id="btnApplyJson">Apply edits ↑</button>
+    </div>
+    <div class="hint">Edited here? Click <b>Apply edits</b> to parse it back into the editor. Export writes the 9 core keys in shipped order; special-bubble blocks are appended only when used.</div>
+    <textarea id="json" spellcheck="false"></textarea>
+  </div>
+</main>
+
+<!-- Word Bank drawer -->
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="dh">
+    <strong style="flex:1">📚 Word Bank <span class="muted" id="bankCount"></span></strong>
+    <button class="mini" id="btnBankImport">Import…</button>
+    <input type="file" id="fileBank" accept=".json" hidden />
+    <button class="mini" id="btnBankExport">Export</button>
+    <button class="mini" id="btnBankReset">Reset</button>
+    <button class="mini ghost" id="btnBankClose">✕</button>
+  </div>
+  <div class="db">
+    <div class="row" style="margin-bottom:8px">
+      <input id="bankSearch" placeholder="Search categories…" class="grow" />
+      <button class="mini" id="btnBankAdd">+ Category</button>
+    </div>
+    <div class="hint">The generator draws categories & words from this bank. Edits persist in your browser (localStorage). Import the full <code class="k">wordbank.json</code> (≈40k words) from this folder for the complete vocabulary.</div>
+    <div class="banklist" id="banklist"></div>
+    <div id="bankEditor"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================================
+   Bubble Words — Level Generator (self-contained, no build, offline)
+   Emits JSON that byte-matches Assets/Resources/Levels/Level_N.json:
+     core key order: categories, allWordEntries, maxBubblesInScene, moveLimit,
+     randomSeed, levelDifficulty, frozenBubbles, useBubbleSeparator,
+     bubbleSeparatorData  — special-bubble blocks appended only when used.
+   Completability invariant: each category's word count must be a multiple of 4
+   (Tier == words.Count, MaxTier == 4 → 4 words merge into one popped orb).
+   ============================================================================ */
+
+/* ---- 8-colour category palette (BubbleGameplayService.CategoryPalette) ---- */
+const PALETTE = [
+  [1.00,0.80,0.40],[1.00,0.65,0.80],[0.60,0.80,1.00],[0.65,0.90,0.65],
+  [0.85,0.75,1.00],[0.85,0.85,0.50],[0.90,0.60,0.45],[0.70,0.85,0.85]
+].map(c=>`rgb(${c.map(x=>Math.round(x*255)).join(',')})`);
+const catColor = i => PALETTE[((i%PALETTE.length)+PALETTE.length)%PALETTE.length];
+
+/* ---- deterministic PRNG (mulberry32) ---- */
+function makeRng(seed){let a=(seed>>>0)||1;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return ((t^(t>>>14))>>>0)/4294967296;};}
+const ri=(rng,n)=>Math.floor(rng()*n);
+const rrange=(rng,lo,hi)=>lo+ri(rng,hi-lo+1);
+const pick=(rng,arr)=>arr[ri(rng,arr.length)];
+function shuffle(rng,arr){arr=arr.slice();for(let i=arr.length-1;i>0;i--){const j=ri(rng,i+1);[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+/* ---- default compact bank: [ [name,[words...]], ... ] ---- */
+const DEFAULT_BANK_COMPACT = [["Time",["Month","Week","Minute","Second","Hour","Century"]],["Sports",["Hockey","Soccer","Tennis","Golf","Boxing","Rugby"]],["Family",["Mom","Sister","Dad","Brother","Mother","Father"]],["Fruits",["Grape","Apple","Banana","Peach","Mango","Persimmon"]],["Music",["Funk","Rap","Blues","Rock","Pop","Composers"]],["Drinks",["Juice","Coffee","Water","Tea","Latte","Cappuccino"]],["Flowers",["Lily","Daisy","Tulip","Rose","Peony","Iris"]],["Dogs",["Bulldog","Doberman","Poodle","Beagle","Husky","Terrier"]],["Food",["Fries","Pizza","Nuggets","Noodles"]],["Calendar",["Year","Month","Week","Day","Date","Holiday"]],["Dances",["Rumba","Salsa","Waltz","Samba","Tango","Square"]],["Language",["Latin","Japanese","English","Italian","German","Spanish"]],["Games",["Chess","Uno","Dominoes","Bingo","Monopoly","Mahjong"]],["Play",["Piano","Trombone","Bass","Drums"]],["Hooves",["Zebra","Horse","Antelope","Rhino"]],["Cards",["King","Ace","Queen","Jack","Spades","Baseball"]],["City",["Paris","Sydney","Rome","Tokyo","Madrid","Berlin"]],["Polygons",["Triangle","Octagon","Rectangle","Square"]],["Ship",["Brig","Galleon","Tanker","Frigate","Brigantine","Clipper"]],["Mountain",["Fuji","Alps","Andes","Everest","Peak","Ridge"]],["Camera",["Lens","Tripod","Flash","Shutter"]],["Seasons",["Autumn","Summer","Spring","Winter","Fall"]],["Buildings",["School","Library","Hospital","Church","House","Skyscraper"]],["Church",["Priest","Bible","Choir","Altar","Prayer","Offering"]],["Winter",["Ice","Snow","Frost","Blizzard","Cold","Snowman"]],["Eats",["Sushi","Pizza","Kebab","Taco"]],["Planets",["Mars","Venus","Earth","Mercury","Uranus","Saturn"]],["Shakespeare",["Romeo","Juliet","Hamlet","Othello","Tempest","Macbeth"]],["Combat",["Sumo","Judo","Karate","Savate"]],["Driving",["Car","Road","Sign","Traffic"]],["Animals",["Cat","Dog","Penguin","Frog","Fish","Birds"]],["Dog",["Husky","Beagle","Puppy","Poodle","Mastiff","Dalmatian"]],["Sauces",["Mustard","Mayo","Curry","Ketchup","Tabasco","Pesto"]],["Transport",["Train","Plane","Bus","Taxi","Car","Boat"]],["Gems",["Sapphire","Ruby","Emerald","Amethyst","Tanzanite","Malachite"]],["Coffee",["Espresso","Americano","Mocha","Latte","Beans","Mug"]],["Plane",["Chassis","Wings","Cockpit","Fuselage","Rudder"]],["Islands",["Crete","Bali","Ibiza","Iceland","Sicily"]],["Fabrics",["Satin","Flannel","Silk","Cotton","Linen","Wool"]],["Films",["Romance","Action","Comedy","Thriller","Sci-Fi"]],["Vehicles",["Bus","Ship","Train","Car","Cars","Trucks"]],["Cheese",["Gouda","Edam","Feta","Brie","Parmesan","Cheddar"]],["Geometry",["Line","Angle","Point","Polygon","Diagonal","Radius"]],["Beverage",["Milk","Tea","Soda","Juice"]],["Genre",["Rock","Jazz","Pop","Rap"]],["Size",["Tiny","Large","Big","Small"]],["Deity",["Thor","Ra","Zeus","Odin"]],["Division",["Region","Country","City","State"]],["Read",["Magazine","Article","Review","Journal"]],["Fish",["Carp","Tuna","Salmon","Sardine","Perch","Trout"]],["Birds",["Parrot","Owl","Swan","Eagle","Crow","Pigeon"]],["Cats",["Persian","Tabby","Siamese","Bengal"]],["Snacks",["Popcorn","Nuts","Crackers","Chips","Fruits","Pretzel"]],["Nuts",["Walnut","Cashew","Pistachios","Peanut"]],["Chess",["King","Bishop","Queen","Rook","Knight","Gambit"]],["Capitals",["Cairo","Rome","Paris","London","Tokyo"]],["Furniture",["Bed","Table","Sofa","Desk","Dresser","Chair"]],["Zodiac",["Aries","Taurus","Scorpio","Leo","Libra","Pisces"]],["Ball",["Kickball","Handball","Softball","Football"]],["Travel",["Trip","Voyage","Tour","Cruise","Air","Ground"]],["Computer",["Program","Software","Keyboard","Monitor","Mic","Mousepad"]],["Keyboard",["Escape","Tab","Enter","Spacebar","Control","Delete"]],["Shopping",["Coupon","Discount","Sale","Price","Boutique","Outlet"]],["Solids",["Cube","Cone","Prism","Sphere","Stone","Metal"]],["Cinema",["Comedy","Fantasy","Thriller","Western","Screen","Popcorn"]],["Rope",["Cotton","Nylon","Silk","Kevlar"]],["Legends",["Tale","Epic","Myth","Fable","Excalibur","Atlantis"]],["Gases",["Argon","Methane","Krypton","Radon","Helium","Neon"]],["Ocean",["Indian","Atlantic","Pacific","Arctic","Boat","Whale"]],["Zoology",["Reptiles","Mammals","Fish","Animals","Birds","Insects"]],["Cosmos",["Planet","Comet","Asteroid","Galaxy","Universe","Meteor"]],["Copy",["Double","Twin","Replica","Clone","Forgery","Facsimile"]],["Subjects",["Science","English","Math","History"]],["History",["Empire","Antiquity","Saga","Medieval"]],["Spicy",["Chili","Mustard","Curry","Ginger"]],["Week",["Tuesday","Friday","Thursday","Saturday"]],["Mail",["Post","Stamp","Letter","Parcel","Bills","Junk"]],["Science",["Feynman","Darwin","Einstein","Newton","Atom","Cell"]],["Teaching",["Lessons","Lecture","Seminar","Course","Exercise","Homework"]],["Coins",["Ducat","Drachma","Denarius","Cent","Doubloon","Guinea"]],["Sushi",["Sashimi","Wasabi","Maki","Nigiri","Rice","Nori"]],["Divine",["City","Country","Region","State"]],["State",["Alaska","Florida","Kansas","Arizona"]],["Felids",["Lynx","Tiger","Ocelot","Lion"]],["Lessons",["Biology","Chemistry","Physics","Algebra"]],["Voices",["Alto","Soprano","Bass","Tenor","Baritone"]],["Museum",["Gallery","Artifact","Curator","Exhibit","Archive"]],["Pets",["Parrot","Hamster","Cat","Rabbit","Dog","Bird"]],["Compass",["North","West","South","East","Bearing","Azimuth"]],["Fabric",["Velvet","Linen","Cotton","Silk","Chiffon","Taffeta"]],["Writer",["Tolkien","Wilde","Faulkner","Orwell","Dostoyevsky","Tolstoy"]],["Building",["Floor","Door","Wall","Window"]],["Jobs",["Actor","Doctor","Welder","Engineer","Mailman","Pilot"]],["Rainbow",["Violet","Blue","Yellow","Green","Red","Orange"]],["Volcano",["Ash","Lava","Vent","Magma"]],["Car",["Seatbelt","Tires","Pedals","Gearbox","Coupe","Sedan"]],["Garden",["Flowers","Trees","Bushes","Grass","Fence","Hose"]],["Train",["Locomotive","Carriage","Depot","Rails","Railway","Metro"]],["Boat",["Harbor","Port","Anchor","Dock"]],["Trees",["Baobab","Elm","Birch","Sequoia","Palm","Oak"]],["Pizza",["Four Cheese","Pepperoni","Carbonara","Margherita","Ketchup","Cheese"]],["USA",["Chicago","Miami","Boston","New York"]],["Fitness",["Workout","Pilates","Gym","Cardio","Yoga","Jogging"]],["Files",["Delete","Copy","Rename","Open"]],["Nuclear",["Atom","Proton","Electron","Neutron","Reactor","Fission"]],["Studies",["Harvard","MIT","Sorbonne","Oxford"]],["Fuels",["Diesel","Gasoline","Propane","Coal"]],["Line",["Wavy","Zigzag","Dashed","Curved"]],["Creature",["Phoenix","Unicorn","Elf","Pegasus"]],["Trips",["Vacation","Voyage","Journey","Tour"]],["Boxing",["Jab","Punch","Knockout","Uppercut","Hook","Cross"]],["Temperature",["Hot","Warm","Cold","Cool","Kelvin","Celsius"]],["Measurements",["Weight","Length","Time","Temperature"]],["Weight",["Gram","Pound","Kilogram","Ounce","Tonnage","Mass"]],["Shoes",["Boots","Loafers","Sneakers","Sandals"]],["Clothing",["Shoes","Shirts","Hats","Pants","T-shirt","Coat"]],["Mailman",["Letter","Parcel","Mailbox","Delivery","Stamp","Envelope"]],["Doctor",["Checkup","Hospital","Diagnosis","Symptoms","Stethoscope","Patient"]],["Wood",["Dresser","Closet","Chair","Cabinet"]],["Ceramic",["Tiles","Vase","Bowl","Plate"]]];
+
+/* ---- word-entry / category factory (matches WordEntryModel / CategoryModel) ---- */
+const newWord = (fullWord)=>({fullWord,chunks:[],icon:"",IsCracked:false,crackBreakNum:0,IsLinked:false,linkedChunkWords:[]});
+const newCat  = (name,words)=>({category:name,parentCategory:"",icon:"",words:(words||[]).map(newWord)});
+function bankFromCompact(arr){return {categories:arr.map(([n,ws])=>newCat(n,ws))};}
+
+/* ---- special-bubble schema (generic list-editor descriptors) ---- */
+// type: wordref = <select> of level words; wordlist = comma word set; str/int = inputs; letters = cryptic sub-editor
+const SPECIAL_DEFS = [
+  {key:'frozenBubbles', label:'Frozen ❄',   flag:'hasFrozenBubbles',  mm:'minMaxFrozenBubbles',
+    fields:[{n:'word',t:'wordref'},{n:'mergesNeeded',t:'int',def:5}]},
+  {key:'burstBubbles', label:'Burst 💥',     flag:'hasBurstBubbles',   mm:'minMaxBurstBubbles',
+    fields:[{n:'word',t:'wordref'},{n:'movesRemaining',t:'int',def:3}]},
+  {key:'crypticBubbles', label:'Cryptic 🔡', flag:'hasCrypticBubbles', mm:'minMaxCrypticBubbles',
+    fields:[{n:'word',t:'wordref'},{n:'letters',t:'letters'}]},
+  {key:'keyLockBubbles', label:'Key/Lock 🔑',flag:'hasKeyLockBubbles', mm:'minMaxKeyLockBubbles',
+    fields:[{n:'keyWord',t:'wordref'},{n:'lockWord',t:'wordref'},{n:'id',t:'int',def:0}]},
+  {key:'screwLockBubbles', label:'Screw-Lock 🔩', flag:'hasScrewLockBubbles', mm:'minMaxScrewLockBubbles',
+    fields:[{n:'screwLockWord',t:'wordref'},{n:'screwDriverWords',t:'wordlist'},{n:'id',t:'int',def:0},{n:'screwCount',t:'int',def:2}]},
+  {key:'crackedBubbles', label:'Cracked 🪨', flag:'hasCrackBubbles',   mm:'minMaxCrackBubbles',
+    fields:[{n:'fullWord',t:'wordref'},{n:'chunkA',t:'str'},{n:'chunkB',t:'str'},{n:'breakNum',t:'int',def:3}]},
+  {key:'backwardBubbles', label:'Backward ↩', flag:'hasBackwardBubbles', mm:'minMaxBackwardBubbles',
+    fields:[{n:'word',t:'wordref'}]},
+  {key:'linkedBubbles', label:'Linked 🔗',   flag:'hasLinkedBubbles',  mm:'minMaxLinkedBubbles',
+    fields:[{n:'word',t:'wordref'},{n:'linkedChunks',t:'wordlist'}]},
+  {key:'bubbleChains', label:'Chains ⛓',     flag:null, mm:null,
+    fields:[{n:'chainID',t:'int',def:0},{n:'breakThreshold',t:'int',def:3},{n:'words',t:'wordlist'},{n:'minIndex',t:'int',def:0},{n:'maxIndex',t:'int',def:0}]},
+];
+
+/* ---- application state ---- */
+let bank = loadBank();
+let state = blankLevel();
+let genParams = {
+  categories:5, wordsPerCategory:4, maxBubblesInScene:24, moveLimit:15,
+  levelDifficulty:0, randomSeed:0, genSeed:1,
+  chosenCats:[], // empty = random from whole bank
+  spCounts:{}    // key -> requested count for generation
+};
+SPECIAL_DEFS.forEach(d=>genParams.spCounts[d.key]=0);
+
+function blankLevel(){
+  const s={categories:[],allWordEntries:[],autoDeriveWords:true,maxBubblesInScene:24,moveLimit:15,randomSeed:0,levelDifficulty:0,
+    frozenBubbles:[],useBubbleSeparator:false,bubbleSeparatorData:{breakThreshold:3,linkedWords:[]}};
+  SPECIAL_DEFS.forEach(d=>{ if(d.key!=='frozenBubbles') s[d.key]=[]; s[d.key+'__flag']=false; s[d.key+'__mm']=[0,0]; });
+  s.useSeparatorFlag=false; s.separatorMM=[0,0];
+  return s;
+}
+
+/* ---- bank persistence ---- */
+function loadBank(){
+  try{const raw=localStorage.getItem('bw_bank'); if(raw){const b=JSON.parse(raw); if(b&&b.categories) return b;}}catch(e){}
+  return bankFromCompact(DEFAULT_BANK_COMPACT);
+}
+function saveBank(){ try{localStorage.setItem('bw_bank',JSON.stringify(bank));}catch(e){} }
+
+/* ---- helpers ---- */
+const $ = s=>document.querySelector(s);
+function el(tag,props,kids){const e=document.createElement(tag);if(props)for(const k in props){if(k==='class')e.className=props[k];else if(k==='html')e.innerHTML=props[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),props[k]);else if(k==='style'&&typeof props[k]==='object')Object.assign(e.style,props[k]);else if(props[k]!==null&&props[k]!==undefined)e.setAttribute(k,props[k]);}if(kids)(Array.isArray(kids)?kids:[kids]).forEach(c=>e.appendChild(typeof c==='string'?document.createTextNode(c):c));return e;}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1600);}
+function levelWords(){const out=[];state.categories.forEach(c=>c.words.forEach(w=>out.push(w.fullWord)));return out;}
+function cloneWord(w){return {fullWord:w.fullWord,chunks:(w.chunks||[]).slice(),icon:w.icon||'',IsCracked:!!w.IsCracked,crackBreakNum:+w.crackBreakNum||0,IsLinked:!!w.IsLinked,linkedChunkWords:(w.linkedChunkWords||[]).slice()};}
+function flattenCats(){const a=[];state.categories.forEach(c=>c.words.forEach(w=>a.push(cloneWord(w))));return a;}
+function syncDerived(){if(state.autoDeriveWords)state.allWordEntries=flattenCats();}
+// first-occurrence, case-insensitive word -> category index (mirrors CategoryWordIndex.Build)
+function wordCatIndexMap(){const m=new Map();state.categories.forEach((c,i)=>c.words.forEach(w=>{const k=(w.fullWord||'').toLowerCase();if(k&&!m.has(k))m.set(k,i);}));return m;}
+function download(name,text){const b=new Blob([text],{type:'application/json'});const u=URL.createObjectURL(b);const a=el('a',{href:u,download:name});document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);}
+
+/* ============================ EXPORT (byte-parity) ======================== */
+function buildLevelJson(s){
+  const cats=s.categories.map(c=>({
+    category:c.category, parentCategory:c.parentCategory||"", icon:c.icon||"",
+    words:c.words.map(serWord)
+  }));
+  const all=(s.allWordEntries||[]).map(serWord);
+  const o={
+    categories:cats,
+    allWordEntries:all,
+    maxBubblesInScene:+s.maxBubblesInScene,
+    moveLimit:+s.moveLimit,
+    randomSeed:+s.randomSeed,
+    levelDifficulty:+s.levelDifficulty,
+    frozenBubbles:(s.frozenBubbles||[]).map(f=>({word:f.word,mergesNeeded:+f.mergesNeeded})),
+    useBubbleSeparator:!!s.useBubbleSeparator,
+    bubbleSeparatorData:{breakThreshold:+s.bubbleSeparatorData.breakThreshold,linkedWords:(s.bubbleSeparatorData.linkedWords||[]).slice()}
+  };
+  // append special-bubble blocks only when used (keeps default output identical to shipped levels)
+  appendSpecial(o,s,'burstBubbles',      f=>({word:f.word,movesRemaining:+f.movesRemaining}));
+  appendSpecial(o,s,'keyLockBubbles',    f=>({keyWord:f.keyWord,lockWord:f.lockWord,id:+f.id}));
+  appendSpecial(o,s,'screwLockBubbles',  f=>({screwLockWord:f.screwLockWord,screwDriverWords:(f.screwDriverWords||[]).slice(),id:+f.id,screwCount:+f.screwCount}));
+  appendSpecial(o,s,'crackedBubbles',    f=>({fullWord:f.fullWord,chunkA:f.chunkA,chunkB:f.chunkB,breakNum:+f.breakNum}));
+  appendSpecial(o,s,'backwardBubbles',   f=>({word:f.word}));
+  appendSpecial(o,s,'linkedBubbles',     f=>({word:f.word,linkedChunks:(f.linkedChunks||[]).slice()}));
+  appendSpecial(o,s,'crypticBubbles',    f=>({word:f.word,letters:(f.letters||[]).map(L=>({letter:String(L.letter||'').slice(0,1),revealAtMerge:+L.revealAtMerge}))}));
+  appendSpecial(o,s,'bubbleChains',      f=>({chainID:+f.chainID,breakThreshold:+f.breakThreshold,words:(f.words||[]).slice(),minIndex:+f.minIndex,maxIndex:+f.maxIndex}));
+  // optional procedural placement flags
+  SPECIAL_DEFS.forEach(d=>{ if(d.flag&&s[d.key+'__flag']){o[d.flag]=true;o[d.mm]=[+s[d.key+'__mm'][0],+s[d.key+'__mm'][1]];} });
+  if(s.useSeparatorFlag){o.hasSeperator=true;} // note: DTO field is misspelled "Seperator"
+  return o;
+}
+function serWord(w){return {fullWord:w.fullWord,chunks:(w.chunks||[]).slice(),icon:w.icon||"",IsCracked:!!w.IsCracked,crackBreakNum:+w.crackBreakNum||0,IsLinked:!!w.IsLinked,linkedChunkWords:(w.linkedChunkWords||[]).slice()};}
+function appendSpecial(o,s,key,map){const arr=s[key]||[];if(arr.length)o[key]=arr.map(map);}
+function levelJsonText(){return JSON.stringify(buildLevelJson(state),null,2);}
+
+/* ============================ VALIDATION ================================== */
+function validate(s){
+  const errs=[],warns=[];
+  const words=[]; s.categories.forEach(c=>c.words.forEach(w=>words.push(w.fullWord)));
+  const wset=new Set(words);
+  if(!s.categories.length) errs.push('No categories — add or generate at least one.');
+  s.categories.forEach(c=>{
+    if(!c.category.trim()) errs.push('A category has an empty name.');
+    if(c.words.length===0) errs.push(`Category "${c.category}" has no words.`);
+    const seen=new Set();
+    c.words.forEach(w=>{if(!w.fullWord.trim())errs.push(`Empty word in "${c.category}".`);if(seen.has(w.fullWord))warns.push(`"${w.fullWord}" appears twice in "${c.category}".`);seen.add(w.fullWord);});
+  });
+  // The spawn pool (allWordEntries) is what actually appears; group it by resolved category.
+  const spawn=s.allWordEntries||[];
+  if(s.categories.length && !spawn.length) errs.push('allWordEntries (spawn pool) is empty — no orbs would spawn.');
+  const idx=wordCatIndexMap(); const groups={}; const unmapped=[];
+  spawn.forEach(w=>{const k=(w.fullWord||'').toLowerCase();if(idx.has(k))groups[idx.get(k)]=(groups[idx.get(k)]||0)+1;else if(w.fullWord)unmapped.push(w.fullWord);});
+  [...new Set(unmapped)].forEach(w=>errs.push(`Spawn word "${w}" is in allWordEntries but no category — it can't resolve a colour/merge group.`));
+  Object.entries(groups).forEach(([ci,n])=>{if(n%4!==0)warns.push(`"${s.categories[ci].category}" spawns ${n} orb(s) — not a multiple of 4, so ${n%4} may be left un-poppable (Tier caps at 4). Shipped levels sometimes do this deliberately.`);});
+  const total=spawn.length;
+  if(+s.maxBubblesInScene<1) errs.push('maxBubblesInScene must be ≥ 1.');
+  if(total && +s.maxBubblesInScene>total) warns.push(`maxBubblesInScene (${s.maxBubblesInScene}) exceeds spawn count (${total}); the board just spawns all ${total}.`);
+  if(![0,1,2].includes(+s.levelDifficulty)) errs.push('levelDifficulty must be 0 (Default), 1 (Difficult) or 2 (Expert).');
+  // referenced words must exist
+  const refCheck=(arr,fld,label)=>arr&&arr.forEach(x=>{const v=x[fld];if(v&&!wset.has(v))warns.push(`${label} references word "${v}" not present in the level.`);});
+  refCheck(s.frozenBubbles,'word','Frozen');
+  refCheck(s.burstBubbles,'word','Burst');
+  refCheck(s.backwardBubbles,'word','Backward');
+  refCheck(s.crypticBubbles,'word','Cryptic');
+  refCheck(s.linkedBubbles,'word','Linked');
+  (s.keyLockBubbles||[]).forEach(k=>{['keyWord','lockWord'].forEach(f=>{if(k[f]&&!wset.has(k[f]))warns.push(`Key/Lock references "${k[f]}" not in level.`);});});
+  (s.crackedBubbles||[]).forEach(k=>{if(k.fullWord&&!wset.has(k.fullWord))warns.push(`Cracked references "${k.fullWord}" not in level.`);});
+  if(s.useBubbleSeparator){
+    if(!(s.bubbleSeparatorData.linkedWords||[]).length) warns.push('Separator is enabled but bubbleSeparatorData.linkedWords is empty.');
+    (s.bubbleSeparatorData.linkedWords||[]).forEach(w=>{if(!wset.has(w))warns.push(`Separator word "${w}" (a chunk?) not in level words — this is allowed for split chunks but double-check.`);});
+  }
+  return {errs,warns};
+}
+
+/* ============================ GENERATOR =================================== */
+function generate(){
+  const p=genParams;
+  const rng=makeRng(p.genSeed>>>0);
+  const wpc=+p.wordsPerCategory||4;
+  let sourceCats = p.chosenCats.length
+    ? bank.categories.filter(c=>p.chosenCats.includes(c.category))
+    : bank.categories.slice();
+  sourceCats = shuffle(rng,sourceCats);
+  const want=+p.categories;
+  const chosen=[];
+  for(let i=0;i<sourceCats.length && chosen.length<want;i++){
+    const src=sourceCats[i];
+    const pool=src.words.map(w=>w.fullWord);
+    if(pool.length<wpc) continue;               // skip categories too small to fill a merge group
+    const words=shuffle(rng,pool).slice(0,wpc);
+    chosen.push(newCat(src.category,words));
+  }
+  const s=blankLevel();
+  s.categories=chosen;
+  s.maxBubblesInScene=+p.maxBubblesInScene;
+  s.moveLimit=+p.moveLimit;
+  s.levelDifficulty=+p.levelDifficulty;
+  s.randomSeed=+p.randomSeed;
+  // special bubbles: draw distinct words from the generated level
+  let poolWords=[]; s.categories.forEach(c=>c.words.forEach(w=>poolWords.push(w.fullWord)));
+  poolWords=shuffle(rng,poolWords);
+  let idx=0; const take=()=>idx<poolWords.length?poolWords[idx++]:null;
+  SPECIAL_DEFS.forEach(d=>{
+    const n=+p.spCounts[d.key]||0;
+    for(let i=0;i<n;i++){
+      const w=take(); if(!w) break;
+      s[d.key].push(genSpecialRow(d,w,rng));
+    }
+  });
+  state=s;
+  if(chosen.length<want) toast(`Only ${chosen.length}/${want} categories had ≥${wpc} words in the bank.`);
+  else toast(`Generated: ${chosen.length} categories · ${poolWords.length} words`);
+  renderAll();
+}
+function genSpecialRow(d,word,rng){
+  switch(d.key){
+    case 'frozenBubbles': return {word,mergesNeeded:rrange(rng,3,10)};
+    case 'burstBubbles': return {word,movesRemaining:rrange(rng,2,5)};
+    case 'crypticBubbles': return {word,letters:word.split('').slice(0,3).map((ch,i)=>({letter:ch,revealAtMerge:i+1}))};
+    case 'keyLockBubbles': return {keyWord:word,lockWord:word,id:0};
+    case 'screwLockBubbles': return {screwLockWord:word,screwDriverWords:[],id:0,screwCount:2};
+    case 'crackedBubbles': {const h=Math.ceil(word.length/2);return {fullWord:word,chunkA:word.slice(0,h),chunkB:word.slice(h),breakNum:3};}
+    case 'backwardBubbles': return {word};
+    case 'linkedBubbles': return {word,linkedChunks:[]};
+    case 'bubbleChains': return {chainID:0,breakThreshold:3,words:[word],minIndex:0,maxIndex:0};
+  }
+  return {word};
+}
+
+/* ============================ RENDER: LEFT PANE ========================== */
+function card(title,pill,bodyEl,id,collapsed){
+  const c=el('section',{class:'card'+(collapsed?' collapsed':''),id:id||''});
+  const head=el('div',{class:'head',onclick:()=>c.classList.toggle('collapsed')},[
+    el('span',{class:'caret'},'▾'), el('h2',{},title)
+  ]);
+  if(pill) head.appendChild(el('span',{class:'pill'},pill));
+  c.appendChild(head); c.appendChild(el('div',{class:'body'},bodyEl)); return c;
+}
+function num(val,on,attrs){return el('input',Object.assign({type:'number',value:val,oninput:e=>on(e.target.value)},attrs||{}));}
+
+function renderLeft(){
+  const L=$('#left'); L.innerHTML='';
+
+  /* --- Generator --- */
+  const g=genParams;
+  const genBody=el('div',{},[
+    el('div',{class:'split2'},[
+      field('Categories',num(g.categories,v=>g.categories=v,{min:1,max:40})),
+      field('Words / category',(()=>{const s=el('select',{onchange:e=>g.wordsPerCategory=+e.target.value});[4,8,12].forEach(n=>s.appendChild(el('option',{value:n,selected:g.wordsPerCategory===n?'':null},n+'')));return s;})()),
+      field('Max bubbles',num(g.maxBubblesInScene,v=>g.maxBubblesInScene=v,{min:1})),
+      field('Move limit (raw)',num(g.moveLimit,v=>g.moveLimit=v,{min:0})),
+      field('Difficulty',diffSelect(g.levelDifficulty,v=>g.levelDifficulty=v)),
+      field('randomSeed (spawn)',num(g.randomSeed,v=>g.randomSeed=v,{min:0})),
+      field('Generator seed',num(g.genSeed,v=>g.genSeed=v,{min:0})),
+    ]),
+    el('div',{class:'hint'},'Same generator seed + params → identical level. Words/category must be a multiple of 4 (merge groups).'),
+    el('div',{class:'row',style:{margin:'6px 0'}},[
+      el('label',{},'Category source:'),
+      el('span',{class:'muted'}, g.chosenCats.length? `${g.chosenCats.length} chosen` : 'random from whole bank'),
+      el('button',{class:'mini',onclick:openCatPicker},'Choose…'),
+      g.chosenCats.length?el('button',{class:'mini ghost',onclick:()=>{g.chosenCats=[];renderLeft();}},'clear'):document.createTextNode('')
+    ]),
+    // special counts for generation
+    el('div',{class:'hint'},'Special bubbles to sprinkle in (drawn from generated words):'),
+    (()=>{const grid=el('div',{class:'split2'});SPECIAL_DEFS.forEach(d=>{grid.appendChild(field(d.label,num(g.spCounts[d.key],v=>g.spCounts[d.key]=+v,{min:0,max:40})));});return grid;})(),
+    el('div',{class:'row',style:{marginTop:'10px'}},[
+      el('button',{class:'primary',onclick:generate},'⚙ Generate level'),
+      el('button',{class:'ghost',onclick:()=>{genParams.genSeed=(genParams.genSeed+1)>>>0;generate();}},'⟳ Reroll (seed+1)'),
+      el('button',{class:'ghost danger',onclick:()=>{state=blankLevel();renderAll();}},'Clear level'),
+    ])
+  ]);
+  L.appendChild(card('Generator','seeded',genBody,'genCard'));
+
+  /* --- Level fields --- */
+  const s=state;
+  const est = (+s.moveLimit||0) + s.categories.length*3 + s.categories.reduce((a,c)=>a+c.words.filter(w=>(w.chunks||[]).length).length,0);
+  const lvlBody=el('div',{},[
+    el('div',{class:'split2'},[
+      field('maxBubblesInScene',num(s.maxBubblesInScene,v=>{s.maxBubblesInScene=v;refreshOutputs();})),
+      field('moveLimit',num(s.moveLimit,v=>{s.moveLimit=v;refreshOutputs();})),
+      field('randomSeed',num(s.randomSeed,v=>{s.randomSeed=v;refreshOutputs();})),
+      field('levelDifficulty',diffSelect(s.levelDifficulty,v=>{s.levelDifficulty=v;refreshOutputs();})),
+    ]),
+    el('div',{class:'hint'},`In-game MovesCount ≈ moveLimit + categories×3 + splitWords + bonus(1–3)  =  ~${est+1}–${est+3}. (bonus is a per-level-number hash, added at runtime.)`)
+  ]);
+  L.appendChild(card('Level parameters', s.categories.length+' cats', lvlBody,'lvlCard'));
+
+  /* --- Categories & words --- */
+  const catBody=el('div',{});
+  s.categories.forEach((c,ci)=>catBody.appendChild(renderCat(c,ci)));
+  catBody.appendChild(el('div',{class:'row',style:{marginTop:'8px'}},[
+    el('button',{class:'mini',onclick:()=>{s.categories.push(newCat('New Category',['One','Two','Three','Four']));renderAll();}},'+ Category')
+  ]));
+  const totalW=levelWords().length;
+  L.appendChild(card('Categories & words', totalW+' words', catBody,'catCard'));
+
+  /* --- Spawn pool (allWordEntries) --- */
+  L.appendChild(card('Spawn pool · allWordEntries',
+    (state.allWordEntries||[]).length+' orbs'+(state.autoDeriveWords?' · auto':' · manual'),
+    renderSpawnPool(),'spawnCard', state.autoDeriveWords));
+
+  /* --- Separator --- */
+  const sep=s.bubbleSeparatorData;
+  const sepBody=el('div',{},[
+    el('div',{class:'field'},[el('label',{},'useBubbleSeparator'),toggle(s.useBubbleSeparator,v=>{s.useBubbleSeparator=v;renderAll();})]),
+    field('breakThreshold',num(sep.breakThreshold,v=>{sep.breakThreshold=v;refreshOutputs();})),
+    field('linkedWords (comma / chunks ok)',el('textarea',{style:{width:'100%',height:'52px'},oninput:e=>{sep.linkedWords=parseList(e.target.value);refreshOutputs();}},(sep.linkedWords||[]).join(', '))),
+    el('details',{class:'adv'},[el('summary',{},'Advanced: emit hasSeperator flag'),
+      el('div',{class:'field'},[el('label',{},'hasSeperator'),toggle(s.useSeparatorFlag,v=>{s.useSeparatorFlag=v;refreshOutputs();})]),
+      el('div',{class:'hint'},'Note: the DTO field is spelled "Seperator" (sic). Shipped levels never set this.')
+    ])
+  ]);
+  L.appendChild(card('Bubble Separator', s.useBubbleSeparator?'ON':'off', sepBody,'sepCard', !s.useBubbleSeparator));
+
+  /* --- Special bubbles --- */
+  SPECIAL_DEFS.forEach(d=>{
+    const arr=s[d.key]||[];
+    L.appendChild(card('Special · '+d.label, arr.length?arr.length+'':'0', renderSpecial(d), 'sp_'+d.key, arr.length===0));
+  });
+}
+
+function renderSpawnPool(){
+  const s=state; const idx=wordCatIndexMap();
+  const groups={}; const unmapped=[];
+  (s.allWordEntries||[]).forEach(w=>{const k=(w.fullWord||'').toLowerCase();if(idx.has(k))groups[idx.get(k)]=(groups[idx.get(k)]||0)+1;else if(w.fullWord)unmapped.push(w.fullWord);});
+  const chips=el('div',{class:'row',style:{margin:'6px 0',gap:'4px'}});
+  Object.keys(groups).sort((a,b)=>a-b).forEach(ci=>{const n=groups[ci],bad=n%4!==0;
+    chips.appendChild(el('span',{class:'pill',style:{borderColor:bad?'var(--warn)':'var(--line2)',color:bad?'var(--warn)':'var(--muted)'}},[
+      el('span',{class:'swatch',style:{background:catColor(+ci),width:'9px',height:'9px',marginRight:'5px'}}),`${s.categories[ci].category}: ${n}`]));});
+  [...new Set(unmapped)].forEach(w=>chips.appendChild(el('span',{class:'pill',style:{borderColor:'var(--err)',color:'var(--err)'}},w+' ⚠')));
+  const body=el('div',{},[
+    el('div',{class:'field'},[el('label',{},'Auto-derive from categories'),toggle(s.autoDeriveWords,v=>{s.autoDeriveWords=v;if(v)syncDerived();renderAll();})]),
+    el('div',{class:'hint'},'allWordEntries is what actually spawns; categories only define colour/merge groups. ON = mirror categories exactly. OFF = hand-edit the spawn list (order matters — the first maxBubbles spawn immediately, the tail is the refill queue).'),
+    el('div',{class:'muted',style:{marginTop:'4px'}},'Resolved groups (⚠ = not a multiple of 4):'), chips
+  ]);
+  if(!s.autoDeriveWords){
+    const byName=new Map(); s.categories.forEach(c=>c.words.forEach(w=>{const k=w.fullWord.toLowerCase();if(!byName.has(k))byName.set(k,w);}));
+    body.appendChild(el('label',{},'Spawn list — one word per line, in spawn order:'));
+    body.appendChild(el('textarea',{style:{width:'100%',height:'170px'},spellcheck:'false',
+      oninput:e=>{const lines=e.target.value.split('\n').map(x=>x.trim()).filter(Boolean);
+        s.allWordEntries=lines.map(nm=>{const src=byName.get(nm.toLowerCase());return src?cloneWord(src):newWord(nm);});refreshOutputs();}},
+      (s.allWordEntries||[]).map(w=>w.fullWord).join('\n')));
+  }
+  return body;
+}
+function field(labelText,control){return el('div',{class:'field'},[el('label',{},labelText),control]);}
+function diffSelect(val,on){const s=el('select',{onchange:e=>on(+e.target.value)});[['0','Default'],['1','Difficult'],['2','Expert']].forEach(([v,t])=>s.appendChild(el('option',{value:v,selected:+val===+v?'':null},`${v} · ${t}`)));return s;}
+function toggle(val,on){const b=el('button',{class:'mini',onclick:()=>on(!val)}, val?'✓ on':'off');b.style.borderColor=val?'var(--ok)':'var(--line2)';b.style.color=val?'var(--ok)':'var(--muted)';return b;}
+function parseList(v){return v.split(/[,\n]/).map(x=>x.trim()).filter(Boolean);}
+
+function renderCat(c,ci){
+  const box=el('div',{class:'cat'});
+  const head=el('div',{class:'ch'},[
+    el('span',{class:'swatch',style:{background:catColor(ci)}}),
+    el('input',{class:'catname',value:c.category,oninput:e=>{c.category=e.target.value;refreshOutputs();}}),
+    el('input',{value:c.parentCategory||'',placeholder:'parentCategory',style:{width:'120px'},title:'promote as subcategory of…',oninput:e=>{c.parentCategory=e.target.value;refreshOutputs();}}),
+    el('button',{class:'mini danger',onclick:()=>{state.categories.splice(ci,1);renderAll();}},'✕')
+  ]);
+  box.appendChild(head);
+  const ws=el('div',{class:'words'});
+  c.words.forEach((w,wi)=>{
+    ws.appendChild(el('div',{class:'word'},[
+      el('input',{class:'w',value:w.fullWord,oninput:e=>{w.fullWord=e.target.value;refreshOutputs();}}),
+      el('span',{class:'flags'},[
+        tagBtn('cracked',w.IsCracked,()=>{w.IsCracked=!w.IsCracked;if(w.IsCracked&&!w.crackBreakNum)w.crackBreakNum=3;renderAll();}),
+        w.IsCracked?num(w.crackBreakNum,v=>{w.crackBreakNum=v;refreshOutputs();},{title:'crackBreakNum',style:'width:52px'}):document.createTextNode(''),
+        tagBtn('linked',w.IsLinked,()=>{w.IsLinked=!w.IsLinked;renderAll();}),
+      ]),
+      el('button',{class:'mini danger',onclick:()=>{c.words.splice(wi,1);renderAll();}},'−')
+    ]));
+  });
+  ws.appendChild(el('button',{class:'mini',style:{alignSelf:'flex-start',marginTop:'4px'},onclick:()=>{c.words.push(newWord('Word'));renderAll();}},'+ word'));
+  box.appendChild(ws);
+  return box;
+}
+function tagBtn(cls,on,click){return el('span',{class:'tag '+cls+(on?' on':''),onclick:click,title:cls},cls);}
+
+/* generic special-bubble list editor */
+function renderSpecial(d){
+  const s=state, arr=s[d.key];
+  const wrap=el('div',{class:'special'});
+  wrap.appendChild(el('div',{class:'toolbar'},[
+    el('button',{class:'mini',onclick:()=>{const w=levelWords()[0]||'';arr.push(defaultRow(d,w));renderAll();}},'+ '+d.label),
+    arr.length?el('button',{class:'mini ghost danger',onclick:()=>{s[d.key]=[];renderAll();}},'clear all'):document.createTextNode('')
+  ]));
+  arr.forEach((row,idx)=>{
+    const r=el('div',{class:'srow'});
+    d.fields.forEach(f=>{
+      const col=el('div',{class:'col'});
+      col.appendChild(el('label',{},f.n));
+      col.appendChild(fieldControl(d,f,row));
+      r.appendChild(col);
+    });
+    r.appendChild(el('div',{class:'col'},[el('label',{},' '),el('button',{class:'mini danger',onclick:()=>{arr.splice(idx,1);renderAll();}},'remove')]));
+    wrap.appendChild(r);
+  });
+  if(d.flag){
+    wrap.appendChild(el('details',{class:'adv'},[
+      el('summary',{},'Advanced: procedural placement ('+d.flag+' / '+d.mm+')'),
+      el('div',{class:'row'},[
+        el('label',{},'enable'),toggle(s[d.key+'__flag'],v=>{s[d.key+'__flag']=v;refreshOutputs();}),
+        el('label',{},'min'),num(s[d.key+'__mm'][0],v=>{s[d.key+'__mm'][0]=+v;refreshOutputs();},{min:0}),
+        el('label',{},'max'),num(s[d.key+'__mm'][1],v=>{s[d.key+'__mm'][1]=+v;refreshOutputs();},{min:0}),
+      ]),
+      el('div',{class:'hint'},'When enabled, exports '+d.flag+'=true and '+d.mm+'=[min,max]. Shipped levels never use these.')
+    ]));
+  }
+  return wrap;
+}
+function defaultRow(d,w){const o={};d.fields.forEach(f=>{o[f.n]=f.t==='wordref'?w:f.t==='wordlist'?[]:f.t==='letters'?[]:f.t==='int'?(f.def||0):'';});
+  if(d.key==='crackedBubbles'){const h=Math.ceil((w||'xx').length/2);o.chunkA=(w||'').slice(0,h);o.chunkB=(w||'').slice(h);o.breakNum=3;}
+  return o;}
+function fieldControl(d,f,row){
+  if(f.t==='wordref'){
+    const sel=el('select',{onchange:e=>{row[f.n]=e.target.value;refreshOutputs();}});
+    const words=levelWords();
+    if(!words.includes(row[f.n])&&row[f.n])sel.appendChild(el('option',{value:row[f.n],selected:''},row[f.n]+' (missing)'));
+    words.forEach(w=>sel.appendChild(el('option',{value:w,selected:row[f.n]===w?'':null},w)));
+    return sel;
+  }
+  if(f.t==='int') return num(row[f.n],v=>{row[f.n]=+v;refreshOutputs();});
+  if(f.t==='str') return el('input',{value:row[f.n]||'',oninput:e=>{row[f.n]=e.target.value;refreshOutputs();}});
+  if(f.t==='wordlist') return el('input',{value:(row[f.n]||[]).join(', '),placeholder:'comma separated',oninput:e=>{row[f.n]=parseList(e.target.value);refreshOutputs();}});
+  if(f.t==='letters'){
+    const v=(row[f.n]||[]).map(L=>`${L.letter}:${L.revealAtMerge}`).join(', ');
+    return el('input',{value:v,placeholder:'A:1, B:2',title:'letter:revealAtMerge pairs',oninput:e=>{row[f.n]=e.target.value.split(',').map(p=>p.trim()).filter(Boolean).map(p=>{const [l,m]=p.split(':');return {letter:(l||'').trim().slice(0,1),revealAtMerge:+(m||0)};});refreshOutputs();}});
+  }
+  return el('input',{});
+}
+
+/* ============================ RENDER: BOARD ============================== */
+function renderBoard(){
+  const svg=$('#board'); const W=560,H=380; svg.innerHTML='';
+  const idx=wordCatIndexMap();
+  // render the actual spawn pool (allWordEntries), coloured by resolved category
+  const words=(state.allWordEntries||[]).map(w=>{const ci=idx.has((w.fullWord||'').toLowerCase())?idx.get(w.fullWord.toLowerCase()):-1;return {w:w.fullWord,ci};});
+  const specialMap={}; // word -> marker
+  const mark=(k,arr,fld)=>{(arr||[]).forEach(x=>{const v=x[fld||'word'];if(v)specialMap[v]=(specialMap[v]||'')+k;});};
+  mark('❄',state.frozenBubbles); mark('💥',state.burstBubbles); mark('🔡',state.crypticBubbles);
+  mark('↩',state.backwardBubbles); mark('🔗',state.linkedBubbles); mark('🪨',state.crackedBubbles,'fullWord');
+  (state.keyLockBubbles||[]).forEach(k=>{if(k.lockWord)specialMap[k.lockWord]='🔒';if(k.keyWord)specialMap[k.keyWord]='🔑';});
+  const sepSet=new Set(state.useBubbleSeparator?(state.bubbleSeparatorData.linkedWords||[]):[]);
+
+  const cap=+state.maxBubblesInScene||words.length;
+  const n=words.length;
+  if(!n){svg.appendChild(el('text',{x:W/2,y:H/2,fill:'#8b97b5','text-anchor':'middle'},'No words — generate or add a category'));return;}
+  const cols=Math.ceil(Math.sqrt(n*W/H)); const rows=Math.ceil(n/cols);
+  const cw=W/cols, ch=H/rows; const r=Math.min(cw,ch)*0.42;
+  words.forEach((it,i)=>{
+    const cx=(i%cols)*cw+cw/2, cy=Math.floor(i/cols)*ch+ch/2;
+    const queued=i>=cap;
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('opacity',queued?'0.28':'1');
+    g.appendChild(svgEl('circle',{cx,cy,r,fill:it.ci<0?'#4a5573':catColor(it.ci),stroke:sepSet.has(it.w)?'#ffcc66':'rgba(0,0,0,.25)','stroke-width':sepSet.has(it.w)?2.5:1}));
+    const label=it.w.length>8?it.w.slice(0,7)+'…':it.w;
+    g.appendChild(svgEl('text',{x:cx,y:cy+3,'text-anchor':'middle','font-size':Math.max(7,r*0.42),fill:'#1a2338','font-weight':600},label));
+    if(specialMap[it.w])g.appendChild(svgEl('text',{x:cx+r*0.7,y:cy-r*0.55,'text-anchor':'middle','font-size':Math.max(9,r*0.6)},specialMap[it.w]));
+    svg.appendChild(g);
+  });
+  // legend line
+  svg.appendChild(svgEl('text',{x:8,y:H-8,'font-size':10,fill:'#8b97b5'},`${Math.min(cap,n)} on board · ${Math.max(0,n-cap)} queued · faded = spawn queue`));
+}
+function svgEl(t,attrs){const e=document.createElementNS('http://www.w3.org/2000/svg',t);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+
+/* ============================ OUTPUTS / VALIDATION UI ==================== */
+function refreshOutputs(){
+  syncDerived();
+  const txt=levelJsonText();
+  $('#json').value=txt;
+  $('#jsonMeta').textContent=`${(new Blob([txt]).size)} bytes · ${Object.keys(buildLevelJson(state)).length} keys`;
+  const {errs,warns}=validate(state);
+  const v=$('#validation');
+  if(!errs.length&&!warns.length){v.innerHTML='<div class="val ok">✓ Valid — completable, byte-parity output.</div>';}
+  else{
+    let h='<div class="val">';
+    if(errs.length)h+='<div class="err"><b>✕ '+errs.length+' error'+(errs.length>1?'s':'')+'</b><ul>'+errs.map(e=>'<li>'+esc(e)+'</li>').join('')+'</ul></div>';
+    if(warns.length)h+='<div class="warn" style="margin-top:6px"><b>⚠ '+warns.length+' warning'+(warns.length>1?'s':'')+'</b><ul>'+warns.map(e=>'<li>'+esc(e)+'</li>').join('')+'</ul></div>';
+    h+='</div>'; v.innerHTML=h;
+  }
+  renderBoard();
+}
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function renderAll(){renderLeft();refreshOutputs();}
+
+/* ============================ WORD BANK UI =============================== */
+function renderBank(filter){
+  $('#bankCount').textContent=`(${bank.categories.length} categories)`;
+  const list=$('#banklist'); list.innerHTML='';
+  const f=(filter||'').toLowerCase();
+  bank.categories.forEach((c,ci)=>{
+    if(f&&!c.category.toLowerCase().includes(f))return;
+    list.appendChild(el('div',{class:'bankcat'},[
+      el('span',{class:'nm'},c.category),
+      el('span',{class:'ws'},c.words.length+' words'),
+      el('button',{class:'mini ghost',onclick:()=>editBankCat(ci)},'edit'),
+      el('button',{class:'mini ghost danger',onclick:()=>{bank.categories.splice(ci,1);saveBank();renderBank($('#bankSearch').value);}},'✕')
+    ]));
+  });
+}
+function editBankCat(ci){
+  const c=bank.categories[ci]; const box=$('#bankEditor');
+  box.innerHTML='';
+  box.appendChild(el('div',{class:'cat',style:{marginTop:'10px'}},[
+    el('div',{class:'ch'},[
+      el('input',{class:'catname',value:c.category,oninput:e=>{c.category=e.target.value;saveBank();}}),
+      el('button',{class:'mini',onclick:()=>{box.innerHTML='';}},'done')
+    ]),
+    el('div',{class:'words'},[
+      el('textarea',{style:{width:'100%',height:'90px'},placeholder:'one word per line',oninput:e=>{c.words=parseList(e.target.value).map(newWord);saveBank();renderBank($('#bankSearch').value);}},c.words.map(w=>w.fullWord).join('\n'))
+    ])
+  ]));
+}
+function mergeBank(newBank,replace){
+  if(replace)bank={categories:[]};
+  const map=new Map(bank.categories.map(c=>[c.category.toLowerCase(),c]));
+  newBank.categories.forEach(nc=>{
+    const key=nc.category.toLowerCase();
+    if(map.has(key)){const ex=map.get(key);const have=new Set(ex.words.map(w=>w.fullWord.toLowerCase()));nc.words.forEach(w=>{if(!have.has(w.fullWord.toLowerCase())){ex.words.push(w);have.add(w.fullWord.toLowerCase());}});}
+    else{const c=newCat(nc.category,[]);c.parentCategory=nc.parentCategory||'';c.icon=nc.icon||'';c.words=nc.words.map(w=>typeof w==='string'?newWord(w):Object.assign(newWord(w.fullWord),w));bank.categories.push(c);map.set(key,c);}
+  });
+  saveBank();
+}
+function normalizeBank(obj){
+  // accept {categories:[...]} full form, or compact [[name,[words]]] form
+  if(Array.isArray(obj)) return bankFromCompact(obj);
+  if(obj&&obj.categories) return {categories:obj.categories.map(c=>({category:c.category,parentCategory:c.parentCategory||'',icon:c.icon||'',words:(c.words||[]).map(w=>typeof w==='string'?newWord(w):Object.assign(newWord(w.fullWord),w))}))};
+  throw new Error('Unrecognized bank format');
+}
+
+/* ============================ CATEGORY PICKER (for generator) =========== */
+function openCatPicker(){
+  const chosen=new Set(genParams.chosenCats);
+  const body=el('div',{class:'db',style:{maxHeight:'60vh'}});
+  const search=el('input',{placeholder:'filter…',class:'grow'});
+  const listWrap=el('div',{class:'banklist'});
+  function draw(){listWrap.innerHTML='';const f=search.value.toLowerCase();bank.categories.forEach(c=>{if(f&&!c.category.toLowerCase().includes(f))return;const cb=el('input',{type:'checkbox'});cb.checked=chosen.has(c.category);cb.onchange=()=>{cb.checked?chosen.add(c.category):chosen.delete(c.category);};listWrap.appendChild(el('label',{class:'bankcat'},[cb,el('span',{class:'nm'},c.category),el('span',{class:'ws'},c.words.length+'w')]));});}
+  search.oninput=draw; draw();
+  modal('Choose source categories',[
+    el('div',{class:'row',style:{marginBottom:'8px'}},[search,el('button',{class:'mini',onclick:()=>{chosen.clear();draw();}},'none')]),
+    listWrap
+  ],()=>{genParams.chosenCats=[...chosen];renderLeft();});
+}
+
+/* generic modal using the drawer overlay */
+function modal(title,kids,onOk){
+  const ov=$('#overlay'); ov.classList.add('open');
+  const box=el('div',{class:'drawer open',style:{width:'min(520px,94vw)'}},[
+    el('div',{class:'dh'},[el('strong',{style:{flex:1}},title),el('button',{class:'mini',onclick:done},'✕')]),
+    el('div',{class:'db'},kids),
+    el('div',{class:'dh',style:{borderTop:'1px solid var(--line)',borderBottom:'none'}},[el('span',{class:'sp'}),el('button',{class:'primary',onclick:()=>{onOk&&onOk();done();}},'Apply')])
+  ]);
+  document.body.appendChild(box);
+  function done(){box.remove();ov.classList.remove('open');ov.onclick=null;}
+  ov.onclick=done;
+}
+
+/* ============================ BATCH ===================================== */
+function openBatch(){
+  let from=1,to=20,step=1;
+  modal('Batch generate',[
+    el('div',{class:'hint'},'Generates a range of levels using the current Generator params. Generator seed = base + (level−from), so each level differs deterministically. Files download individually.'),
+    el('div',{class:'row'},[
+      el('label',{},'From'),num(from,v=>from=+v,{min:1}),
+      el('label',{},'To'),num(to,v=>to=+v,{min:1}),
+      el('label',{},'Δ difficulty every'),num(0,v=>step=+v,{min:0,title:'increase difficulty every N levels (0=off)'}),
+    ]),
+    el('div',{class:'hint'},'Tip: browsers may prompt to allow multiple downloads — accept once.')
+  ],()=>{
+    const base=+genParams.genSeed;
+    for(let lv=from;lv<=to;lv++){
+      genParams.genSeed=(base+(lv-from))>>>0;
+      if(step>0)genParams.levelDifficulty=Math.min(2,Math.floor((lv-from)/step));
+      generateSilent();
+      download(`Level_${lv}.json`, levelJsonText());
+    }
+    genParams.genSeed=base; renderAll();
+    toast(`Batch: exported Level_${from}…Level_${to}.json`);
+  });
+}
+function generateSilent(){const t=toast;window.__q=1;try{generate();}finally{window.__q=0;}}
+
+/* ============================ WIRING ==================================== */
+function apply(){
+  $('#btnBank').onclick=()=>{$('#drawer').classList.add('open');$('#overlay').classList.add('open');renderBank('');};
+  $('#btnBankClose').onclick=$('#overlay').onclick=()=>{$('#drawer').classList.remove('open');$('#overlay').classList.remove('open');};
+  $('#bankSearch').oninput=e=>renderBank(e.target.value);
+  $('#btnBankAdd').onclick=()=>{bank.categories.unshift(newCat('New Category',['One','Two','Three','Four']));saveBank();renderBank('');editBankCat(0);};
+  $('#btnBankReset').onclick=()=>{if(confirm('Reset word bank to the built-in default?')){bank=bankFromCompact(DEFAULT_BANK_COMPACT);saveBank();renderBank('');toast('Bank reset');}};
+  $('#btnBankExport').onclick=()=>download('wordbank.json',JSON.stringify(bank,null,2));
+  $('#btnBankImport').onclick=()=>$('#fileBank').click();
+  $('#fileBank').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const b=normalizeBank(JSON.parse(r.result));const replace=confirm('OK = replace bank, Cancel = merge into current bank');mergeBank(b,replace);renderBank('');toast(`Imported ${b.categories.length} categories`);}catch(err){alert('Import failed: '+err.message);}};r.readAsText(f);e.target.value='';};
+
+  $('#levelNum').oninput=()=>refreshOutputs();
+  $('#btnLoad').onclick=()=>$('#fileLoad').click();
+  $('#fileLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{loadLevelObject(JSON.parse(r.result));const m=f.name.match(/(\d+)/);if(m)$('#levelNum').value=m[1];toast('Loaded '+f.name);}catch(err){alert('Load failed: '+err.message);}};r.readAsText(f);e.target.value='';};
+  $('#btnExport').onclick=()=>{const {errs}=validate(state);if(errs.length&&!confirm(errs.length+' validation error(s). Export anyway?'))return;download(`Level_${$('#levelNum').value||1}.json`,levelJsonText());toast(`Exported Level_${$('#levelNum').value||1}.json`);};
+  $('#btnBatch').onclick=openBatch;
+  $('#btnCopy').onclick=()=>{navigator.clipboard.writeText($('#json').value);toast('JSON copied');};
+  $('#btnApplyJson').onclick=()=>{try{loadLevelObject(JSON.parse($('#json').value));toast('Applied JSON → editor');}catch(err){alert('Parse failed: '+err.message);}};
+}
+function loadLevelObject(o){
+  const s=blankLevel();
+  const mapW=w=>Object.assign(newWord(w.fullWord||''),{chunks:w.chunks||[],icon:w.icon||'',IsCracked:!!w.IsCracked,crackBreakNum:w.crackBreakNum||0,IsLinked:!!w.IsLinked,linkedChunkWords:w.linkedChunkWords||[]});
+  s.categories=(o.categories||[]).map(c=>({category:c.category||'',parentCategory:c.parentCategory||'',icon:c.icon||'',words:(c.words||[]).map(mapW)}));
+  s.allWordEntries=(o.allWordEntries||[]).map(mapW);
+  const flat=[]; s.categories.forEach(c=>c.words.forEach(w=>flat.push(cloneWord(w))));
+  s.autoDeriveWords = JSON.stringify(flat)===JSON.stringify(s.allWordEntries.map(cloneWord));
+  s.maxBubblesInScene=o.maxBubblesInScene??24; s.moveLimit=o.moveLimit??15;
+  s.randomSeed=o.randomSeed??0; s.levelDifficulty=o.levelDifficulty??0;
+  s.frozenBubbles=(o.frozenBubbles||[]).map(f=>({word:f.word,mergesNeeded:f.mergesNeeded||0}));
+  s.useBubbleSeparator=!!o.useBubbleSeparator;
+  s.bubbleSeparatorData={breakThreshold:o.bubbleSeparatorData?.breakThreshold??3,linkedWords:o.bubbleSeparatorData?.linkedWords||[]};
+  // special blocks (optional)
+  s.burstBubbles=(o.burstBubbles||[]).map(x=>({word:x.word,movesRemaining:x.movesRemaining||0}));
+  s.keyLockBubbles=(o.keyLockBubbles||[]).map(x=>({keyWord:x.keyWord,lockWord:x.lockWord,id:x.id||0}));
+  s.screwLockBubbles=(o.screwLockBubbles||[]).map(x=>({screwLockWord:x.screwLockWord,screwDriverWords:x.screwDriverWords||[],id:x.id||0,screwCount:x.screwCount||0}));
+  s.crackedBubbles=(o.crackedBubbles||[]).map(x=>({fullWord:x.fullWord,chunkA:x.chunkA,chunkB:x.chunkB,breakNum:x.breakNum||0}));
+  s.backwardBubbles=(o.backwardBubbles||[]).map(x=>({word:x.word}));
+  s.linkedBubbles=(o.linkedBubbles||[]).map(x=>({word:x.word,linkedChunks:x.linkedChunks||[]}));
+  s.crypticBubbles=(o.crypticBubbles||[]).map(x=>({word:x.word,letters:(x.letters||[]).map(L=>({letter:L.letter,revealAtMerge:L.revealAtMerge||0}))}));
+  s.bubbleChains=(o.bubbleChains||[]).map(x=>({chainID:x.chainID||0,breakThreshold:x.breakThreshold||3,words:x.words||[],minIndex:x.minIndex||0,maxIndex:x.maxIndex||0}));
+  SPECIAL_DEFS.forEach(d=>{if(d.flag&&o[d.flag]){s[d.key+'__flag']=true;s[d.key+'__mm']=o[d.mm]||[0,0];}});
+  if(o.hasSeperator)s.useSeparatorFlag=true;
+  state=s; renderAll();
+}
+
+apply();
+renderAll();
+</script>
+</body>
+</html>
