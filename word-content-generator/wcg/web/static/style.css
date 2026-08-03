@@ -31,3 +31,5 @@ main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
 .card .words { font-size: 14px; line-height: 1.5; flex: 1; }
 .card button { align-self: flex-start; padding: 8px 14px; border: 0;
                border-radius: 8px; background: #10ac84; color: #fff; cursor: pointer; }
+.card .send-lg { background: #3b3b98; }
+.card .send-lg:disabled { background: #8a8ac0; cursor: default; }

@@ -246,10 +246,20 @@ SHELL_HTML = """<!doctype html>
   </div>
   <script>
     const btns=document.querySelectorAll('.tabs button');
-    btns.forEach(b=>b.addEventListener('click',()=>{
-      btns.forEach(x=>x.classList.toggle('active',x===b));
-      document.querySelectorAll('iframe').forEach(f=>f.classList.toggle('active',f.id==='f-'+b.dataset.t));
-    }));
+    function show(t){
+      btns.forEach(x=>x.classList.toggle('active',x.dataset.t===t));
+      document.querySelectorAll('iframe').forEach(f=>f.classList.toggle('active',f.id==='f-'+t));
+    }
+    btns.forEach(b=>b.addEventListener('click',()=>show(b.dataset.t)));
+    // Relay the Word Content -> Level Generator hand-off between the two iframes.
+    window.addEventListener('message',(e)=>{
+      const m=e.data;
+      if(m && m.type==='bw-import-categories'){
+        const f=document.getElementById('f-levels');
+        if(f&&f.contentWindow) f.contentWindow.postMessage(m,'*');
+        show('levels');
+      }
+    });
   </script>
 </body></html>"""
 

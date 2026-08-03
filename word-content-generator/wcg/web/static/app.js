@@ -62,9 +62,34 @@ function renderVariants(variants) {
     const button = document.createElement("button");
     button.textContent = "Pick this one";
     button.onclick = () => select(variant);
-    card.append(title, meta, words, button);
+    const send = document.createElement("button");
+    send.textContent = "→ Level Generator";
+    send.className = "send-lg";
+    send.title = "Add this category to the Level Generator's word bank";
+    send.onclick = () => sendToLevelGen(variant, send);
+    card.append(title, meta, words, button, send);
     container.appendChild(card);
   });
+}
+
+// Push a suggested category straight into the Level Generator's word bank.
+// Works when this UI runs inside the unified Bubble Word Tools shell (the parent
+// relays the message to the Level Generator tab).
+function sendToLevelGen(variant, btn) {
+  const payload = {
+    type: "bw-import-categories",
+    source: "wcg",
+    categories: [{ name: variant.name, words: variant.words }],
+  };
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage(payload, "*");
+    $("generate-status").textContent =
+      `Sent "${variant.name}" to the Level Generator word bank.`;
+    if (btn) { btn.textContent = "✓ Sent"; btn.disabled = true; }
+  } else {
+    $("generate-status").textContent =
+      "Open this inside Bubble Word Tools (the unified server) to send to the Level Generator.";
+  }
 }
 
 async function select(variant) {
