@@ -1,4 +1,5 @@
-# Full word bank extracted from the game (proprietary content — not published here).
+# Full word bank extracted from the game (proprietary — not published).
 wordbank.json
+**/wordbank.json
 
 .DS_Store
