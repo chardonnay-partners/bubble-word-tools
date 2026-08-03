@@ -1,0 +1,13 @@
+.git/
+.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+analysis/
+reports/
+output/
+docs/
+tests/
+.idea/
+.DS_Store
+config/sheet.json

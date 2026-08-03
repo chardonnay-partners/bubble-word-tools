@@ -1,0 +1,14 @@
+{
+  "themes": [
+    { "id": "animals", "hint": "animal kingdom: birds, pets, sea creatures, insects, habitats" },
+    { "id": "food-drink", "hint": "food, dishes, ingredients, drinks, desserts, cuisines" },
+    { "id": "nature", "hint": "plants, flowers, weather, geography, seasons, landscapes" },
+    { "id": "home", "hint": "furniture, rooms, kitchen tools, household objects" },
+    { "id": "sports", "hint": "sports, equipment, positions, games" },
+    { "id": "travel", "hint": "transport, countries, landmarks, vacation items" },
+    { "id": "arts-entertainment", "hint": "music, cinema, books, instruments, art supplies" },
+    { "id": "science-tech", "hint": "space, gadgets, computers, inventions, units" },
+    { "id": "clothing", "hint": "clothes, accessories, footwear, fabrics" },
+    { "id": "professions", "hint": "jobs, workplaces, tools of trades" }
+  ]
+}

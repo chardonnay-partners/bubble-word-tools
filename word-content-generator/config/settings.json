@@ -1,0 +1,8 @@
+{
+  "model": "claude-sonnet-5",
+  "item_min": 4,
+  "item_max": 4,
+  "locales": ["en", "fr", "de", "ja", "ko", "pt", "es", "ru"],
+  "max_llm_retries": 3,
+  "propose_variants": 3
+}

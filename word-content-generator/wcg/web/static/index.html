@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Word Content Generator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Word Content Generator</h1>
+  <nav>
+    <a id="sheet-link" class="tab active"
+       href="https://docs.google.com/spreadsheets/d/1qW17E9iSseOB3V3jj97PqWCqVy0M6ws_r-HqVJthXO0/edit"
+       target="_blank" rel="noopener">Open Word Content sheet</a>
+  </nav>
+</header>
+<main>
+  <section id="view-generate">
+    <form id="propose-form">
+      <input id="topic" type="text" placeholder="Type a topic, e.g. planets"
+             autocomplete="off" required>
+      <button id="suggest-btn" type="submit">Suggest</button>
+    </form>
+    <p id="generate-status"></p>
+    <div id="variants"></div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

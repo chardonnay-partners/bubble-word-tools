@@ -1,0 +1,22 @@
+[project]
+name = "word-content-generator"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["anthropic>=0.40"]
+
+[project.optional-dependencies]
+web = ["fastapi>=0.110", "uvicorn[standard]>=0.29"]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[project.scripts]
+wcg-serve = "wcg.web.app:run"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["wcg*"]
+
+[tool.setuptools.package-data]
+"wcg.web" = ["static/*"]

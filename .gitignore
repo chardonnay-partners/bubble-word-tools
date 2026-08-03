@@ -3,3 +3,7 @@ wordbank.json
 **/wordbank.json
 
 .DS_Store
+
+# WCG game-content pool (real game words) — kept out of the public repo
+word-content-generator/data/categories/*.json
+word-content-generator/data/localization.csv
