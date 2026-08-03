@@ -42,10 +42,23 @@ and the API at `/api/*`; `/` is the tab shell.
 
 ## Deploy (Docker / Coolify)
 
-One image serves both tabs. Point the build at this **repo root** with the Dockerfile
-at `word-content-generator/Dockerfile` (it copies both folders and sets
-`WCG_LEVELS_DIR`). Env: `ANTHROPIC_API_KEY`, optional `SHEET_WEBHOOK_URL` +
-`SHEET_TOKEN`; persistent volume at `/app/data`; port `8000`, single instance.
+One image serves both tabs at one URL. In Coolify:
+
+1. **+ New resource → Public Repository** → `chardonnay-partners/bubble-word-tools`,
+   branch `main`, build pack **Dockerfile**.
+2. **Base directory:** `/` (repo root) · **Dockerfile location:**
+   `/word-content-generator/Dockerfile`. (The Dockerfile copies both folders and
+   sets `WCG_LEVELS_DIR` so both tabs ship in the image.)
+3. **Environment variables:**
+   - `ANTHROPIC_API_KEY` — required for the Word Content tab's LLM features.
+   - `APP_BASIC_AUTH` — set to `user:pass` to require login for the whole app
+     (recommended for a public URL; the `/api/health` probe stays open). Unset = open.
+   - optional `SHEET_WEBHOOK_URL` + `SHEET_TOKEN` for the Google-Sheet push.
+4. **Persistent storage:** volume at `/app/data` (the category pool survives redeploys).
+5. **Port `8000`, single instance.**
+
+`ANTHROPIC_API_KEY` means anyone who can reach the URL can spend your Anthropic
+credits — keep `APP_BASIC_AUTH` set or the app on a private network.
 
 ## Notes on game content
 

@@ -1,6 +1,8 @@
+import base64
 import json
 import os
 import re
+import secrets
 import threading
 import time
 from contextlib import asynccontextmanager
@@ -8,7 +10,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse,
+                               Response)
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -201,6 +204,33 @@ def create_app(data_dir="data/categories", config_dir="config", llm_factory=None
         if not request.url.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-cache"
         return response
+
+    # Optional HTTP Basic Auth. Set APP_BASIC_AUTH="user:pass" (e.g. as a Coolify
+    # env var) to gate the whole app; unset = open (local dev). The health check
+    # stays open so the platform's container health probe still works.
+    auth = os.environ.get("APP_BASIC_AUTH", "").strip()
+    if ":" in auth:
+        exp_user, exp_pass = auth.split(":", 1)
+
+        @app.middleware("http")
+        async def basic_auth(request, call_next):
+            if request.url.path == "/api/health":
+                return await call_next(request)
+            ok = False
+            header = request.headers.get("authorization", "")
+            if header.startswith("Basic "):
+                try:
+                    user, _, pw = base64.b64decode(
+                        header[6:]).decode("utf-8").partition(":")
+                    ok = (secrets.compare_digest(user, exp_user)
+                          and secrets.compare_digest(pw, exp_pass))
+                except Exception:
+                    ok = False
+            if not ok:
+                return Response("Authentication required", status_code=401,
+                                headers={"WWW-Authenticate":
+                                         'Basic realm="Bubble Word Tools"'})
+            return await call_next(request)
 
     # Tabbed shell: Level Generator (default) + Word Content, served as one app.
     @app.get("/", response_class=HTMLResponse)
