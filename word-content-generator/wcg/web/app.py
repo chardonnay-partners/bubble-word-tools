@@ -10,8 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI
-from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse,
-                               Response)
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -232,66 +231,14 @@ def create_app(data_dir="data/categories", config_dir="config", llm_factory=None
                                          'Basic realm="Bubble Word Tools"'})
             return await call_next(request)
 
-    # Tabbed shell: Level Generator (default) + Word Content, served as one app.
-    @app.get("/", response_class=HTMLResponse)
-    def shell():
-        return SHELL_HTML
-
-    # Level generator — self-contained static tool, served as the default tab.
+    # One unified single-page tool: the Level Generator (with a native Word
+    # Content tab) is served at /, and talks to the /api/* endpoints directly.
     levels = Path(levels_dir) if levels_dir else \
         Path(os.environ.get("WCG_LEVELS_DIR",
                             Path(__file__).resolve().parents[3] / "level-generator"))
     if levels.is_dir():
-        app.mount("/levels", StaticFiles(directory=levels, html=True), name="levels")
-
-    # Word Content generator UI (this app's own frontend; talks to /api/*).
-    app.mount("/word", StaticFiles(directory=Path(__file__).parent / "static",
-                                   html=True), name="word")
+        app.mount("/", StaticFiles(directory=levels, html=True), name="app")
     return app
-
-
-SHELL_HTML = """<!doctype html>
-<html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bubble Word Tools</title>
-<style>
-  html,body{margin:0;height:100%;background:#0f1420;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-  .tabs{display:flex;gap:4px;background:#171e2e;border-bottom:1px solid #2a3552;padding:6px 10px;align-items:center;height:33px;box-sizing:border-box}
-  .tabs .brand{color:#e6ebf5;font-weight:700;margin-right:14px;font-size:14px;white-space:nowrap}
-  .tabs button{font:inherit;color:#8b97b5;background:transparent;border:1px solid transparent;border-radius:7px;padding:5px 15px;cursor:pointer}
-  .tabs button:hover{color:#e6ebf5}
-  .tabs button.active{color:#e6ebf5;background:#1e2740;border-color:#38456b}
-  .frames{position:absolute;top:46px;left:0;right:0;bottom:0}
-  iframe{border:0;width:100%;height:100%;display:none;background:#0f1420}
-  iframe.active{display:block}
-</style></head><body>
-  <div class="tabs">
-    <span class="brand">🫧 Bubble Word Tools</span>
-    <button data-t="levels" class="active">Level Generator</button>
-    <button data-t="word">Word Content</button>
-  </div>
-  <div class="frames">
-    <iframe id="f-levels" class="active" src="/levels/"></iframe>
-    <iframe id="f-word" src="/word/" loading="lazy"></iframe>
-  </div>
-  <script>
-    const btns=document.querySelectorAll('.tabs button');
-    function show(t){
-      btns.forEach(x=>x.classList.toggle('active',x.dataset.t===t));
-      document.querySelectorAll('iframe').forEach(f=>f.classList.toggle('active',f.id==='f-'+t));
-    }
-    btns.forEach(b=>b.addEventListener('click',()=>show(b.dataset.t)));
-    // Relay the Word Content -> Level Generator hand-off between the two iframes.
-    window.addEventListener('message',(e)=>{
-      const m=e.data;
-      if(m && m.type==='bw-import-categories'){
-        const f=document.getElementById('f-levels');
-        if(f&&f.contentWindow) f.contentWindow.postMessage(m,'*');
-        show('levels');
-      }
-    });
-  </script>
-</body></html>"""
 
 
 def run():

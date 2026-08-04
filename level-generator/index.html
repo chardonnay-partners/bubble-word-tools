@@ -13,7 +13,28 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
-  body{background:var(--bg);color:var(--txt);font:13px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  body{background:var(--bg);color:var(--txt);font:13px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .apptabs{display:flex;gap:4px;align-items:center;background:#0b0f19;border-bottom:1px solid var(--line);padding:6px 12px;flex:none}
+  .apptabs .brand{color:var(--txt);font-weight:700;margin-right:14px;font-size:14px;white-space:nowrap}
+  .apptabs button{font:inherit;color:var(--muted);background:transparent;border:1px solid transparent;border-radius:7px;padding:5px 15px;cursor:pointer}
+  .apptabs button:hover{color:var(--txt)}
+  .apptabs button.active{color:var(--txt);background:var(--panel2);border-color:var(--line2)}
+  .view{flex:1;min-height:0}
+  #view-levels{display:flex;flex-direction:column}
+  #view-word{overflow:auto}
+  #view-levels[hidden],#view-word[hidden]{display:none}
+  .wc{max-width:1040px;margin:0 auto;padding:18px}
+  .wc-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .wc-form{display:flex;gap:8px;margin:8px 0}
+  .wc-form input{flex:1}
+  .wc-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin:10px 0}
+  .wc-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px}
+  .wc-card h3{margin:0;font-size:14px}
+  .wc-card .m{font-size:11px;color:var(--muted)}
+  .wc-card .w{font-size:13px;flex:1;line-height:1.5}
+  .wc-card .btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .wc-poolhead{display:flex;align-items:center;gap:10px;margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+  .val.err-box{border-color:var(--err);background:#2a1518;color:var(--err)}
   button{font:inherit;cursor:pointer;color:var(--txt);background:var(--panel2);border:1px solid var(--line2);border-radius:7px;padding:6px 11px}
   button:hover{border-color:var(--accent)}
   button.primary{background:var(--accent2);border-color:var(--accent);font-weight:600}
@@ -30,10 +51,10 @@
   .col{display:flex;flex-direction:column;gap:4px}
   .grow{flex:1}
   .sp{flex:1}
-  header{display:flex;align-items:center;gap:12px;padding:9px 14px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  header{display:flex;align-items:center;gap:12px;padding:9px 14px;background:var(--panel);border-bottom:1px solid var(--line);flex:none}
   header h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.2px}
   header .badge{font-size:11px;color:var(--muted);border:1px solid var(--line2);border-radius:20px;padding:2px 9px}
-  main{display:grid;grid-template-columns:minmax(420px,1fr) minmax(420px,1fr);gap:0;height:calc(100vh - 51px)}
+  main{display:grid;grid-template-columns:minmax(420px,1fr) minmax(420px,1fr);gap:0;flex:1;min-height:0}
   .pane{overflow:auto;padding:14px}
   .pane.left{border-right:1px solid var(--line)}
   section.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px}
@@ -90,6 +111,12 @@
 </style>
 </head>
 <body>
+<div class="apptabs">
+  <span class="brand">🫧 Bubble Word Tools</span>
+  <button data-view="levels" class="active">Level Generator</button>
+  <button data-view="word">Word Content</button>
+</div>
+<div id="view-levels" class="view">
 <header>
   <h1>🫧 Bubble Words · Level Generator</h1>
   <span class="badge" id="schemaBadge">schema: 9 core keys</span>
@@ -120,6 +147,32 @@
     <textarea id="json" spellcheck="false"></textarea>
   </div>
 </main>
+</div><!-- /view-levels -->
+
+<div id="view-word" class="view" hidden>
+  <div class="wc">
+    <div class="wc-top">
+      <h2 style="margin:0;font-size:15px">🔤 Word Content Generator</h2>
+      <span id="wc-status" class="muted"></span>
+      <span class="sp"></span>
+      <a class="pill" id="wc-sheet" href="https://docs.google.com/spreadsheets/d/1qW17E9iSseOB3V3jj97PqWCqVy0M6ws_r-HqVJthXO0/edit" target="_blank" rel="noopener">Open Word Content sheet ↗</a>
+    </div>
+    <div id="wc-offline" class="val" hidden></div>
+    <form id="wc-form" class="wc-form" autocomplete="off">
+      <input id="wc-topic" placeholder="Type a topic, e.g. planets" />
+      <button class="primary" id="wc-suggest" type="submit">Suggest</button>
+    </form>
+    <div class="hint">Suggestions come from the LLM backend (needs the running server + <code class="k">ANTHROPIC_API_KEY</code>). Add a category straight to the Level Generator's word bank, or save it to the shared pool.</div>
+    <div id="wc-variants" class="wc-cards"></div>
+    <div class="wc-poolhead">
+      <strong>Approved pool</strong>
+      <button class="mini" id="wc-refresh">Refresh</button>
+      <button class="mini" id="wc-addall">+ Add all to bank</button>
+      <span id="wc-poolcount" class="muted"></span>
+    </div>
+    <div id="wc-pool" class="wc-cards"></div>
+  </div>
+</div>
 
 <!-- Word Bank drawer -->
 <div class="overlay" id="overlay"></div>
@@ -775,19 +828,112 @@ function loadLevelObject(o){
   state=s; renderAll();
 }
 
-// Receive categories pushed from the Word Content tab (via the shell relay).
-window.addEventListener('message',e=>{
-  const m=e.data;
-  if(!m||m.type!=='bw-import-categories'||!Array.isArray(m.categories))return;
-  const cats=m.categories.filter(c=>c&&c.name&&(c.words||[]).length).map(c=>newCat(c.name,c.words));
-  if(!cats.length)return;
-  mergeBank({categories:cats},false);
-  $('#drawer').classList.add('open');$('#overlay').classList.add('open');
-  renderBank('');
-  toast(`Imported ${cats.length} categor${cats.length>1?'ies':'y'} from Word Content`);
-});
+/* ===================== WORD CONTENT tab (native) ========================= */
+/* Talks to the same-origin /api/* backend when served by the unified server. */
+async function wcApi(path,opts){
+  const r=await fetch(path,opts);
+  let d={}; try{d=await r.json();}catch(e){}
+  if(!r.ok) throw new Error(d.error||r.statusText||('HTTP '+r.status));
+  return d;
+}
+function wcAddToBank(name,words,btn){
+  const clean=(words||[]).map(w=>String(w).trim()).filter(Boolean);
+  if(!name||!clean.length)return;
+  mergeBank({categories:[newCat(name,clean)]},false);
+  if($('#drawer').classList.contains('open')) renderBank($('#bankSearch').value);
+  toast(`Added "${name}" to the word bank`);
+  if(btn){btn.textContent='✓ In bank';btn.disabled=true;}
+}
+function renderWcVariants(vars){
+  const c=$('#wc-variants'); c.innerHTML='';
+  vars.forEach(v=>{
+    const card=el('div',{class:'wc-card'},[
+      el('h3',{},v.descriptor||v.name),
+      el('div',{class:'m'},`In game: ${v.name} · difficulty ${v.difficulty}`),
+      el('div',{class:'w'},(v.words||[]).join(' · ')),
+    ]);
+    const add=el('button',{class:'mini primary',onclick:()=>wcAddToBank(v.name,v.words,add)},'→ Add to bank');
+    const save=el('button',{class:'mini',onclick:()=>wcSaveToPool(v,save)},'Save to pool');
+    card.appendChild(el('div',{class:'btns'},[add,save]));
+    c.appendChild(card);
+  });
+}
+async function wcSaveToPool(variant,btn){
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  try{
+    const d=await wcApi('/api/select',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({variant})});
+    const w=(d.warnings&&d.warnings.length)?' ('+d.warnings.join('; ')+')':'';
+    toast(`Saved "${d.category.names.en}" to pool${w}`);
+    if(btn)btn.textContent='✓ Saved';
+    wcLoadPool();
+  }catch(err){ toast('Save failed: '+err.message); if(btn){btn.disabled=false;btn.textContent='Save to pool';} }
+}
+let wcPool=[];
+async function wcLoadPool(){
+  try{
+    const d=await wcApi('/api/categories?status=approved');
+    wcPool=d.categories||[];
+    $('#wc-poolcount').textContent=wcPool.length?`${wcPool.length} approved`:'none yet';
+    const c=$('#wc-pool'); c.innerHTML='';
+    wcPool.forEach(cat=>{
+      const words=(cat.items||[]).filter(x=>x&&!/^->/.test(String(x)));
+      const card=el('div',{class:'wc-card'},[
+        el('h3',{},cat.name),
+        el('div',{class:'m'},`${cat.theme||'—'} · difficulty ${cat.difficulty}`),
+        el('div',{class:'w'},words.join(' · ')),
+      ]);
+      const add=el('button',{class:'mini primary',onclick:()=>wcAddToBank(cat.name,words,add)},'→ Add to bank');
+      card.appendChild(el('div',{class:'btns'},[add]));
+      c.appendChild(card);
+    });
+  }catch(err){/* offline handled by wcInit */}
+}
+let wcInited=false;
+async function wcInit(){
+  if(wcInited) return; wcInited=true;
+  try{
+    await wcApi('/api/health');
+    $('#wc-offline').hidden=true;
+    wcLoadPool();
+  }catch(e){
+    const b=$('#wc-offline'); b.hidden=false; b.className='val err-box';
+    b.innerHTML='⚠ Backend not reachable. Content generation needs the unified server — run <code class="k">wcg-serve</code> and open the tool from it. The Level Generator tab works fully offline.';
+    $('#wc-suggest').disabled=true; $('#wc-topic').disabled=true;
+    $('#wc-poolcount').textContent='';
+  }
+}
+function wireWordContent(){
+  $('#wc-form').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const topic=$('#wc-topic').value.trim(); if(!topic)return;
+    const st=$('#wc-status'); st.textContent='Asking the model…';
+    $('#wc-suggest').disabled=true; $('#wc-variants').innerHTML='';
+    try{
+      const d=await wcApi('/api/propose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic})});
+      renderWcVariants(d.variants||[]);
+      st.textContent=(d.variants&&d.variants.length)?'Pick one to add:':'No valid suggestions — try again.';
+    }catch(err){ st.textContent='Error: '+err.message; }
+    finally{ $('#wc-suggest').disabled=false; }
+  });
+  $('#wc-refresh').onclick=wcLoadPool;
+  $('#wc-addall').onclick=()=>{
+    if(!wcPool.length){toast('Pool is empty');return;}
+    let n=0; wcPool.forEach(cat=>{const words=(cat.items||[]).filter(x=>x&&!/^->/.test(String(x)));if(cat.name&&words.length){mergeBank({categories:[newCat(cat.name,words)]},false);n++;}});
+    if($('#drawer').classList.contains('open'))renderBank($('#bankSearch').value);
+    toast(`Added ${n} categories to the word bank`);
+  };
+  // top-level tab switching
+  document.querySelectorAll('.apptabs button').forEach(b=>b.addEventListener('click',()=>{
+    const view=b.dataset.view;
+    document.querySelectorAll('.apptabs button').forEach(x=>x.classList.toggle('active',x===b));
+    $('#view-levels').hidden = view!=='levels';
+    $('#view-word').hidden   = view!=='word';
+    if(view==='word') wcInit();
+  }));
+}
 
 apply();
+wireWordContent();
 renderAll();
 </script>
 </body>

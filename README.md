@@ -18,11 +18,13 @@ Open <http://localhost:8000>:
 
 - **Level Generator** tab (default) — the [`level-generator/`](level-generator/) tool,
   fully client-side.
-- **Word Content** tab — the Word Content generator (LLM category suggestions, pool,
-  localization, Google-Sheet sync).
+- **Word Content** tab — LLM category suggestions + the approved pool, with
+  **→ Add to bank** to drop a category straight into the Level Generator's word bank.
 
-The server mounts the Level Generator at `/levels/`, the Word Content UI at `/word/`,
-and the API at `/api/*`; `/` is the tab shell.
+It is **one single-page app**: `level-generator/index.html` (served at `/`) contains
+both tabs and calls the `/api/*` endpoints directly — no iframe, one codebase. The
+Word Content tab needs the running server (+ `ANTHROPIC_API_KEY`); the Level Generator
+tab also works fully standalone (open the HTML file directly, or via GitHub Pages).
 
 ## Tools
 
