@@ -114,7 +114,8 @@
   .br-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
   .br-top input{flex:1;min-width:200px}
   .br-list{display:flex;flex-direction:column;gap:6px}
-  .lvl{display:grid;grid-template-columns:66px 1fr 74px;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:9px 12px;cursor:pointer}
+  .lvl{display:grid;grid-template-columns:66px 1fr 118px;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:9px 12px;cursor:pointer}
+  .lvl .open{display:flex;align-items:center;justify-content:flex-end;gap:8px}
   .lvl:hover{border-color:var(--accent)}
   .lvl .no{font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
   .lvl .no small{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);font-weight:600;letter-spacing:.08em}
@@ -124,6 +125,28 @@
   .diffb{font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--muted)}
   .diffb.d1{color:var(--warn);border-color:var(--warn)} .diffb.d2{color:var(--err);border-color:var(--err)}
   .br-empty{padding:28px;text-align:center;color:var(--muted)}
+  /* Playable test overlay */
+  .playmodal{position:fixed;inset:0;background:var(--bg);z-index:60;display:none;flex-direction:column}
+  .playmodal.open{display:flex}
+  .play-top{display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .play-top .title{font-weight:700}
+  .play-top .moves{font-family:var(--mono);font-size:14px;background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:4px 12px}
+  .play-top .moves.low{color:var(--err);border-color:var(--err)}
+  .play-top .play-hint{font-size:12px;color:var(--muted)}
+  .play-wrap{flex:1;min-height:0;position:relative;overflow:auto;background:radial-gradient(120% 120% at 50% 0%,#12294a 0%,#0c1526 70%)}
+  .play-board{position:absolute;left:0;top:0;right:0;touch-action:none}
+  .porb{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;cursor:grab;user-select:none;box-shadow:0 3px 10px rgba(0,0,0,.3);border:2px solid rgba(0,0,0,.18);touch-action:none}
+  .porb .w{font-weight:700;color:#12233a;padding:2px;line-height:1.05;pointer-events:none;word-break:break-word}
+  .porb .tier{position:absolute;bottom:4px;font-family:var(--mono);font-size:9px;color:rgba(0,0,0,.5);pointer-events:none}
+  .porb .ice{position:absolute;top:3px;font-size:11px;font-family:var(--mono);color:#12233a;pointer-events:none}
+  .porb.frozen{filter:grayscale(.35) brightness(1.08);cursor:not-allowed;border-color:#bfe3ff}
+  .porb.linked{box-shadow:0 0 0 3px var(--warn),0 3px 10px rgba(0,0,0,.3)}
+  .porb.target{box-shadow:0 0 0 4px var(--ok),0 4px 14px rgba(0,0,0,.35)}
+  .porb.dragging{cursor:grabbing;z-index:20;box-shadow:0 10px 26px rgba(0,0,0,.45)}
+  .play-banner{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:rgba(8,14,22,.72);z-index:30}
+  .play-banner.show{display:flex}
+  .play-banner h2{font-size:32px;font-weight:800}
+  .play-banner .sub{color:var(--muted);max-width:44ch;text-align:center}
 </style>
 </head>
 <body>
@@ -143,6 +166,7 @@
     <button id="btnBank">📚 Word Bank</button>
     <button id="btnLoad">↥ Load JSON</button>
     <input type="file" id="fileLoad" accept=".json" hidden />
+    <button id="btnPlay">▶ Playtest</button>
     <button id="btnExport" class="primary">↧ Export Level_N.json</button>
     <button id="btnBatch">⇊ Batch…</button>
   </div>
@@ -233,6 +257,25 @@
     <div class="hint">The generator draws categories & words from this bank. Edits persist in your browser (localStorage). Import the full <code class="k">wordbank.json</code> (≈40k words) from this folder for the complete vocabulary.</div>
     <div class="banklist" id="banklist"></div>
     <div id="bankEditor"></div>
+  </div>
+</div>
+
+<div class="playmodal" id="playmodal">
+  <div class="play-top">
+    <span class="title" id="play-title">▶ Playtest</span>
+    <span class="moves" id="play-moves">Moves 0</span>
+    <span class="play-hint">Drag a bubble onto a same-colour bubble to merge · 4 words pops it · clear the board to win</span>
+    <span class="sp"></span>
+    <button class="mini" id="play-restart">↻ Restart</button>
+    <button class="mini" id="play-close">✕ Close</button>
+  </div>
+  <div class="play-wrap">
+    <div class="play-board" id="play-board"></div>
+    <div class="play-banner" id="play-banner">
+      <h2 id="play-result"></h2>
+      <div class="sub" id="play-sub"></div>
+      <div class="row"><button class="primary" id="play-again">↻ Play again</button><button id="play-exit">Close</button></div>
+    </div>
   </div>
 </div>
 
@@ -1018,7 +1061,10 @@ function browseRow(item,s){
   if(s.sep) meta.appendChild(el('span',{title:'separator / chain'},'⛓'));
   mid.appendChild(meta);
   row.appendChild(mid);
-  row.appendChild(el('div',{class:'open'},'Open →'));
+  const oc=el('div',{class:'open'});
+  oc.appendChild(el('button',{class:'mini',title:'Playtest this level',onclick:ev=>{ev.stopPropagation();playLevel(item.level,item.n);}},'▶'));
+  oc.appendChild(el('span',{},'Open →'));
+  row.appendChild(oc);
   return row;
 }
 function renderBrowse(){
@@ -1047,8 +1093,116 @@ function openLevel(item){
   toast(`Loaded Level ${item.n} into the editor`);
 }
 
+/* ===================== PLAYABLE TEST ENGINE ============================== */
+/* Faithful in-browser re-implementation of the merge loop (works for shipped
+   levels and freshly generated ones — same level JSON either way). */
+let PLAY=null, PLAY_N=null, pDragBound=false;
+function truncate(s,n){s=String(s||'');return s.length>n?s.slice(0,n-1)+'…':s;}
+function computeMoves(L){const cats=L.categories||[];const chunked=cats.reduce((a,c)=>a+(c.words||[]).filter(w=>(w.chunks||[]).length>0).length,0);return cats.length*3+chunked+(+L.moveLimit||0);}
+function buildPlay(L){
+  const cats=L.categories||[]; const idx=new Map();
+  cats.forEach((c,i)=>(c.words||[]).forEach(w=>{const k=(w.fullWord||'').toLowerCase();if(k&&!idx.has(k))idx.set(k,{id:c.category,color:i});}));
+  const frozenMap=new Map((L.frozenBubbles||[]).map(f=>[f.word,f.mergesNeeded||1]));
+  const sepOn=!!L.useBubbleSeparator;
+  const linkedSet=new Set(sepOn?((L.bubbleSeparatorData&&L.bubbleSeparatorData.linkedWords)||[]):[]);
+  const spawn=[];
+  (L.allWordEntries||[]).forEach(w=>{
+    const word=w.fullWord; if(!word)return;
+    const meta=idx.get(word.toLowerCase())||{id:'?',color:-1};
+    if((w.chunks||[]).length>0){ w.chunks.forEach(ch=>spawn.push({word:ch,id:meta.id,color:meta.color,isChunk:true,chunkParent:word,chunksNeeded:w.chunks.length,frozen:0,isLinked:linkedSet.has(word)})); }
+    else spawn.push({word,id:meta.id,color:meta.color,isChunk:false,frozen:frozenMap.get(word)||0,isLinked:linkedSet.has(word)});
+  });
+  const maxB=+L.maxBubblesInScene||spawn.length; const initN=Math.min(maxB,spawn.length); let idc=0;
+  const mk=e=>({id:++idc,words:[e.word],categoryId:e.id,color:e.color,isChunk:!!e.isChunk,chunkParent:e.chunkParent,chunksNeeded:e.chunksNeeded||0,frozen:e.frozen||0,isLinked:!!e.isLinked,slot:-1});
+  const moves=computeMoves(L);
+  PLAY={mk,queue:spawn.slice(initN),moves,movesRemaining:moves,streak:0,sep:{on:sepOn,linked:linkedSet},ended:false,level:L,orbs:spawn.slice(0,initN).map(mk)};
+  PLAY.orbs.forEach((o,i)=>o.slot=i);
+  return PLAY;
+}
+function pFreeSlot(){const used=new Set(PLAY.orbs.filter(o=>o.slot>=0).map(o=>o.slot));let i=0;while(used.has(i))i++;return i;}
+function pCompatible(a,b){if(a.frozen>0||b.frozen>0)return false;if(a.isChunk&&b.isChunk)return a.chunkParent===b.chunkParent;if(a.isChunk||b.isChunk)return false;return a.categoryId===b.categoryId;}
+function pSpend(ok){PLAY.movesRemaining--;if(ok){PLAY.streak++;if(PLAY.streak>=5){PLAY.streak=0;PLAY.movesRemaining++;}}else PLAY.streak=0;}
+function pRefill(k){for(let i=0;i<k;i++){if(!PLAY.queue.length)break;const o=PLAY.mk(PLAY.queue.shift());o.slot=pFreeSlot();PLAY.orbs.push(o);}}
+function pAttempt(a,b){
+  if(PLAY.ended||!a||!b||a===b)return;
+  if(PLAY.sep.on&&a.isLinked!==b.isLinked){toast('Blocked by chain');pRender();return;}    // no move spent
+  if(pCompatible(a,b)){
+    b.words=b.words.concat(a.words);
+    PLAY.orbs=PLAY.orbs.filter(x=>x!==a);
+    PLAY.orbs.forEach(o=>{if(o.frozen>0)o.frozen--;});                                        // thaw tick
+    pSpend(true);
+    if(b.isChunk&&b.words.length>=b.chunksNeeded){b.isChunk=false;b.words=[b.chunkParent];b.chunkParent=undefined;b.chunksNeeded=0;pRefill(1);}
+    else if(b.words.length>=4){PLAY.orbs=PLAY.orbs.filter(x=>x!==b);pRefill(4);}              // pop
+  } else pSpend(false);
+  if(PLAY.orbs.length===0){PLAY.ended=true;pBanner(true);}
+  else if(PLAY.movesRemaining<=0){PLAY.ended=true;pBanner(false);}
+  pRender();
+}
+function pRender(){
+  const board=$('#play-board'), wrap=board.parentElement;
+  const W=wrap.clientWidth||600, H=wrap.clientHeight||400;
+  const cell=Math.max(76,Math.min(116,Math.floor(W/7)));const cols=Math.max(1,Math.floor(W/cell));
+  board.innerHTML=''; let maxSlot=0;
+  PLAY.orbs.forEach(o=>{
+    if(o.slot>maxSlot)maxSlot=o.slot;
+    const col=o.slot%cols,rw=Math.floor(o.slot/cols);
+    const t=Math.min(o.words.length,4);const size=Math.round(cell*(0.58+0.1*t));
+    const cx=col*cell+cell/2,cy=rw*cell+cell/2+12;
+    const e=el('div',{class:'porb'+(o.frozen>0?' frozen':'')+(o.isLinked&&PLAY.sep.on?' linked':''),'data-id':o.id});
+    e.style.width=e.style.height=size+'px';e.style.left=(cx-size/2)+'px';e.style.top=(cy-size/2)+'px';
+    e.style.background=o.color<0?'#4a5573':catColor(o.color);
+    const wl=el('div',{class:'w'}, o.isChunk?truncate(o.words[0],8):truncate(o.words[o.words.length-1],9));
+    wl.style.fontSize=Math.max(9,Math.round(size*0.15))+'px';e.appendChild(wl);
+    if(o.frozen>0)e.appendChild(el('div',{class:'ice'},'❄'+o.frozen));
+    else if(!o.isChunk&&o.words.length>1)e.appendChild(el('div',{class:'tier'},o.words.length+'/4'));
+    board.appendChild(e);
+  });
+  board.style.height=Math.max(H,(Math.floor(maxSlot/cols)+1)*cell+40)+'px';
+  const m=$('#play-moves');m.textContent='Moves '+Math.max(0,PLAY.movesRemaining);m.classList.toggle('low',PLAY.movesRemaining<=5);
+}
+function pBanner(win){
+  $('#play-result').textContent=win?'Level cleared! 🎉':'Out of moves';
+  $('#play-sub').textContent=win?('Moves left: '+Math.max(0,PLAY.movesRemaining)):(PLAY.orbs.length+' bubble(s) remain — not solvable within this move budget. Tune moveLimit or the spawn pool.');
+  $('#play-banner').classList.add('show');
+}
+function playLevel(L,n){
+  if(!L||!(L.categories||[]).length){toast('Nothing to play — generate or open a level first');return;}
+  PLAY_N=n; buildPlay(L);
+  $('#play-title').textContent='▶ Playtest'+(n?(' · Level '+n):'');
+  $('#play-banner').classList.remove('show');
+  $('#playmodal').classList.add('open');
+  setTimeout(pRender,30);
+}
+function pClose(){$('#playmodal').classList.remove('open');}
+function bindPlay(){
+  $('#btnPlay').onclick=()=>playLevel(buildLevelJson(state), $('#levelNum').value||'');
+  $('#play-close').onclick=pClose; $('#play-exit').onclick=pClose;
+  $('#play-restart').onclick=()=>playLevel(PLAY.level,PLAY_N);
+  $('#play-again').onclick=()=>playLevel(PLAY.level,PLAY_N);
+  if(pDragBound)return; pDragBound=true;
+  const board=$('#play-board'); let drag=null,de=null,tgt=null,ox=0,oy=0;
+  board.addEventListener('pointerdown',ev=>{
+    if(!PLAY||PLAY.ended)return; const pe=ev.target.closest('.porb'); if(!pe)return;
+    const o=PLAY.orbs.find(x=>x.id===+pe.dataset.id); if(!o||o.frozen>0)return;
+    drag=o;de=pe;de.classList.add('dragging');try{de.setPointerCapture(ev.pointerId);}catch(_){}
+    const r=de.getBoundingClientRect();ox=ev.clientX-(r.left+r.width/2);oy=ev.clientY-(r.top+r.height/2);ev.preventDefault();
+  });
+  board.addEventListener('pointermove',ev=>{
+    if(!drag)return; const br=board.getBoundingClientRect(); const size=parseFloat(de.style.width);
+    de.style.left=(ev.clientX-br.left-ox-size/2)+'px'; de.style.top=(ev.clientY-br.top-oy-size/2)+'px';
+    de.style.pointerEvents='none'; const under=document.elementFromPoint(ev.clientX,ev.clientY); de.style.pointerEvents='';
+    const te=under&&under.closest&&under.closest('.porb');
+    if(tgt&&tgt.e&&tgt.e!==te)tgt.e.classList.remove('target');
+    if(te&&+te.dataset.id!==drag.id){const o=PLAY.orbs.find(x=>x.id===+te.dataset.id);const ok=o&&!(PLAY.sep.on&&o.isLinked!==drag.isLinked)&&pCompatible(drag,o);if(ok){te.classList.add('target');tgt={o,e:te};}else tgt=null;}
+    else tgt=null;
+  });
+  const up=()=>{if(!drag)return;const d=drag,t=tgt;if(de)de.classList.remove('dragging');if(t&&t.e)t.e.classList.remove('target');drag=null;de=null;tgt=null;if(t&&t.o)pAttempt(d,t.o);else pRender();};
+  board.addEventListener('pointerup',up); board.addEventListener('pointercancel',up);
+}
+
 apply();
 wireWordContent();
+bindPlay();
 renderAll();
 </script>
 </body>
