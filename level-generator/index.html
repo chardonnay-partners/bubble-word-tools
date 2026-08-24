@@ -108,6 +108,22 @@
   .split2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   details.adv{margin-top:8px;border:1px dashed var(--line2);border-radius:7px;padding:6px 10px}
   details.adv summary{cursor:pointer;color:var(--muted);font-size:12px}
+  /* Game Levels browser */
+  #view-browse{overflow:auto}
+  .br{max-width:1080px;margin:0 auto;padding:16px}
+  .br-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .br-top input{flex:1;min-width:200px}
+  .br-list{display:flex;flex-direction:column;gap:6px}
+  .lvl{display:grid;grid-template-columns:66px 1fr 74px;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:9px 12px;cursor:pointer}
+  .lvl:hover{border-color:var(--accent)}
+  .lvl .no{font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
+  .lvl .no small{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);font-weight:600;letter-spacing:.08em}
+  .lvl .cats{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lvl .meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .lvl .open{text-align:right;color:var(--accent);font-size:12px;font-weight:600}
+  .diffb{font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--muted)}
+  .diffb.d1{color:var(--warn);border-color:var(--warn)} .diffb.d2{color:var(--err);border-color:var(--err)}
+  .br-empty{padding:28px;text-align:center;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -115,6 +131,7 @@
   <span class="brand">🫧 Bubble Word Tools</span>
   <button data-view="levels" class="active">Level Generator</button>
   <button data-view="word">Word Content</button>
+  <button data-view="browse">Game Levels</button>
 </div>
 <div id="view-levels" class="view">
 <header>
@@ -171,6 +188,28 @@
       <span id="wc-poolcount" class="muted"></span>
     </div>
     <div id="wc-pool" class="wc-cards"></div>
+  </div>
+</div>
+
+<div id="view-browse" class="view" hidden>
+  <div class="br">
+    <div class="br-top">
+      <input id="br-search" placeholder="Search by level number or category…" />
+      <select id="br-special">
+        <option value="">All specials</option>
+        <option value="frozen">Frozen ❄</option>
+        <option value="separator">Separator ⛓</option>
+      </select>
+      <span id="br-count" class="muted mono"></span>
+      <span id="br-status" class="muted"></span>
+    </div>
+    <div id="br-picker" hidden>
+      <div class="val" style="margin-bottom:12px">
+        No bundled levels in this build. Pick your local <b>Assets/Resources/Levels</b> folder to browse — files are read in your browser, nothing is uploaded.
+        <div style="margin-top:8px"><label class="mini" style="cursor:pointer;display:inline-block">Choose Levels folder…<input id="br-folder" type="file" webkitdirectory multiple hidden></label></div>
+      </div>
+    </div>
+    <div id="br-list" class="br-list"></div>
   </div>
 </div>
 
@@ -922,14 +961,90 @@ function wireWordContent(){
     if($('#drawer').classList.contains('open'))renderBank($('#bankSearch').value);
     toast(`Added ${n} categories to the word bank`);
   };
-  // top-level tab switching
-  document.querySelectorAll('.apptabs button').forEach(b=>b.addEventListener('click',()=>{
-    const view=b.dataset.view;
-    document.querySelectorAll('.apptabs button').forEach(x=>x.classList.toggle('active',x===b));
-    $('#view-levels').hidden = view!=='levels';
-    $('#view-word').hidden   = view!=='word';
-    if(view==='word') wcInit();
-  }));
+  // top-level tab switching + Game Levels wiring
+  document.querySelectorAll('.apptabs button').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+  $('#br-search').oninput=renderBrowse;
+  $('#br-special').onchange=renderBrowse;
+  $('#br-folder').onchange=onBrowseFolder;
+}
+
+/* ===================== GAME LEVELS browser (native tab) ================== */
+const VIEWS={levels:'#view-levels',word:'#view-word',browse:'#view-browse'};
+function switchView(view){
+  document.querySelectorAll('.apptabs button').forEach(x=>x.classList.toggle('active',x.dataset.view===view));
+  Object.entries(VIEWS).forEach(([k,sel])=>{const n=$(sel);if(n)n.hidden=(k!==view);});
+  if(view==='word') wcInit();
+  if(view==='browse') browseInit();
+}
+let BROWSE=null;
+async function browseInit(){
+  if(BROWSE) return;                          // load the bundle once
+  const status=$('#br-status');
+  status.textContent='Loading levels…';
+  try{
+    const r=await fetch('levels.json'); if(!r.ok) throw 0;
+    BROWSE=await r.json();
+    status.textContent=''; $('#br-picker').hidden=true;
+    renderBrowse();
+  }catch(e){
+    status.textContent='';
+    $('#br-picker').hidden=false;             // public/file build → local folder picker
+    $('#br-list').innerHTML='<div class="br-empty">Load your <b>Assets/Resources/Levels</b> folder above to browse the shipped levels.</div>';
+  }
+}
+async function onBrowseFolder(e){
+  const files=[...e.target.files].filter(f=>/Level_\d+\.json$/i.test(f.name));
+  const arr=[];
+  for(const f of files){ try{ arr.push({n:parseInt(f.name.match(/(\d+)/)[1],10), level:JSON.parse(await f.text())}); }catch(_){} }
+  arr.sort((a,b)=>a.n-b.n);
+  BROWSE=arr; $('#br-picker').hidden=true; renderBrowse();
+}
+function levelSummary(L){
+  const cats=(L.categories||[]).map(c=>c.category);
+  return {cats, spawn:(L.allWordEntries||[]).length, moves:L.moveLimit, mb:L.maxBubblesInScene,
+          diff:L.levelDifficulty||0, frozen:(L.frozenBubbles||[]).length>0, sep:!!L.useBubbleSeparator};
+}
+function browseRow(item,s){
+  const row=el('div',{class:'lvl',onclick:()=>openLevel(item)});
+  row.appendChild(el('div',{class:'no'},[document.createTextNode(item.n+''),el('small',{},'LEVEL')]));
+  const mid=el('div',{});
+  mid.appendChild(el('div',{class:'cats'}, s.cats.slice(0,6).join(' · ')+(s.cats.length>6?' …':'')));
+  const meta=el('div',{class:'meta'},[
+    el('span',{},s.cats.length+' cats'), el('span',{},s.spawn+' orbs'),
+    el('span',{},'moves '+s.moves), el('span',{},'max '+s.mb),
+    el('span',{class:'diffb d'+s.diff}, ['Default','Difficult','Expert'][s.diff]||('D'+s.diff)),
+  ]);
+  if(s.frozen) meta.appendChild(el('span',{title:'frozen bubbles'},'❄'));
+  if(s.sep) meta.appendChild(el('span',{title:'separator / chain'},'⛓'));
+  mid.appendChild(meta);
+  row.appendChild(mid);
+  row.appendChild(el('div',{class:'open'},'Open →'));
+  return row;
+}
+function renderBrowse(){
+  if(!BROWSE) return;
+  const q=($('#br-search').value||'').toLowerCase().trim();
+  const sp=$('#br-special').value;
+  const list=$('#br-list'); list.innerHTML='';
+  const cap=400; let matches=0;
+  for(const item of BROWSE){
+    const s=levelSummary(item.level);
+    if(sp==='frozen'&&!s.frozen) continue;
+    if(sp==='separator'&&!s.sep) continue;
+    if(q && !((item.n+' '+s.cats.join(' ')).toLowerCase().includes(q))) continue;
+    matches++;
+    if(matches<=cap) list.appendChild(browseRow(item,s));
+  }
+  $('#br-count').textContent = matches
+    ? `${matches} of ${BROWSE.length} levels`+(matches>cap?` · showing first ${cap}`:'')
+    : `0 of ${BROWSE.length} levels`;
+  if(!matches) list.innerHTML='<div class="br-empty">No levels match.</div>';
+}
+function openLevel(item){
+  loadLevelObject(item.level);
+  $('#levelNum').value=item.n;
+  switchView('levels');
+  toast(`Loaded Level ${item.n} into the editor`);
 }
 
 apply();
