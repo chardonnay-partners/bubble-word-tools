@@ -226,11 +226,16 @@
       </select>
       <span id="br-count" class="muted mono"></span>
       <span id="br-status" class="muted"></span>
+      <span class="sp"></span>
+      <button class="mini" id="br-reload" hidden title="Clear the cached levels and reload">⟲ Reload</button>
     </div>
     <div id="br-picker" hidden>
       <div class="val" style="margin-bottom:12px">
-        No bundled levels in this build. Pick your local <b>Assets/Resources/Levels</b> folder to browse — files are read in your browser, nothing is uploaded.
-        <div style="margin-top:8px"><label class="mini" style="cursor:pointer;display:inline-block">Choose Levels folder…<input id="br-folder" type="file" webkitdirectory multiple hidden></label></div>
+        Load the shipped levels once — pick your local <b>Assets/Resources/Levels</b> folder (or a <code class="k">levels.json</code> bundle). They're read in your browser, <b>cached for next time</b>, and never uploaded.
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          <label class="mini" style="cursor:pointer;display:inline-block">Choose Levels folder…<input id="br-folder" type="file" webkitdirectory multiple hidden></label>
+          <label class="mini" style="cursor:pointer;display:inline-block">Load levels.json…<input id="br-bundle" type="file" accept=".json" hidden></label>
+        </div>
       </div>
     </div>
     <div id="br-list" class="br-list"></div>
@@ -1009,6 +1014,8 @@ function wireWordContent(){
   $('#br-search').oninput=renderBrowse;
   $('#br-special').onchange=renderBrowse;
   $('#br-folder').onchange=onBrowseFolder;
+  $('#br-bundle').onchange=onBrowseBundle;
+  $('#br-reload').onclick=browseReload;
 }
 
 /* ===================== GAME LEVELS browser (native tab) ================== */
@@ -1020,28 +1027,54 @@ function switchView(view){
   if(view==='browse') browseInit();
 }
 let BROWSE=null;
+/* tiny IndexedDB kv store so loaded levels persist in this browser (private, never uploaded) */
+function idbOpen(){return new Promise((res,rej)=>{try{const r=indexedDB.open('bwtools',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e);}});}
+async function idbGet(k){try{const db=await idbOpen();return await new Promise((res,rej)=>{const t=db.transaction('kv').objectStore('kv').get(k);t.onsuccess=()=>res(t.result);t.onerror=()=>rej(t.error);});}catch(e){return undefined;}}
+async function idbSet(k,v){try{const db=await idbOpen();await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite').objectStore('kv').put(v,k);t.onsuccess=()=>res();t.onerror=()=>rej(t.error);});}catch(e){}}
+async function idbDel(k){try{const db=await idbOpen();await new Promise((res)=>{const t=db.transaction('kv','readwrite').objectStore('kv').delete(k);t.onsuccess=()=>res();t.onerror=()=>res();});}catch(e){}}
+
 async function browseInit(){
-  if(BROWSE) return;                          // load the bundle once
-  const status=$('#br-status');
-  status.textContent='Loading levels…';
+  if(BROWSE){ renderBrowse(); return; }
+  const status=$('#br-status'); status.textContent='Loading levels…';
+  // 1) cached in this browser from a previous load
+  const cached=await idbGet('levels');
+  if(Array.isArray(cached)&&cached.length){ BROWSE=cached; afterLevelsLoaded(); status.textContent=`cached ${cached.length}`; return; }
+  // 2) bundled alongside the tool (running from the repo / unified server)
   try{
     const r=await fetch('levels.json'); if(!r.ok) throw 0;
-    BROWSE=await r.json();
-    status.textContent=''; $('#br-picker').hidden=true;
-    renderBrowse();
-  }catch(e){
-    status.textContent='';
-    $('#br-picker').hidden=false;             // public/file build → local folder picker
-    $('#br-list').innerHTML='<div class="br-empty">Load your <b>Assets/Resources/Levels</b> folder above to browse the shipped levels.</div>';
-  }
+    BROWSE=await r.json(); idbSet('levels',BROWSE); afterLevelsLoaded(); status.textContent='';
+    return;
+  }catch(e){}
+  // 3) hosted build with no bundle → load once from local files
+  status.textContent=''; $('#br-picker').hidden=false; $('#br-reload').hidden=true;
+  $('#br-list').innerHTML='<div class="br-empty">Load your <b>Assets/Resources/Levels</b> folder (or a <code class="k">levels.json</code> bundle) once — it’s cached in this browser and loads automatically next time.</div>';
+}
+function afterLevelsLoaded(){ $('#br-picker').hidden=true; $('#br-reload').hidden=false; renderBrowse(); }
+async function cacheAndRender(arr){
+  if(!arr.length){ toast('No levels found in that selection'); return; }
+  BROWSE=arr; await idbSet('levels',arr); $('#br-status').textContent='';
+  afterLevelsLoaded();
+  toast(`Cached ${arr.length} levels — they'll load automatically next time.`);
 }
 async function onBrowseFolder(e){
   const files=[...e.target.files].filter(f=>/Level_\d+\.json$/i.test(f.name));
   const arr=[];
   for(const f of files){ try{ arr.push({n:parseInt(f.name.match(/(\d+)/)[1],10), level:JSON.parse(await f.text())}); }catch(_){} }
   arr.sort((a,b)=>a.n-b.n);
-  BROWSE=arr; $('#br-picker').hidden=true; renderBrowse();
+  cacheAndRender(arr);
 }
+async function onBrowseBundle(e){
+  const f=e.target.files[0]; if(!f) return;
+  try{
+    const j=JSON.parse(await f.text());
+    const raw=Array.isArray(j)?j:(Array.isArray(j.levels)?j.levels:null);
+    if(!raw) throw 0;
+    const arr=raw.map((x,i)=> (x&&x.level)?{n:x.n||i+1,level:x.level}:{n:i+1,level:x});
+    arr.sort((a,b)=>a.n-b.n);
+    cacheAndRender(arr);
+  }catch(err){ toast('Not a valid levels.json bundle'); }
+}
+async function browseReload(){ await idbDel('levels'); BROWSE=null; $('#br-reload').hidden=true; browseInit(); }
 function levelSummary(L){
   const cats=(L.categories||[]).map(c=>c.category);
   return {cats, spawn:(L.allWordEntries||[]).length, moves:L.moveLimit, mb:L.maxBubblesInScene,
