@@ -7,7 +7,3 @@ wordbank.json
 # WCG game-content pool (real game words) — kept out of the public repo
 word-content-generator/data/categories/*.json
 word-content-generator/data/localization.csv
-
-# Game levels bundle (full shipped content) — kept out of the public repo
-level-generator/levels.json
-**/levels.json
