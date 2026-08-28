@@ -168,8 +168,15 @@
   .rb-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
   .rb .lvl .cats{white-space:normal;display:flex;flex-wrap:wrap;gap:4px}
   .rb-cat{font-size:11px;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--txt)}
-  .rb-cat.t1{border-color:var(--ok)} .rb-cat.t2{border-color:var(--accent)}
+  .rb-cat.t1{border-color:var(--ok)} .rb-cat.t2{border-color:var(--accent)} .rb-cat.t3{border-color:var(--warn)} .rb-cat.t4{border-color:var(--err)}
   .rb .open{gap:6px}
+  .meta .delta{color:var(--txt)}
+  .lvl-detail.cmp{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.lvl-detail.cmp{grid-template-columns:1fr}}
+  .cmp-h{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;border-bottom:1px dashed var(--line2);padding-bottom:4px}
+  .cmp-col .lvl-cat{display:block;margin-bottom:7px}
+  .cmp-col .rb-cat{display:inline-block;margin-bottom:2px}
+  .cmp-col .lvl-words{display:block}
   /* Playable test overlay */
   .playmodal{position:fixed;inset:0;background:var(--bg);z-index:60;display:none;flex-direction:column}
   .playmodal.open{display:flex}
@@ -201,7 +208,7 @@
   <button data-view="word">Word Content</button>
   <button data-view="browse">Game Levels</button>
   <button data-view="wb">Word Bank</button>
-  <button data-view="rebuild">Rebuilt 1–50</button>
+  <button data-view="rebuild">Compare 1–50</button>
 </div>
 <div id="view-levels" class="view">
 <header>
@@ -317,13 +324,13 @@
 <div id="view-rebuild" class="view" hidden>
   <div class="rb">
     <div class="rb-top">
-      <strong>Rebuilt levels 1–50</strong>
-      <span class="tier t1">Easy</span><span class="tier t2">Medium</span>
+      <strong>Levels 1–50 — original vs rebuilt</strong>
+      <span class="tier t1">Easy</span><span class="tier t2">Medium</span><span class="tier t3">Hard</span><span class="tier t4">Expert</span>
       <span class="muted" id="rb-count"></span>
       <span class="sp"></span>
       <button class="mini primary" id="rb-exportall">⭳ Export all 50</button>
     </div>
-    <div class="hint">Same shape as the shipped levels (category count, 4 words each, move budget and special bubbles preserved), re-themed in increasing difficulty. <b>Hard/Expert categories are excluded entirely</b>; <b>levels 1–25 are Easy-only</b>; 26–50 ramp in more Medium categories. Click a level to load it into the editor, ▶ to playtest, ⭳ to export one.</div>
+    <div class="hint">Each row keeps the shipped level's shape (category count, 4 words each, move budget, special bubbles) but swaps in difficulty-appropriate categories. <b>Click a level</b> to expand a side-by-side comparison of its <b>original</b> vs <b>rebuilt</b> categories and words. Rebuilt rules: Hard/Expert excluded, 1–25 Easy-only, 26–50 ramp in Medium. ▶ playtest · ⭳ export.</div>
     <div id="rb-list" class="br-list"></div>
   </div>
 </div>
@@ -1192,7 +1199,23 @@ function rebuildLevel(shipped,n){
     L.useBubbleSeparator=true;
     L.bubbleSeparatorData={breakThreshold:sd.breakThreshold||3, linkedWords:spawn.slice(0,cnt)};
   }
-  return {n, level:L, json:buildLevelJson(L), easyN, medN};
+  const oldMix={1:0,2:0,3:0,4:0}; (shipped.categories||[]).forEach(c=>{oldMix[catDifficulty(c)]++;});
+  return {n, level:L, old:shipped, json:buildLevelJson(L), easyN, medN, oldMix};
+}
+function mixLabel(m){ return [1,2,3,4].filter(t=>m[t]).map(t=>m[t]+'EMHX'[t-1]).join(' ')||'—'; }
+function cmpColNode(title,L){
+  const col=el('div',{class:'cmp-col'});
+  col.appendChild(el('div',{class:'cmp-h'},title));
+  (L.categories||[]).forEach(c=>{
+    const row=el('div',{class:'lvl-cat'});
+    row.appendChild(el('span',{class:'rb-cat t'+catDifficulty(c)},c.category));
+    row.appendChild(el('span',{class:'lvl-words'},(c.words||[]).map(w=>w.fullWord).join(' · ')));
+    col.appendChild(row);
+  });
+  return col;
+}
+function rebuildDetailNode(oldL,newL){
+  return el('div',{class:'lvl-detail cmp'},[cmpColNode('Original (shipped)',oldL),cmpColNode('Rebuilt',newL)]);
 }
 async function rebuildInit(){
   const lv=await ensureLevels();
@@ -1216,20 +1239,19 @@ function renderRebuild(){
     r.level.categories.forEach(c=>catsLine.appendChild(el('span',{class:'rb-cat t'+catDifficulty(c)},c.category)));
     mid.appendChild(catsLine);
     const meta=el('div',{class:'meta'});
-    meta.appendChild(el('span',{class:'tier t1'},r.easyN+' Easy'));
-    if(r.medN) meta.appendChild(el('span',{class:'tier t2'},r.medN+' Medium'));
+    meta.appendChild(el('span',{title:'original difficulty mix → rebuilt',class:'delta'}, 'was '+mixLabel(r.oldMix)+'  →  now '+r.easyN+'E'+(r.medN?(' '+r.medN+'M'):'')));
     meta.appendChild(el('span',{}, r.level.categories.length+' cats · '+r.level.allWordEntries.length+' words · moves '+r.level.moveLimit));
     if((r.level.frozenBubbles||[]).length) meta.appendChild(el('span',{title:'frozen'},'❄'));
     if(r.level.useBubbleSeparator) meta.appendChild(el('span',{title:'separator'},'⛓'));
     mid.appendChild(meta);
     head.appendChild(mid);
     const oc=el('div',{class:'open'});
-    oc.appendChild(el('button',{class:'mini',title:'Playtest',onclick:ev=>{ev.stopPropagation();playLevel(r.json,r.n);}},'▶'));
-    oc.appendChild(el('button',{class:'mini',title:'Export this level',onclick:ev=>{ev.stopPropagation();download('Level_'+r.n+'.json',JSON.stringify(r.json,null,2));}},'⭳'));
+    oc.appendChild(el('button',{class:'mini',title:'Playtest rebuilt',onclick:ev=>{ev.stopPropagation();playLevel(r.json,r.n);}},'▶'));
+    oc.appendChild(el('button',{class:'mini',title:'Export rebuilt level',onclick:ev=>{ev.stopPropagation();download('Level_'+r.n+'.json',JSON.stringify(r.json,null,2));}},'⭳'));
     oc.appendChild(el('span',{class:'caret'}, open?'▾':'▸'));
     head.appendChild(oc);
     row.appendChild(head);
-    if(open) row.appendChild(levelDetailNode(r.level));
+    if(open) row.appendChild(rebuildDetailNode(r.old,r.level));
     host.appendChild(row);
   });
 }
