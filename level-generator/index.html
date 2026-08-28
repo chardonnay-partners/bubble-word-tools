@@ -145,6 +145,16 @@
   .wb-words{font-size:12px;color:var(--muted);line-height:1.4;word-break:break-word}
   .wb-card.wb-new{border-color:#b06bff;box-shadow:0 0 0 1px #b06bff33;background:linear-gradient(180deg,#b06bff12,transparent)}
   .newbadge{font-family:var(--mono);font-size:9px;font-weight:800;letter-spacing:.06em;color:#fff;background:#b06bff;border-radius:5px;padding:1px 6px;flex:none}
+  .wb-caret{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px;flex:none}
+  .wb-caret:hover{color:var(--accent)}
+  .wb-card.open{grid-column:1/-1}
+  .wb-words{cursor:pointer}
+  .wb-defs{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+  .wb-def{display:grid;grid-template-columns:130px 1fr;gap:8px;align-items:center}
+  .wb-word{font-weight:600;font-size:13px;word-break:break-word}
+  .wb-mean{font-size:12px;background:var(--bg);border:1px solid var(--line2);border-radius:6px;padding:4px 7px;color:var(--txt)}
+  .wb-mean:focus{outline:none;border-color:var(--accent)}
+  .wb-defs-foot{display:flex;gap:10px;align-items:center;margin-top:8px}
   /* Playable test overlay */
   .playmodal{position:fixed;inset:0;background:var(--bg);z-index:60;display:none;flex-direction:column}
   .playmodal.open{display:flex}
@@ -280,6 +290,7 @@
       <button class="mini" id="wb-import">Import…</button>
       <input id="wb-file" type="file" accept=".json" hidden />
       <button class="mini" id="wb-export">Export</button>
+      <button class="mini" id="wb-fetchall" title="Look up dictionary definitions for every word still missing a meaning">✨ Fetch meanings</button>
     </div>
     <div id="wb-summary" class="wb-summary"></div>
     <div class="hint">Difficulty rates each category by how common / widely-known its words are — <b>Easy</b> everyday vocabulary → <b>Expert</b> technical or niche. Curated for the built-in bank; imported or generated categories are auto-estimated (edit any with the dropdown). Ratings persist in your browser.</div>
@@ -365,7 +376,24 @@ const NEW_CATEGORIES=new Set(NEW_BANK_COMPACT.map(e=>e[0].toLowerCase()));
 const BANK_SEED=DEFAULT_BANK_COMPACT.concat(NEW_BANK_COMPACT);
 
 /* ---- word-entry / category factory (matches WordEntryModel / CategoryModel) ---- */
-const newWord = (fullWord)=>({fullWord,chunks:[],icon:"",IsCracked:false,crackBreakNum:0,IsLinked:false,linkedChunkWords:[]});
+const newWord = (fullWord)=>({fullWord,meaning:"",chunks:[],icon:"",IsCracked:false,crackBreakNum:0,IsLinked:false,linkedChunkWords:[]});
+// word (lowercase) -> definition; sourced from bank entries + on-demand dictionary lookups.
+let MEANINGS={};
+function refreshMeanings(){ MEANINGS={}; bank.categories.forEach(c=>c.words.forEach(w=>{const k=(w.fullWord||'').toLowerCase(); if(w.meaning&&!MEANINGS[k])MEANINGS[k]=w.meaning;})); }
+function wordMeaning(w){ return (w&&w.meaning) || MEANINGS[((w&&w.fullWord)||'').toLowerCase()] || ''; }
+async function fetchMeaning(word){
+  const tries=[word]; if(/\s/.test(word)) tries.push(word.split(/\s+/)[0]);
+  for(const t of tries){
+    try{
+      const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(t.toLowerCase()));
+      if(!r.ok) continue;
+      const d=await r.json();
+      const def=d && d[0] && d[0].meanings && d[0].meanings[0] && d[0].meanings[0].definitions[0].definition;
+      if(def) return def.length>150?def.slice(0,147)+'…':def;
+    }catch(e){}
+  }
+  return '';
+}
 const newCat  = (name,words)=>({category:name,parentCategory:"",icon:"",words:(words||[]).map(newWord)});
 function bankFromCompact(arr){return {categories:arr.map(([n,ws])=>newCat(n,ws))};}
 
@@ -394,6 +422,7 @@ const SPECIAL_DEFS = [
 
 /* ---- application state ---- */
 let bank = loadBank();
+refreshMeanings();
 let state = blankLevel();
 let genParams = {
   categories:5, wordsPerCategory:4, maxBubblesInScene:24, moveLimit:15,
@@ -429,7 +458,7 @@ const $ = s=>document.querySelector(s);
 function el(tag,props,kids){const e=document.createElement(tag);if(props)for(const k in props){if(k==='class')e.className=props[k];else if(k==='html')e.innerHTML=props[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),props[k]);else if(k==='style'&&typeof props[k]==='object')Object.assign(e.style,props[k]);else if(props[k]!==null&&props[k]!==undefined)e.setAttribute(k,props[k]);}if(kids)(Array.isArray(kids)?kids:[kids]).forEach(c=>e.appendChild(typeof c==='string'?document.createTextNode(c):c));return e;}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1600);}
 function levelWords(){const out=[];state.categories.forEach(c=>c.words.forEach(w=>out.push(w.fullWord)));return out;}
-function cloneWord(w){return {fullWord:w.fullWord,chunks:(w.chunks||[]).slice(),icon:w.icon||'',IsCracked:!!w.IsCracked,crackBreakNum:+w.crackBreakNum||0,IsLinked:!!w.IsLinked,linkedChunkWords:(w.linkedChunkWords||[]).slice()};}
+function cloneWord(w){return {fullWord:w.fullWord,meaning:w.meaning||'',chunks:(w.chunks||[]).slice(),icon:w.icon||'',IsCracked:!!w.IsCracked,crackBreakNum:+w.crackBreakNum||0,IsLinked:!!w.IsLinked,linkedChunkWords:(w.linkedChunkWords||[]).slice()};}
 function flattenCats(){const a=[];state.categories.forEach(c=>c.words.forEach(w=>a.push(cloneWord(w))));return a;}
 function syncDerived(){if(state.autoDeriveWords)state.allWordEntries=flattenCats();}
 // first-occurrence, case-insensitive word -> category index (mirrors CategoryWordIndex.Build)
@@ -468,7 +497,7 @@ function buildLevelJson(s){
   if(s.useSeparatorFlag){o.hasSeperator=true;} // note: DTO field is misspelled "Seperator"
   return o;
 }
-function serWord(w){return {fullWord:w.fullWord,chunks:(w.chunks||[]).slice(),icon:w.icon||"",IsCracked:!!w.IsCracked,crackBreakNum:+w.crackBreakNum||0,IsLinked:!!w.IsLinked,linkedChunkWords:(w.linkedChunkWords||[]).slice()};}
+function serWord(w){const o={fullWord:w.fullWord};const m=wordMeaning(w);if(m)o.meaning=m;o.chunks=(w.chunks||[]).slice();o.icon=w.icon||"";o.IsCracked=!!w.IsCracked;o.crackBreakNum=+w.crackBreakNum||0;o.IsLinked=!!w.IsLinked;o.linkedChunkWords=(w.linkedChunkWords||[]).slice();return o;}
 function appendSpecial(o,s,key,map){const arr=s[key]||[];if(arr.length)o[key]=arr.map(map);}
 function levelJsonText(){return JSON.stringify(buildLevelJson(state),null,2);}
 
@@ -947,7 +976,7 @@ function apply(){
 }
 function loadLevelObject(o){
   const s=blankLevel();
-  const mapW=w=>Object.assign(newWord(w.fullWord||''),{chunks:w.chunks||[],icon:w.icon||'',IsCracked:!!w.IsCracked,crackBreakNum:w.crackBreakNum||0,IsLinked:!!w.IsLinked,linkedChunkWords:w.linkedChunkWords||[]});
+  const mapW=w=>Object.assign(newWord(w.fullWord||''),{meaning:w.meaning||'',chunks:w.chunks||[],icon:w.icon||'',IsCracked:!!w.IsCracked,crackBreakNum:w.crackBreakNum||0,IsLinked:!!w.IsLinked,linkedChunkWords:w.linkedChunkWords||[]});
   s.categories=(o.categories||[]).map(c=>({category:c.category||'',parentCategory:c.parentCategory||'',icon:c.icon||'',words:(c.words||[]).map(mapW)}));
   s.allWordEntries=(o.allWordEntries||[]).map(mapW);
   const flat=[]; s.categories.forEach(c=>c.words.forEach(w=>flat.push(cloneWord(w))));
@@ -1077,8 +1106,9 @@ function wireWordContent(){
   $('#wb-tier').onchange=renderWordBank;
   $('#wb-add').onclick=()=>{bank.categories.unshift(newCat('New Category',['One','Two','Three','Four']));saveBank();renderWordBank();};
   $('#wb-export').onclick=()=>download('wordbank.json',JSON.stringify(bank,null,2));
+  $('#wb-fetchall').onclick=e=>wbFetchAll(e.target);
   $('#wb-import').onclick=()=>$('#wb-file').click();
-  $('#wb-file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const b=normalizeBank(JSON.parse(r.result));const rep=confirm('OK = replace bank, Cancel = merge into current bank');mergeBank(b,rep);renderWordBank();toast(`Imported ${b.categories.length} categories`);}catch(err){alert('Import failed: '+err.message);}};r.readAsText(f);e.target.value='';};
+  $('#wb-file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const b=normalizeBank(JSON.parse(r.result));const rep=confirm('OK = replace bank, Cancel = merge into current bank');mergeBank(b,rep);refreshMeanings();renderWordBank();toast(`Imported ${b.categories.length} categories`);}catch(err){alert('Import failed: '+err.message);}};r.readAsText(f);e.target.value='';};
 }
 
 /* ===================== GAME LEVELS browser (native tab) ================== */
@@ -1321,12 +1351,37 @@ function catDifficulty(cat){
   const d=DEFAULT_DIFFICULTY[(cat.category||'').toLowerCase()];
   return d||autoDifficulty(cat);                                          // curated, else estimate
 }
+const wbExpanded=new Set();
+async function wbFetchAll(btn){
+  const words=[]; bank.categories.forEach(c=>c.words.forEach(w=>{ if(!wordMeaning(w)) words.push(w); }));
+  if(!words.length){ toast('Every word already has a meaning'); return; }
+  if(!confirm(`Look up definitions for ${words.length} words? This calls a free dictionary API and may take a minute.`)) return;
+  if(btn) btn.disabled=true;
+  let done=0, found=0, B=6;
+  for(let i=0;i<words.length;i+=B){
+    const batch=words.slice(i,i+B);
+    await Promise.all(batch.map(async w=>{ const m=await fetchMeaning(w.fullWord); if(m){w.meaning=m;found++;} done++; }));
+    if(btn) btn.textContent=`✨ ${done}/${words.length}…`;
+  }
+  saveBank(); refreshMeanings(); renderWordBank();
+  if(btn){ btn.disabled=false; btn.textContent='✨ Fetch meanings'; }
+  toast(`Added ${found} meanings (${words.length-found} had no dictionary match — edit those manually)`);
+}
+async function wbFetchCategory(c,btn){
+  if(btn){btn.disabled=true;btn.textContent='Fetching…';}
+  let n=0;
+  for(const w of (c.words||[])){ if(!wordMeaning(w)){ const m=await fetchMeaning(w.fullWord); if(m){w.meaning=m;n++;} } }
+  saveBank(); refreshMeanings(); renderWordBank();
+  toast(n?`Added ${n} meaning(s) for ${c.category}`:`No new definitions found for ${c.category}`);
+}
 function wbCard(c,i){
   const isNew=NEW_CATEGORIES.has((c.category||'').toLowerCase());
-  const card=el('div',{class:'wb-card'+(isNew?' wb-new':'')});
-  const head=el('div',{class:'wb-card-h'},[
-    el('input',{class:'wb-name',value:c.category,oninput:e=>{c.category=e.target.value;saveBank();}}),
-  ]);
+  const key=(c.category||'')+'#'+i;
+  const open=wbExpanded.has(key);
+  const card=el('div',{class:'wb-card'+(isNew?' wb-new':'')+(open?' open':'')});
+  const head=el('div',{class:'wb-card-h'});
+  head.appendChild(el('button',{class:'wb-caret',title:open?'collapse':'expand — show word meanings',onclick:()=>{open?wbExpanded.delete(key):wbExpanded.add(key);renderWordBank();}}, open?'▾':'▸'));
+  head.appendChild(el('input',{class:'wb-name',value:c.category,oninput:e=>{c.category=e.target.value;saveBank();}}));
   if(isNew) head.appendChild(el('span',{class:'newbadge',title:'Newly added category'},'NEW'));
   const cur=catDifficulty(c);
   const sel=el('select',{class:'wb-tsel',title:'difficulty',onchange:e=>{c.difficulty=+e.target.value;saveBank();renderWordBank();}});
@@ -1334,7 +1389,25 @@ function wbCard(c,i){
   head.appendChild(sel);
   head.appendChild(el('button',{class:'mini ghost danger',title:'delete category',onclick:()=>{bank.categories.splice(i,1);saveBank();renderWordBank();}},'✕'));
   card.appendChild(head);
-  card.appendChild(el('div',{class:'wb-words'},(c.words||[]).map(w=>w.fullWord).join(' · ')));
+  if(!open){
+    const prev=el('div',{class:'wb-words',title:'click to show meanings',onclick:()=>{wbExpanded.add(key);renderWordBank();}},(c.words||[]).map(w=>w.fullWord).join(' · '));
+    card.appendChild(prev);
+    return card;
+  }
+  // expanded: one row per word with its (editable) meaning
+  const list=el('div',{class:'wb-defs'});
+  (c.words||[]).forEach(w=>{
+    const row=el('div',{class:'wb-def'});
+    row.appendChild(el('div',{class:'wb-word'},w.fullWord));
+    row.appendChild(el('input',{class:'wb-mean',placeholder:'meaning…',value:wordMeaning(w),
+      oninput:e=>{w.meaning=e.target.value;saveBank();MEANINGS[(w.fullWord||'').toLowerCase()]=e.target.value;}}));
+    list.appendChild(row);
+  });
+  card.appendChild(list);
+  card.appendChild(el('div',{class:'wb-defs-foot'},[
+    el('button',{class:'mini',onclick:e=>wbFetchCategory(c,e.target)},'✨ Fetch missing meanings'),
+    el('span',{class:'muted',style:{fontSize:'11px'}},'meanings save with the bank and export into each level'),
+  ]));
   return card;
 }
 function renderWordBank(){
