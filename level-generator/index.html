@@ -125,6 +125,24 @@
   .diffb{font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--muted)}
   .diffb.d1{color:var(--warn);border-color:var(--warn)} .diffb.d2{color:var(--err);border-color:var(--err)}
   .br-empty{padding:28px;text-align:center;color:var(--muted)}
+  /* Word Bank tab */
+  #view-wb{overflow:auto}
+  .wb{max-width:1080px;margin:0 auto;padding:16px}
+  .wb-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .wb-top input#wb-search{flex:1;min-width:200px}
+  .wb-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .tier{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;color:#0f1420;white-space:nowrap}
+  .tier.t1{background:var(--ok)} .tier.t2{background:var(--accent)} .tier.t3{background:var(--warn)} .tier.t4{background:var(--err);color:#fff}
+  .wb-sec{margin:16px 0}
+  .wb-sec-h{display:flex;align-items:center;gap:10px;margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:6px;flex-wrap:wrap}
+  .wb-sec-desc{font-size:12px}
+  .wb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:8px}
+  .wb-card{background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:10px}
+  .wb-card-h{display:flex;gap:6px;align-items:center;margin-bottom:5px}
+  .wb-name{flex:1;font-weight:600;background:var(--bg);border:1px solid transparent;border-radius:6px;padding:3px 6px;min-width:0}
+  .wb-name:focus{border-color:var(--accent);outline:none}
+  .wb-tsel{font-size:11px;padding:2px 4px}
+  .wb-words{font-size:12px;color:var(--muted);line-height:1.4;word-break:break-word}
   /* Playable test overlay */
   .playmodal{position:fixed;inset:0;background:var(--bg);z-index:60;display:none;flex-direction:column}
   .playmodal.open{display:flex}
@@ -155,6 +173,7 @@
   <button data-view="levels" class="active">Level Generator</button>
   <button data-view="word">Word Content</button>
   <button data-view="browse">Game Levels</button>
+  <button data-view="wb">Word Bank</button>
 </div>
 <div id="view-levels" class="view">
 <header>
@@ -239,6 +258,30 @@
       </div>
     </div>
     <div id="br-list" class="br-list"></div>
+  </div>
+</div>
+
+<div id="view-wb" class="view" hidden>
+  <div class="wb">
+    <div class="wb-top">
+      <input id="wb-search" placeholder="Search categories or words…" />
+      <select id="wb-tier">
+        <option value="">All difficulties</option>
+        <option value="1">Easy</option>
+        <option value="2">Medium</option>
+        <option value="3">Hard</option>
+        <option value="4">Expert</option>
+      </select>
+      <span id="wb-count" class="muted mono"></span>
+      <span class="sp"></span>
+      <button class="mini" id="wb-add">+ Category</button>
+      <button class="mini" id="wb-import">Import…</button>
+      <input id="wb-file" type="file" accept=".json" hidden />
+      <button class="mini" id="wb-export">Export</button>
+    </div>
+    <div id="wb-summary" class="wb-summary"></div>
+    <div class="hint">Difficulty rates each category by how common / widely-known its words are — <b>Easy</b> everyday vocabulary → <b>Expert</b> technical or niche. Curated for the built-in bank; imported or generated categories are auto-estimated (edit any with the dropdown). Ratings persist in your browser.</div>
+    <div id="wb-list"></div>
   </div>
 </div>
 
@@ -1016,15 +1059,23 @@ function wireWordContent(){
   $('#br-folder').onchange=onBrowseFolder;
   $('#br-bundle').onchange=onBrowseBundle;
   $('#br-reload').onclick=browseReload;
+  // Word Bank tab
+  $('#wb-search').oninput=renderWordBank;
+  $('#wb-tier').onchange=renderWordBank;
+  $('#wb-add').onclick=()=>{bank.categories.unshift(newCat('New Category',['One','Two','Three','Four']));saveBank();renderWordBank();};
+  $('#wb-export').onclick=()=>download('wordbank.json',JSON.stringify(bank,null,2));
+  $('#wb-import').onclick=()=>$('#wb-file').click();
+  $('#wb-file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const b=normalizeBank(JSON.parse(r.result));const rep=confirm('OK = replace bank, Cancel = merge into current bank');mergeBank(b,rep);renderWordBank();toast(`Imported ${b.categories.length} categories`);}catch(err){alert('Import failed: '+err.message);}};r.readAsText(f);e.target.value='';};
 }
 
 /* ===================== GAME LEVELS browser (native tab) ================== */
-const VIEWS={levels:'#view-levels',word:'#view-word',browse:'#view-browse'};
+const VIEWS={levels:'#view-levels',word:'#view-word',browse:'#view-browse',wb:'#view-wb'};
 function switchView(view){
   document.querySelectorAll('.apptabs button').forEach(x=>x.classList.toggle('active',x.dataset.view===view));
   Object.entries(VIEWS).forEach(([k,sel])=>{const n=$(sel);if(n)n.hidden=(k!==view);});
   if(view==='word') wcInit();
   if(view==='browse') browseInit();
+  if(view==='wb') renderWordBank();
 }
 let BROWSE=null;
 /* tiny IndexedDB kv store so loaded levels persist in this browser (private, never uploaded) */
@@ -1231,6 +1282,70 @@ function bindPlay(){
   });
   const up=()=>{if(!drag)return;const d=drag,t=tgt;if(de)de.classList.remove('dragging');if(t&&t.e)t.e.classList.remove('target');drag=null;de=null;tgt=null;if(t&&t.o)pAttempt(d,t.o);else pRender();};
   board.addEventListener('pointerup',up); board.addEventListener('pointercancel',up);
+}
+
+/* ===================== WORD BANK tab (difficulty-rated) ================== */
+const DIFF=[
+  {key:1,label:'Easy',   desc:'Everyday words everyone knows'},
+  {key:2,label:'Medium', desc:'Common, but a step up'},
+  {key:3,label:'Hard',   desc:'Specialised / educated vocabulary'},
+  {key:4,label:'Expert', desc:'Technical, obscure or niche'},
+];
+const DEFAULT_DIFFICULTY={"time":1,"sports":1,"family":1,"fruits":1,"music":1,"drinks":1,"flowers":1,"dogs":1,"food":1,"calendar":1,"dances":2,"language":2,"games":1,"play":2,"hooves":2,"cards":1,"city":1,"polygons":3,"ship":1,"mountain":2,"camera":1,"seasons":1,"buildings":1,"church":2,"winter":1,"eats":1,"planets":2,"shakespeare":3,"combat":2,"driving":1,"animals":1,"dog":1,"sauces":2,"transport":1,"gems":3,"coffee":1,"plane":2,"islands":2,"fabrics":2,"films":1,"vehicles":1,"cheese":2,"geometry":3,"beverage":1,"genre":2,"size":1,"deity":3,"division":2,"read":2,"fish":1,"birds":1,"cats":1,"snacks":1,"nuts":1,"chess":2,"capitals":2,"furniture":1,"zodiac":2,"ball":1,"travel":1,"computer":1,"keyboard":2,"shopping":1,"solids":2,"cinema":2,"rope":2,"legends":3,"gases":4,"ocean":2,"zoology":4,"cosmos":2,"copy":2,"subjects":1,"history":2,"spicy":2,"week":1,"mail":1,"science":2,"teaching":2,"coins":4,"sushi":2,"divine":2,"state":2,"felids":4,"lessons":2,"voices":2,"museum":2,"pets":1,"compass":2,"fabric":2,"writer":3,"building":1,"jobs":1,"rainbow":1,"volcano":2,"car":1,"garden":1,"train":2,"boat":1,"trees":2,"pizza":1,"usa":1,"fitness":1,"files":1,"nuclear":4,"studies":2,"fuels":2,"line":1,"creature":2,"trips":1,"boxing":2,"temperature":2,"measurements":2,"weight":2,"shoes":1,"clothing":1,"mailman":1,"doctor":2,"wood":1,"ceramic":1};
+// fallback estimate for categories with no curated rating (imported / generated)
+function autoDifficulty(cat){
+  const ws=(cat.words||[]).map(w=>(w.fullWord||'')).filter(Boolean);
+  if(!ws.length) return 2;
+  const avg=ws.reduce((a,w)=>a+w.replace(/[^A-Za-z]/g,'').length,0)/ws.length;
+  const longMax=Math.max.apply(null,ws.map(w=>w.length));
+  let s=avg; if(longMax>=11)s+=1.5; if(ws.some(w=>/\s/.test(w)))s+=0.4;
+  return s<5.2?1:s<6.6?2:s<8?3:4;
+}
+function catDifficulty(cat){
+  if(cat.difficulty) return cat.difficulty;                               // manual / stored
+  const d=DEFAULT_DIFFICULTY[(cat.category||'').toLowerCase()];
+  return d||autoDifficulty(cat);                                          // curated, else estimate
+}
+function wbCard(c,i){
+  const card=el('div',{class:'wb-card'});
+  const head=el('div',{class:'wb-card-h'},[
+    el('input',{class:'wb-name',value:c.category,oninput:e=>{c.category=e.target.value;saveBank();}}),
+  ]);
+  const cur=catDifficulty(c);
+  const sel=el('select',{class:'wb-tsel',title:'difficulty',onchange:e=>{c.difficulty=+e.target.value;saveBank();renderWordBank();}});
+  DIFF.forEach(d=>sel.appendChild(el('option',{value:d.key,selected:d.key===cur?'':null},d.label)));
+  head.appendChild(sel);
+  head.appendChild(el('button',{class:'mini ghost danger',title:'delete category',onclick:()=>{bank.categories.splice(i,1);saveBank();renderWordBank();}},'✕'));
+  card.appendChild(head);
+  card.appendChild(el('div',{class:'wb-words'},(c.words||[]).map(w=>w.fullWord).join(' · ')));
+  return card;
+}
+function renderWordBank(){
+  const q=($('#wb-search').value||'').toLowerCase().trim();
+  const tf=$('#wb-tier').value;
+  const groups={1:[],2:[],3:[],4:[]};
+  bank.categories.forEach((c,i)=>{
+    const t=catDifficulty(c);
+    if(tf && +tf!==t) return;
+    if(q && !((c.category||'').toLowerCase().includes(q) || (c.words||[]).some(w=>(w.fullWord||'').toLowerCase().includes(q)))) return;
+    groups[t].push({c,i});
+  });
+  const host=$('#wb-list'); host.innerHTML=''; let total=0;
+  DIFF.forEach(d=>{
+    const items=groups[d.key]; if(!items.length) return; total+=items.length;
+    const sec=el('div',{class:'wb-sec'});
+    sec.appendChild(el('div',{class:'wb-sec-h'},[
+      el('span',{class:'tier t'+d.key},d.label),
+      el('span',{class:'muted mono'},items.length+' categories'),
+      el('span',{class:'wb-sec-desc muted'},d.desc),
+    ]));
+    const grid=el('div',{class:'wb-grid'});
+    items.forEach(({c,i})=>grid.appendChild(wbCard(c,i)));
+    sec.appendChild(grid); host.appendChild(sec);
+  });
+  $('#wb-count').textContent=`${total} shown · ${bank.categories.length} in bank`;
+  $('#wb-summary').innerHTML=DIFF.map(d=>`<span class="tier t${d.key}">${d.label} · ${bank.categories.filter(c=>catDifficulty(c)===d.key).length}</span>`).join(' ');
+  if(!total) host.innerHTML='<div class="br-empty">No categories match.</div>';
 }
 
 apply();
