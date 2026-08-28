@@ -177,6 +177,17 @@
   .cmp-col .lvl-cat{display:block;margin-bottom:7px}
   .cmp-col .rb-cat{display:inline-block;margin-bottom:2px}
   .cmp-col .lvl-words{display:block}
+  /* difficulty curve chart */
+  #rb-chart{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px 8px;margin-bottom:12px}
+  #rb-chart:empty{display:none}
+  .curve{width:100%;height:auto;display:block}
+  .cv-grid{stroke:var(--line)} .cv-div{stroke:var(--line2);stroke-dasharray:3 3}
+  .cv-axis{fill:var(--muted);font-family:var(--mono);font-size:9px}
+  .cv-old{fill:none;stroke:var(--warn);stroke-width:2;stroke-linejoin:round}
+  .cv-new{fill:none;stroke:var(--ok);stroke-width:2;stroke-linejoin:round}
+  .cv-legend{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+  .cv-k{display:inline-flex;align-items:center;gap:6px;color:var(--txt)}
+  .cv-sw{width:16px;height:3px;border-radius:2px} .cv-sw.old{background:var(--warn)} .cv-sw.new{background:var(--ok)}
   /* Playable test overlay */
   .playmodal{position:fixed;inset:0;background:var(--bg);z-index:60;display:none;flex-direction:column}
   .playmodal.open{display:flex}
@@ -331,6 +342,7 @@
       <button class="mini primary" id="rb-exportall">⭳ Export all 50</button>
     </div>
     <div class="hint">Each row keeps the shipped level's shape (category count, 4 words each, move budget, special bubbles) but swaps in difficulty-appropriate categories. <b>Click a level</b> to expand a side-by-side comparison of its <b>original</b> vs <b>rebuilt</b> categories and words. Rebuilt rules: Hard/Expert excluded, 1–25 Easy-only, 26–50 ramp in Medium. ▶ playtest · ⭳ export.</div>
+    <div id="rb-chart"></div>
     <div id="rb-list" class="br-list"></div>
   </div>
 </div>
@@ -1217,13 +1229,37 @@ function cmpColNode(title,L){
 function rebuildDetailNode(oldL,newL){
   return el('div',{class:'lvl-detail cmp'},[cmpColNode('Original (shipped)',oldL),cmpColNode('Rebuilt',newL)]);
 }
+function meanTier(cats){ const a=(cats||[]).map(c=>catDifficulty(c)); return a.length? a.reduce((x,y)=>x+y,0)/a.length : 0; }
+function renderRebuildChart(){
+  const host=$('#rb-chart'); if(!host) return;
+  if(!REBUILT.length){ host.innerHTML=''; return; }
+  const oldS=REBUILT.map(r=>meanTier(r.old.categories)), newS=REBUILT.map(r=>meanTier(r.level.categories));
+  const N=REBUILT.length, W=680,H=210,padL=52,padR=16,padT=16,padB=28, plotW=W-padL-padR, plotH=H-padT-padB;
+  const X=i=> padL+(N<=1?0:i/(N-1))*plotW, Y=s=> padT+(4-s)/3*plotH;
+  const poly=arr=>arr.map((s,i)=>X(i).toFixed(1)+','+Y(s).toFixed(1)).join(' ');
+  const labels=['Easy','Medium','Hard','Expert'];
+  let grid=''; for(let t=1;t<=4;t++){ const yy=Y(t).toFixed(1); grid+=`<line class="cv-grid" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/><text class="cv-axis" x="${padL-8}" y="${(+yy+3).toFixed(1)}" text-anchor="end">${labels[t-1]}</text>`; }
+  let xt=''; [1,10,20,25,30,40,50].forEach(n=>{ if(n<=N){ xt+=`<text class="cv-axis" x="${X(n-1).toFixed(1)}" y="${H-8}" text-anchor="middle">${n}</text>`; }});
+  const bx=((X(24)+X(25))/2).toFixed(1);
+  const div=`<line class="cv-div" x1="${bx}" y1="${padT}" x2="${bx}" y2="${padT+plotH}"/>`;
+  const dot=(arr,cls)=>`<circle class="${cls}" cx="${X(N-1).toFixed(1)}" cy="${Y(arr[N-1]).toFixed(1)}" r="3" style="fill:${cls==='cv-old'?'var(--warn)':'var(--ok)'};stroke:none"/>`;
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" class="curve" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Average category difficulty per level, original vs rebuilt">
+    ${grid}${div}
+    <polyline class="cv-old" points="${poly(oldS)}"/>
+    <polyline class="cv-new" points="${poly(newS)}"/>
+    ${dot(oldS,'cv-old')}${dot(newS,'cv-new')}
+    ${xt}
+  </svg>
+  <div class="cv-legend"><span class="cv-k"><span class="cv-sw old"></span>Original</span><span class="cv-k"><span class="cv-sw new"></span>Rebuilt</span><span class="muted">avg category difficulty per level · dashed line = Easy-only cutoff (L25)</span></div>`;
+}
 async function rebuildInit(){
   const lv=await ensureLevels();
   const host=$('#rb-list');
-  if(!lv){ host.innerHTML='<div class="br-empty">Level data isn’t loaded yet. Open the <b>Game Levels</b> tab once (it loads/caches the shipped levels), then come back.</div>'; $('#rb-count').textContent=''; return; }
+  if(!lv){ host.innerHTML='<div class="br-empty">Level data isn’t loaded yet. Open the <b>Game Levels</b> tab once (it loads/caches the shipped levels), then come back.</div>'; $('#rb-count').textContent=''; $('#rb-chart').innerHTML=''; return; }
   const byN={}; lv.forEach(x=>byN[x.n]=x.level);
   REBUILT=[];
   for(let n=1;n<=50;n++){ if(byN[n]) REBUILT.push(rebuildLevel(byN[n],n)); }
+  renderRebuildChart();
   renderRebuild();
 }
 function renderRebuild(){
