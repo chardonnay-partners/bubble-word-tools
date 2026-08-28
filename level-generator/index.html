@@ -114,14 +114,21 @@
   .br-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
   .br-top input{flex:1;min-width:200px}
   .br-list{display:flex;flex-direction:column;gap:6px}
-  .lvl{display:grid;grid-template-columns:66px 1fr 118px;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:9px 12px;cursor:pointer}
+  .lvl{background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:9px 12px}
+  .lvl.open{border-color:var(--accent)}
+  .lvl-head{display:grid;grid-template-columns:66px 1fr auto;gap:12px;align-items:center;cursor:pointer}
+  .lvl-head:hover .caret{color:var(--accent)}
   .lvl .open{display:flex;align-items:center;justify-content:flex-end;gap:8px}
-  .lvl:hover{border-color:var(--accent)}
   .lvl .no{font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
   .lvl .no small{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);font-weight:600;letter-spacing:.08em}
   .lvl .cats{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .lvl .meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .lvl .open{text-align:right;color:var(--accent);font-size:12px;font-weight:600}
+  .lvl .caret{color:var(--muted);font-size:12px}
+  .lvl-detail{margin-top:8px;border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:5px}
+  .lvl-cat{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:baseline}
+  @media(max-width:640px){.lvl-cat{grid-template-columns:1fr}}
+  .lvl-cat .nm{font-weight:600;font-size:12.5px}
+  .lvl-words{font-size:12px;color:var(--muted);line-height:1.5}
   .diffb{font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--muted)}
   .diffb.d1{color:var(--warn);border-color:var(--warn)} .diffb.d2{color:var(--err);border-color:var(--err)}
   .br-empty{padding:28px;text-align:center;color:var(--muted)}
@@ -1149,7 +1156,7 @@ function switchView(view){
 }
 
 /* ===================== REBUILT LEVELS 1–50 (difficulty-ordered) ========== */
-let REBUILT=[];
+let REBUILT=[]; const rebuildExpanded=new Set();
 async function ensureLevels(){
   if(BROWSE) return BROWSE;
   const cached=await idbGet('levels'); if(Array.isArray(cached)&&cached.length){BROWSE=cached;return BROWSE;}
@@ -1200,8 +1207,10 @@ function renderRebuild(){
   const host=$('#rb-list'); host.innerHTML='';
   $('#rb-count').textContent=REBUILT.length+' levels';
   REBUILT.forEach(r=>{
-    const row=el('div',{class:'lvl'});
-    row.appendChild(el('div',{class:'no'},[document.createTextNode(r.n+''),el('small',{},'LEVEL')]));
+    const open=rebuildExpanded.has(r.n);
+    const row=el('div',{class:'lvl'+(open?' open':'')});
+    const head=el('div',{class:'lvl-head',onclick:()=>{open?rebuildExpanded.delete(r.n):rebuildExpanded.add(r.n);renderRebuild();}});
+    head.appendChild(el('div',{class:'no'},[document.createTextNode(r.n+''),el('small',{},'LEVEL')]));
     const mid=el('div',{});
     const catsLine=el('div',{class:'cats'});
     r.level.categories.forEach(c=>catsLine.appendChild(el('span',{class:'rb-cat t'+catDifficulty(c)},c.category)));
@@ -1213,12 +1222,14 @@ function renderRebuild(){
     if((r.level.frozenBubbles||[]).length) meta.appendChild(el('span',{title:'frozen'},'❄'));
     if(r.level.useBubbleSeparator) meta.appendChild(el('span',{title:'separator'},'⛓'));
     mid.appendChild(meta);
-    row.appendChild(mid);
+    head.appendChild(mid);
     const oc=el('div',{class:'open'});
     oc.appendChild(el('button',{class:'mini',title:'Playtest',onclick:ev=>{ev.stopPropagation();playLevel(r.json,r.n);}},'▶'));
     oc.appendChild(el('button',{class:'mini',title:'Export this level',onclick:ev=>{ev.stopPropagation();download('Level_'+r.n+'.json',JSON.stringify(r.json,null,2));}},'⭳'));
-    row.appendChild(oc);
-    row.onclick=()=>{loadLevelObject(r.json);$('#levelNum').value=r.n;switchView('levels');toast('Loaded rebuilt Level '+r.n+' into the editor');};
+    oc.appendChild(el('span',{class:'caret'}, open?'▾':'▸'));
+    head.appendChild(oc);
+    row.appendChild(head);
+    if(open) row.appendChild(levelDetailNode(r.level));
     host.appendChild(row);
   });
 }
@@ -1276,9 +1287,23 @@ function levelSummary(L){
   return {cats, spawn:(L.allWordEntries||[]).length, moves:L.moveLimit, mb:L.maxBubblesInScene,
           diff:L.levelDifficulty||0, frozen:(L.frozenBubbles||[]).length>0, sep:!!L.useBubbleSeparator};
 }
+const browseExpanded=new Set();
+// Inline level contents (categories + their words) — no bubble board.
+function levelDetailNode(L){
+  const wrap=el('div',{class:'lvl-detail'});
+  (L.categories||[]).forEach(c=>{
+    const row=el('div',{class:'lvl-cat'});
+    row.appendChild(el('span',{class:'nm'},c.category));
+    row.appendChild(el('span',{class:'lvl-words'},(c.words||[]).map(w=>w.fullWord).join(' · ')));
+    wrap.appendChild(row);
+  });
+  return wrap;
+}
 function browseRow(item,s){
-  const row=el('div',{class:'lvl',onclick:()=>openLevel(item)});
-  row.appendChild(el('div',{class:'no'},[document.createTextNode(item.n+''),el('small',{},'LEVEL')]));
+  const open=browseExpanded.has(item.n);
+  const row=el('div',{class:'lvl'+(open?' open':'')});
+  const head=el('div',{class:'lvl-head',onclick:()=>{open?browseExpanded.delete(item.n):browseExpanded.add(item.n);renderBrowse();}});
+  head.appendChild(el('div',{class:'no'},[document.createTextNode(item.n+''),el('small',{},'LEVEL')]));
   const mid=el('div',{});
   mid.appendChild(el('div',{class:'cats'}, s.cats.slice(0,6).join(' · ')+(s.cats.length>6?' …':'')));
   const meta=el('div',{class:'meta'},[
@@ -1289,11 +1314,13 @@ function browseRow(item,s){
   if(s.frozen) meta.appendChild(el('span',{title:'frozen bubbles'},'❄'));
   if(s.sep) meta.appendChild(el('span',{title:'separator / chain'},'⛓'));
   mid.appendChild(meta);
-  row.appendChild(mid);
+  head.appendChild(mid);
   const oc=el('div',{class:'open'});
   oc.appendChild(el('button',{class:'mini',title:'Playtest this level',onclick:ev=>{ev.stopPropagation();playLevel(item.level,item.n);}},'▶'));
-  oc.appendChild(el('span',{},'Open →'));
-  row.appendChild(oc);
+  oc.appendChild(el('span',{class:'caret'}, open?'▾':'▸'));
+  head.appendChild(oc);
+  row.appendChild(head);
+  if(open) row.appendChild(levelDetailNode(item.level));
   return row;
 }
 function renderBrowse(){
