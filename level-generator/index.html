@@ -224,6 +224,7 @@
   <button data-view="browse">Game Levels</button>
   <button data-view="wb">Word Bank</button>
   <button data-view="ws">Word Solitaire</button>
+  <button data-view="rb1">Rebuilt v1</button>
   <button data-view="rebuild">Compare 1–50</button>
 </div>
 <div id="view-levels" class="view">
@@ -355,6 +356,18 @@
     </div>
     <div class="hint">Categories &amp; words harvested from the <b>Word Solitaire</b> game levels (a separate game). Read-only reference — browse or copy words to build Bubble categories. Cached in your browser after first load.</div>
     <div id="ws-list" class="br-list"></div>
+  </div>
+</div>
+
+<div id="view-rb1" class="view" hidden>
+  <div class="br">
+    <div class="br-top">
+      <span id="rb1-count" class="muted mono"></span>
+      <span class="sp"></span>
+      <button class="mini primary" id="rb1-exportall">⭳ Export all 50</button>
+    </div>
+    <div class="hint">Rebuilt levels <b>v1</b> — generated from the curated 168-category bank only (<b>no Word Solitaire categories, no image categories</b>), with the level-quality engine: readable chunk splits, no same-domain / semantic-nesting collisions, synonym-aware words, reduced cross-level repetition. Click a level for its categories &amp; words. ▶ playtest · ⭳ export.</div>
+    <div id="rb1-list" class="br-list"></div>
   </div>
 </div>
 
@@ -1194,12 +1207,13 @@ function wireWordContent(){
   $('#wb-export').onclick=()=>download('wordbank.json',JSON.stringify(bank,null,2));
   $('#wb-fetchall').onclick=e=>wbFetchAll(e.target);
   $('#rb-exportall').onclick=()=>{ if(!REBUILT.length){toast('Nothing to export yet');return;} REBUILT.forEach(r=>download('Level_'+r.n+'.json',JSON.stringify(r.nw.json,null,2))); toast('Exporting NEW set: Level_1 … Level_50.json'); };
+  $('#rb1-exportall').onclick=()=>{ if(!RB1.length){toast('Nothing to export yet');return;} RB1.forEach(r=>download('Level_'+r.n+'.json',JSON.stringify(r.json,null,2))); toast('Exporting v1: Level_1 … Level_50.json'); };
   $('#wb-import').onclick=()=>$('#wb-file').click();
   $('#wb-file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const b=normalizeBank(JSON.parse(r.result));const rep=confirm('OK = replace bank, Cancel = merge into current bank');mergeBank(b,rep);refreshMeanings();renderWordBank();toast(`Imported ${b.categories.length} categories`);}catch(err){alert('Import failed: '+err.message);}};r.readAsText(f);e.target.value='';};
 }
 
 /* ===================== GAME LEVELS browser (native tab) ================== */
-const VIEWS={levels:'#view-levels',word:'#view-word',browse:'#view-browse',wb:'#view-wb',ws:'#view-ws',rebuild:'#view-rebuild'};
+const VIEWS={levels:'#view-levels',word:'#view-word',browse:'#view-browse',wb:'#view-wb',ws:'#view-ws',rb1:'#view-rb1',rebuild:'#view-rebuild'};
 function switchView(view){
   document.querySelectorAll('.apptabs button').forEach(x=>x.classList.toggle('active',x.dataset.view===view));
   Object.entries(VIEWS).forEach(([k,sel])=>{const n=$(sel);if(n)n.hidden=(k!==view);});
@@ -1207,7 +1221,59 @@ function switchView(view){
   if(view==='browse') browseInit();
   if(view==='wb') renderWordBank();
   if(view==='ws') wsInit();
+  if(view==='rb1') rb1Init();
   if(view==='rebuild') rebuildInit();
+}
+
+/* ===================== REBUILT v1 (curated-only single variant) ========== */
+let RB1=[]; const rb1Expanded=new Set();
+async function rb1Init(){
+  const lv=await ensureLevels();
+  const host=$('#rb1-list');
+  if(!lv){ host.innerHTML='<div class="br-empty">Open the <b>Game Levels</b> tab once (it loads the shipped levels), then come back.</div>'; $('#rb1-count').textContent=''; return; }
+  const byN={}; lv.forEach(x=>byN[x.n]=x.level);
+  RB1=[]; const used={};
+  for(let n=1;n<=50;n++){ if(byN[n]) RB1.push(rebuildLevel(byN[n],n,{pool:seedPool(), used})); }
+  renderRB1();
+}
+function rb1DetailNode(L){
+  const wrap=el('div',{class:'lvl-detail'});
+  (L.categories||[]).forEach(c=>{
+    const row=el('div',{class:'lvl-cat'});
+    row.appendChild(el('span',{class:'rb-cat t'+catDifficulty(c)},c.category));
+    row.appendChild(wordsNode(c.words));
+    wrap.appendChild(row);
+  });
+  return wrap;
+}
+function renderRB1(){
+  const host=$('#rb1-list'); host.innerHTML='';
+  $('#rb1-count').textContent=RB1.length+' rebuilt levels · v1 (curated only)';
+  RB1.forEach(r=>{
+    const open=rb1Expanded.has(r.n);
+    const row=el('div',{class:'lvl'+(open?' open':'')});
+    const head=el('div',{class:'lvl-head',onclick:()=>{open?rb1Expanded.delete(r.n):rb1Expanded.add(r.n);renderRB1();}});
+    head.appendChild(el('div',{class:'no'},[document.createTextNode(r.n+''),el('small',{},'LEVEL')]));
+    const mid=el('div',{});
+    const cats=el('div',{class:'cats'}); r.level.categories.forEach(c=>cats.appendChild(el('span',{class:'rb-cat t'+catDifficulty(c)},c.category))); mid.appendChild(cats);
+    const meta=el('div',{class:'meta'});
+    meta.appendChild(bandBadge(r.level));
+    meta.appendChild(el('span',{}, r.catCount+' cats · '+r.totalMoves+' moves'));
+    if(r.chunkedWords) meta.appendChild(el('span',{title:r.chunkedWords+' split/chunk words (unlocks L11)'},'⧉ '+r.chunkedWords));
+    if((r.level.frozenBubbles||[]).length) meta.appendChild(el('span',{title:'frozen (unlocks L31)'},'❄'));
+    if(r.level.useBubbleSeparator) meta.appendChild(el('span',{title:'separator (unlocks L21)'},'⛓'));
+    if(r.issues) meta.appendChild(el('span',{class:'muted',title:'residual structural issues flagged by the validator'},'⚠ '+r.issues));
+    mid.appendChild(meta);
+    head.appendChild(mid);
+    const oc=el('div',{class:'open'});
+    oc.appendChild(el('button',{class:'mini',title:'Playtest this level',onclick:ev=>{ev.stopPropagation();playLevel(r.json,r.n);}},'▶'));
+    oc.appendChild(el('button',{class:'mini',title:'Export this level',onclick:ev=>{ev.stopPropagation();download('Level_'+r.n+'.json',JSON.stringify(r.json,null,2));}},'⭳'));
+    oc.appendChild(el('span',{class:'caret'}, open?'▾':'▸'));
+    head.appendChild(oc);
+    row.appendChild(head);
+    if(open) row.appendChild(rb1DetailNode(r.level));
+    host.appendChild(row);
+  });
 }
 
 /* ===================== WORD SOLITAIRE CATEGORIES (reference, read-only) === */
