@@ -1204,6 +1204,29 @@ const SPIKES=Object.keys(SPIKE_TIER).map(Number);
 function levelTierFor(n){ return SPIKE_TIER[n]||1; }
 // Share of "difficult" (harder-tier) categories in a spike level: 20% at L11, +5% per difficulty level, capped 50%.
 function difficultFrac(n){ const i=SPIKES.indexOf(n); return i<0?0:Math.min(0.5, 0.20+0.05*i); }
+/* Everyday words used to judge whether a word splits into an intuitive chunk (a "hidden word"). */
+const COMMON_PIECES=new Set(("man men boy girl kid dog cat cow pig hen fox bee ant owl bird fish frog bat rat ape lion bear wolf deer goat seal duck hawk crab worm bull pup "+
+"arm leg ear eye toe hip rib jaw lip hand foot head hair nose chin neck back chest knee skin bone face palm nail heel "+
+"bed bath room door wall roof hall yard gate sink tub lamp sofa desk chair table shelf floor stair oven stove fork spoon bowl cup plate pan pot box bag jar mat rug bin can lid "+
+"sun moon star sky sea air ice snow rain wind fog mud mist hill cave rock sand tree leaf root seed weed moss fern wood fire lake pond reef wave tide dew storm cloud "+
+"egg ham jam pie bun cake corn rice bean meat milk tea soup salt oil nut pea plum lime pear date bread toast honey sugar "+
+"ball bell ring key lock nail pin rope net hook cart boat ship sail oar kite drum horn book page pen ink map coin card dice clock watch belt boot sock hat cap coat vest "+
+"foot hand head mail board bar pad seat space mouse bow side way port land house work town road path line rail wood water fire snow sun rain sea air back over under out "+
+"run jump swim walk sing read cook bake draw play jog row dig fly ski "+
+"set day end art age use ace aid all one two ten car bus van cab jet oak elm palm rose lily "+
+"king queen jack ace gold iron tin lead zinc coal gas star").split(/\s+/).filter(Boolean));
+// Best split where a piece is a common everyday word; null if none. Prefers true compounds (both pieces real).
+function commonPieceSplit(word){
+  const s=word, L=s.length; let best=null;
+  for(let p=2;p<=L-2;p++){
+    const a=s.slice(0,p).toLowerCase(), b=s.slice(p).toLowerCase();
+    const ca=COMMON_PIECES.has(a), cb=COMMON_PIECES.has(b);
+    if(!ca&&!cb) continue;
+    const score=(ca&&cb?10:0)+(ca?a.length:0)+(cb?b.length:0)-Math.abs(p-L/2)*0.5;
+    if(!best||score>best.score) best={split:[s.slice(0,p),s.slice(p)],score,both:ca&&cb?1:0};
+  }
+  return best;
+}
 // Move budget = multiplier × required moves (categories×3). 180% ≤L10, −10pts/5 levels, 150% floor.
 function moveMult(n){ return n<=10 ? 1.8 : Math.max(1.5, 1.8-0.1*Math.ceil((n-10)/5)); }
 function rebuildLevel(shipped,n){
@@ -1227,12 +1250,15 @@ function rebuildLevel(shipped,n){
   const L=blankLevel();
   L.categories=newCats;
   // Chunk / split words — gated to L11+ (SeparatedWords unlock). Match the shipped level's
-  // chunk count; auto-split each chosen word in half.
+  // chunk count, but only pick words that contain an intuitive "hidden word" (Closet→Clo-set),
+  // never obscure ones split into gibberish (Taffeta→Taff-eta). True compounds (Foot-ball) rank first.
   const shippedChunks = (shipped.categories||[]).reduce((a,c)=>a+c.words.filter(w=>(w.chunks||[]).length).length,0);
   const chunkTarget = n>=11 ? shippedChunks : 0;
   if(chunkTarget){
-    const splittable=[]; newCats.forEach(c=>c.words.forEach(w=>{ if(!/\s/.test(w.fullWord) && w.fullWord.length>=4) splittable.push(w); }));
-    shuffle(rng, splittable).slice(0,chunkTarget).forEach(w=>{ const s=w.fullWord, h=Math.ceil(s.length/2); w.chunks=[s.slice(0,h), s.slice(h)]; });
+    const cands=[];
+    newCats.forEach(c=>c.words.forEach(w=>{ if(!/\s/.test(w.fullWord)&&w.fullWord.length>=4){ const cs=commonPieceSplit(w.fullWord); if(cs) cands.push({w,cs}); }}));
+    cands.sort((x,y)=> (y.cs.both-x.cs.both) || (y.cs.score-x.cs.score));   // compounds first, then best split
+    cands.slice(0,chunkTarget).forEach(({w,cs})=>{ w.chunks=cs.split; });   // may fall short of target → fewer, cleaner chunks
   }
   const flat=[]; newCats.forEach(c=>c.words.forEach(w=>flat.push(cloneWord(w))));
   L.allWordEntries=flat;
