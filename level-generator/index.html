@@ -222,6 +222,7 @@
   <button data-view="word">Word Content</button>
   <button data-view="browse">Game Levels</button>
   <button data-view="wb">Word Bank</button>
+  <button data-view="ws">Word Solitaire</button>
   <button data-view="rebuild">Compare 1–50</button>
 </div>
 <div id="view-levels" class="view">
@@ -341,6 +342,18 @@
     <div id="wb-summary" class="wb-summary"></div>
     <div class="hint">Difficulty rates each category by how common / widely-known its words are — <b>Easy</b> everyday vocabulary → <b>Expert</b> technical or niche. Curated for the built-in bank; imported or generated categories are auto-estimated (edit any with the dropdown). Ratings persist in your browser.</div>
     <div id="wb-list"></div>
+  </div>
+</div>
+
+<div id="view-ws" class="view" hidden>
+  <div class="br">
+    <div class="br-top">
+      <input id="ws-search" placeholder="Search Word Solitaire categories or words…" />
+      <span id="ws-count" class="muted mono"></span>
+      <span id="ws-status" class="muted"></span>
+    </div>
+    <div class="hint">Categories &amp; words harvested from the <b>Word Solitaire</b> game levels (a separate game). Read-only reference — browse or copy words to build Bubble categories. Cached in your browser after first load.</div>
+    <div id="ws-list" class="br-list"></div>
   </div>
 </div>
 
@@ -1160,6 +1173,7 @@ function wireWordContent(){
   // top-level tab switching + Game Levels wiring
   document.querySelectorAll('.apptabs button').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
   $('#br-search').oninput=renderBrowse;
+  $('#ws-search').oninput=renderWS;
   $('#br-special').onchange=renderBrowse;
   $('#br-band').onchange=renderBrowse;
   $('#br-folder').onchange=onBrowseFolder;
@@ -1177,14 +1191,47 @@ function wireWordContent(){
 }
 
 /* ===================== GAME LEVELS browser (native tab) ================== */
-const VIEWS={levels:'#view-levels',word:'#view-word',browse:'#view-browse',wb:'#view-wb',rebuild:'#view-rebuild'};
+const VIEWS={levels:'#view-levels',word:'#view-word',browse:'#view-browse',wb:'#view-wb',ws:'#view-ws',rebuild:'#view-rebuild'};
 function switchView(view){
   document.querySelectorAll('.apptabs button').forEach(x=>x.classList.toggle('active',x.dataset.view===view));
   Object.entries(VIEWS).forEach(([k,sel])=>{const n=$(sel);if(n)n.hidden=(k!==view);});
   if(view==='word') wcInit();
   if(view==='browse') browseInit();
   if(view==='wb') renderWordBank();
+  if(view==='ws') wsInit();
   if(view==='rebuild') rebuildInit();
+}
+
+/* ===================== WORD SOLITAIRE CATEGORIES (reference, read-only) === */
+let WSCATS=null;
+async function wsInit(){
+  if(WSCATS){ renderWS(); return; }
+  const st=$('#ws-status'); st.textContent='Loading…';
+  const cached=await idbGet('wscats_v1');
+  if(Array.isArray(cached)&&cached.length){ WSCATS=cached; st.textContent=''; renderWS(); return; }
+  try{
+    const r=await fetch('wordsolitaire.json?v=1'); if(!r.ok) throw 0;
+    WSCATS=await r.json(); idbSet('wscats_v1',WSCATS); st.textContent=''; renderWS();
+  }catch(e){ st.textContent='Could not load wordsolitaire.json'; }
+}
+function renderWS(){
+  if(!WSCATS) return;
+  const q=($('#ws-search').value||'').toLowerCase().trim();
+  const list=$('#ws-list'); list.innerHTML='';
+  const cap=500; let matches=0;
+  const frag=document.createDocumentFragment();
+  for(const [name,words] of WSCATS){
+    if(q && !(name.toLowerCase().includes(q) || words.some(w=>w.toLowerCase().includes(q)))) continue;
+    matches++;
+    if(matches<=cap){
+      const row=el('div',{class:'lvl-cat'});
+      row.appendChild(el('span',{class:'nm'},name));
+      row.appendChild(el('span',{class:'lvl-words'}, words.join(' · ')));
+      frag.appendChild(row);
+    }
+  }
+  list.appendChild(frag);
+  $('#ws-count').textContent = matches.toLocaleString()+' categor'+(matches===1?'y':'ies')+(matches>cap?` (showing ${cap})`:'');
 }
 
 /* ===================== REBUILT LEVELS 1–50 (difficulty-ordered) ========== */
