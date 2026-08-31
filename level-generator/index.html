@@ -1235,16 +1235,23 @@ function rebuildLevel(shipped,n){
   const L=blankLevel();
   L.categories=newCats;
   // Chunk / split words — gated to L11+ (SeparatedWords unlock). Match the shipped level's
-  // chunk count, but only chunk EASY, recognizable words (Closet, Football) — never obscure ones
-  // (Taffeta, Baobab) that confuse players. Split near the middle (Clo-set).
+  // chunk count. Rules: chunk only EASY words (never Taffeta/Baobab); 5+ letters, preferring 6+;
+  // at most ONE chunk word per category. Split near the middle (Clo-set).
   const shippedChunks = (shipped.categories||[]).reduce((a,c)=>a+c.words.filter(w=>(w.chunks||[]).length).length,0);
   const chunkTarget = n>=11 ? shippedChunks : 0;
   if(chunkTarget){
-    const cands=[];
-    newCats.forEach(c=>c.words.forEach(w=>{ if(!/[\s-]/.test(w.fullWord)&&w.fullWord.length>=4 && !isObscureWord(w.fullWord)) cands.push(w); }));
-    shuffle(rng, cands);                                                    // random tie-break, deterministic per level
-    cands.sort((a,b)=> wordZipf(b.fullWord)-wordZipf(a.fullWord));          // most familiar words first
-    cands.slice(0,chunkTarget).forEach(w=>{ w.chunks=midSplit(w.fullWord); }); // may fall short → fewer, all-easy chunks
+    const better=(a,b)=> ((b.fullWord.length>=6)-(a.fullWord.length>=6))     // prefer 6+ letters over exactly 5
+                       || (wordZipf(b.fullWord)-wordZipf(a.fullWord))          // then the more familiar word
+                       || (b.fullWord.length-a.fullWord.length);
+    const perCat=[];                                                          // Rule 1: one candidate per category
+    newCats.forEach(c=>{
+      const opts=c.words.filter(w=>!/[\s-]/.test(w.fullWord)&&w.fullWord.length>=5&&!isObscureWord(w.fullWord));
+      if(!opts.length) return;
+      shuffle(rng, opts); opts.sort(better);
+      perCat.push(opts[0]);
+    });
+    shuffle(rng, perCat); perCat.sort(better);
+    perCat.slice(0,chunkTarget).forEach(w=>{ w.chunks=midSplit(w.fullWord); }); // may fall short → fewer, conforming chunks
   }
   const flat=[]; newCats.forEach(c=>c.words.forEach(w=>flat.push(cloneWord(w))));
   L.allWordEntries=flat;
