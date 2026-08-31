@@ -1191,8 +1191,8 @@ function switchView(view){
 let REBUILT=[]; const rebuildExpanded=new Set();
 async function ensureLevels(){
   if(BROWSE) return BROWSE;
-  const cached=await idbGet('levels'); if(Array.isArray(cached)&&cached.length){BROWSE=cached;return BROWSE;}
-  try{const r=await fetch('levels.json'); if(r.ok){BROWSE=await r.json();idbSet('levels',BROWSE);return BROWSE;}}catch(e){}
+  const cached=await idbGet('levels_v2'); if(Array.isArray(cached)&&cached.length){BROWSE=cached;return BROWSE;}
+  try{const r=await fetch('levels.json?v=2'); if(r.ok){BROWSE=await r.json();idbSet('levels_v2',BROWSE);return BROWSE;}}catch(e){}
   return null;
 }
 function poolByTier(t){ return bank.categories.filter(c=>catDifficulty(c)===t && (c.words||[]).length>=4); }
@@ -1204,29 +1204,14 @@ const SPIKES=Object.keys(SPIKE_TIER).map(Number);
 function levelTierFor(n){ return SPIKE_TIER[n]||1; }
 // Share of "difficult" (harder-tier) categories in a spike level: 20% at L11, +5% per difficulty level, capped 50%.
 function difficultFrac(n){ const i=SPIKES.indexOf(n); return i<0?0:Math.min(0.5, 0.20+0.05*i); }
-/* Everyday words used to judge whether a word splits into an intuitive chunk (a "hidden word"). */
-const COMMON_PIECES=new Set(("man men boy girl kid dog cat cow pig hen fox bee ant owl bird fish frog bat rat ape lion bear wolf deer goat seal duck hawk crab worm bull pup "+
-"arm leg ear eye toe hip rib jaw lip hand foot head hair nose chin neck back chest knee skin bone face palm nail heel "+
-"bed bath room door wall roof hall yard gate sink tub lamp sofa desk chair table shelf floor stair oven stove fork spoon bowl cup plate pan pot box bag jar mat rug bin can lid "+
-"sun moon star sky sea air ice snow rain wind fog mud mist hill cave rock sand tree leaf root seed weed moss fern wood fire lake pond reef wave tide dew storm cloud "+
-"egg ham jam pie bun cake corn rice bean meat milk tea soup salt oil nut pea plum lime pear date bread toast honey sugar "+
-"ball bell ring key lock nail pin rope net hook cart boat ship sail oar kite drum horn book page pen ink map coin card dice clock watch belt boot sock hat cap coat vest "+
-"foot hand head mail board bar pad seat space mouse bow side way port land house work town road path line rail wood water fire snow sun rain sea air back over under out "+
-"run jump swim walk sing read cook bake draw play jog row dig fly ski "+
-"set day end art age use ace aid all one two ten car bus van cab jet oak elm palm rose lily "+
-"king queen jack ace gold iron tin lead zinc coal gas star").split(/\s+/).filter(Boolean));
-// Best split where a piece is a common everyday word; null if none. Prefers true compounds (both pieces real).
-function commonPieceSplit(word){
-  const s=word, L=s.length; let best=null;
-  for(let p=2;p<=L-2;p++){
-    const a=s.slice(0,p).toLowerCase(), b=s.slice(p).toLowerCase();
-    const ca=COMMON_PIECES.has(a), cb=COMMON_PIECES.has(b);
-    if(!ca&&!cb) continue;
-    const score=(ca&&cb?10:0)+(ca?a.length:0)+(cb?b.length:0)-Math.abs(p-L/2)*0.5;
-    if(!best||score>best.score) best={split:[s.slice(0,p),s.slice(p)],score,both:ca&&cb?1:0};
-  }
-  return best;
-}
+/* Word familiarity: Zipf frequency ×10 (from Python `wordfreq`, en). Only words below 4.5 are listed;
+   anything absent is common. Used so only easy, recognizable words become chunk/split words —
+   obscure words (Taffeta, Baobab, Carbonara…) confuse players and are never chunked. */
+const WORD_ZIPF={"diagnosis":42,"lessons":44,"newton":39,"angle":44,"unicorn":35,"phoenix":42,"galleon":26,"vent":38,"pizza":44,"uno":33,"carp":32,"boots":43,"gasoline":39,"kickball":23,"epistemology":29,"bronze":42,"walnut":36,"mammals":37,"mailman":29,"lava":37,"peach":38,"twin":43,"cello":33,"soprano":33,"clause":40,"monitor":44,"neon":36,"lynx":31,"uranus":30,"homework":41,"raspberry":35,"tires":40,"hume":33,"draco":30,"tuna":36,"ocelot":23,"denarius":20,"coat":44,"lily":40,"wormhole":29,"croissant":28,"orzo":18,"propane":32,"cappuccino":29,"taurus":32,"bingo":37,"danube":31,"mutation":36,"haiku":31,"marble":40,"strawberry":37,"leo":42,"closet":41,"plato":34,"atom":37,"cube":38,"handball":31,"carriage":39,"neutron":34,"mercury":40,"burger":41,"skyscraper":32,"peony":26,"dalmatian":27,"pisces":30,"robot":42,"eagle":41,"prism":34,"locomotive":35,"blizzard":35,"sofa":38,"facsimile":30,"helium":34,"sheep":42,"syntax":35,"libra":29,"doberman":25,"nori":26,"thor":37,"pepper":41,"chromium":31,"mint":39,"chiffon":28,"muffin":34,"logos":35,"prayer":44,"scorpio":31,"arch":40,"asteroid":36,"outlet":40,"odin":32,"trumpet":36,"stethoscope":27,"ash":42,"velociraptor":23,"sashimi":26,"nylon":34,"depot":40,"fallacy":32,"ethos":33,"donut":33,"ducat":20,"broccoli":35,"wool":39,"triceratops":24,"bali":37,"salmon":40,"tab":40,"frost":40,"hungary":39,"faulkner":33,"ursa":26,"judo":32,"trucks":42,"shutter":35,"trout":38,"tiger":43,"rabbit":40,"mahjong":26,"epic":43,"curator":35,"antarctica":35,"sardine":27,"methane":35,"latte":33,"kevlar":28,"paradox":36,"locrian":16,"aries":31,"biscuit":35,"chimera":29,"aesthetics":36,"wavy":32,"desk":44,"feynman":27,"chromosome":35,"arizona":44,"drums":39,"malachite":25,"sumo":31,"polygon":30,"quasar":24,"karate":35,"tiles":37,"siamese":30,"ketchup":35,"aeolian":24,"loafers":28,"orwell":31,"knight":43,"cotton":43,"espresso":34,"cone":38,"bassoon":25,"axon":27,"pound":43,"metaphysics":31,"clipper":31,"sandals":35,"dashed":33,"nickel":38,"soda":40,"spades":31,"stamp":41,"gearbox":32,"bee":41,"jab":34,"fuji":32,"neutrino":28,"slovenia":34,"cow":41,"brontosaurus":22,"blues":43,"taffeta":23,"mixolydian":17,"softball":37,"quark":30,"ridge":41,"romeo":37,"coupe":33,"hockey":44,"premise":38,"kite":35,"bass":43,"pesto":29,"harbor":42,"delta":41,"dendrite":20,"workout":40,"galaxy":43,"diesel":40,"raptor":31,"elf":36,"granite":39,"radon":29,"sicily":35,"mic":38,"bushes":36,"wings":44,"monopoly":38,"vacation":44,"souffle":23,"samba":32,"pedals":32,"birch":35,"diagonal":34,"lecture":41,"synapse":28,"altocumulus":13,"brie":31,"tabasco":26,"singularity":32,"gram":38,"everest":34,"chips":42,"rename":32,"chassis":35,"carbonara":23,"cardio":34,"penguin":38,"liver":42,"boson":28,"ace":41,"catalase":22,"thyme":31,"welder":29,"oboe":27,"wagner":37,"harvard":42,"beans":41,"poodle":30,"composers":35,"parmesan":32,"lungs":40,"locker":40,"bach":35,"iris":38,"okapi":19,"tanzanite":19,"confucius":31,"yen":37,"forgery":32,"tolstoy":30,"omelet":26,"dorian":32,"grass":44,"buttress":27,"tanker":34,"isotope":31,"romance":43,"mousse":30,"chili":37,"daisy":38,"handel":30,"saga":39,"genome":37,"grape":37,"reactor":38,"vivaldi":26,"tempest":33,"compound":42,"tiramisu":25,"oval":40,"hobbes":30,"redshift":25,"doubloon":17,"dock":40,"andes":31,"gambit":31,"syllogism":21,"waffle":33,"snowman":32,"anchor":40,"gym":44,"parcel":37,"thriller":39,"sorbonne":26,"mocha":30,"lasagna":31,"excalibur":29,"doll":41,"amylase":23,"mesa":35,"facade":34,"beetle":35,"mozart":34,"fruits":41,"delete":42,"couplet":25,"pepsin":18,"medieval":40,"rap":41,"parrot":35,"elm":34,"basil":36,"fries":38,"stratus":24,"spacebar":20,"pancreas":31,"feta":28,"sneakers":35,"onion":39,"catalyst":38,"cruise":42,"lepton":20,"hallway":37,"satin":34,"alto":35,"spaghetti":36,"orion":34,"kant":31,"popcorn":37,"hamster":33,"allele":29,"sapphire":34,"crow":38,"tango":36,"silk":41,"yoga":42,"rails":38,"hats":40,"rosemary":36,"ribosome":24,"phrygian":22,"uppercut":26,"cortex":36,"wrap":42,"rook":31,"baobab":22,"biology":42,"grater":25,"salsa":35,"solder":31,"volga":28,"chemistry":43,"brigantine":22,"velvet":38,"mars":43,"platinum":40,"mantis":31,"slate":38,"pulsar":27,"waltz":34,"ontology":29,"lydian":21,"krypton":28,"goat":40,"bearing":42,"portugal":41,"canyon":40,"reptiles":34,"basalt":30,"alps":36,"americano":26,"toast":40,"venus":38,"dome":39,"aluminum":40,"curved":38,"othello":30,"guinea":41,"hadron":27,"tulip":32,"oxford":44,"fission":31,"kraken":29,"mug":37,"dominoes":28,"ballad":34,"valence":29,"bishop":44,"ounce":38,"sushi":37,"iceland":38,"perch":33,"tabby":28,"atlantis":34,"tenor":34,"hotdog":28,"savate":13,"cirrostratus":10,"envelope":39,"junk":40,"butte":31,"wilde":34,"nuts":43,"tonnage":29,"puzzle":40,"kebab":30,"boutique":35,"terrier":32,"owl":39,"wasabi":28,"sphere":39,"panda":36,"taxi":42,"mailbox":33,"sonnet":30,"maki":29,"valkyrie":31,"gouda":25,"cumulus":26,"einstein":37,"copper":43,"madrid":43,"frigate":31,"chess":39,"corollary":27,"ibiza":32,"ruby":40,"ruler":38,"rectangle":32,"potato":41,"nuggets":35,"kansas":44,"ant":39,"ode":33,"comet":36,"shirts":42,"mango":36,"coupon":39,"fence":42,"hose":37,"boxing":42,"tolkien":32,"pegasus":31,"verb":37,"fable":32,"cranberry":32,"arctic":40,"anger":44,"fuselage":31,"brownie":32,"logic":44,"linen":36,"tokyo":43,"baritone":30,"cirrus":26,"myth":41,"euro":41,"lion":42,"funk":37,"moth":35,"electron":38,"peanut":39,"autumn":43,"oceania":30,"checkup":29,"gorgon":26,"zeus":35,"nebula":32,"pewter":28,"clarinet":31,"atlantic":44,"polymer":36,"seminar":38,"rudder":32,"tart":34,"azimuth":25,"tennis":43,"choir":39,"ravioli":29,"chiasmus":14,"swan":38,"ra":39,"kelvin":33,"gluon":22,"granola":30,"nimbus":26,"globe":43,"pen":44,"noodles":37,"alaska":42,"folder":37,"tale":43,"litotes":12,"bulldog":34,"bengal":37,"insects":40,"mastiff":26,"gooseberry":25,"adjective":33,"antiquity":34,"violet":38,"persian":38,"trombone":30,"tarragon":25,"discount":43,"oven":40,"mousepad":20,"artifact":34,"blocks":44,"margherita":26,"frog":39,"elegy":27,"seatbelt":31,"juliet":36,"carrot":36,"juice":44,"milkshake":30,"adverb":25,"pilates":30,"hook":44,"berlin":44,"kidneys":35,"cairo":38,"jazz":43,"knife":44,"taco":37,"proton":34,"hen":36,"flannel":32,"hamlet":36,"pepperoni":30,"brass":40,"crete":32,"jogging":34,"stegosaurus":21,"protease":28,"baklava":24,"amalgam":29,"sphinx":30,"plateau":36,"myelin":25,"diamond":44,"harp":34,"crackers":35,"pig":41,"rugby":44,"metro":42,"wasp":34,"argon":29,"zebra":34,"drachma":20,"mayo":37,"pistachios":26,"clone":37,"blackberry":36,"saturn":35,"emerald":36,"locke":35,"ligase":20,"torso":34,"dresser":34,"pancakes":36,"rhino":36,"husky":33,"celsius":33,"knockout":36,"banana":40,"fridge":40,"vase":35,"curry":40,"pathos":28,"obsidian":30,"dostoyevsky":25,"brig":33,"kilogram":30,"palm":42,"mit":37,"brioche":26,"triangle":39,"ganges":29,"persimmon":25,"lens":42,"sage":38,"replica":37,"axiom":30,"penne":25,"sci-fi":43,"blueberry":33,"column":43,"rumba":26,"leopard":36,"oak":42,"pediment":23,"puppy":40,"hydra":33,"archive":40,"altar":38,"codon":25,"beagle":31,"octagon":29,"algebra":38,"fusilli":17,"spinach":35,"sedan":35,"eclair":22,"whale":40,"keyboard":41,"peso":30,"tripod":32,"spoon":39,"priest":43,"chopin":29,"cockpit":36,"antelope":31,"exhibit":42,"denmark":40,"neuron":32,"zigzag":28,"darwin":38,"voyage":39,"physics":44,"pretzel":30,"radius":39,"macbeth":33,"sequoia":28,"spleen":31,"cereal":37,"thames":37,"pigeon":36,"cashew":28,"ginger":39,"magma":32,"dolomite":26,"nigiri":19,"mustard":37,"nile":36,"anaphora":19,"meteor":35,"rupee":30,"punch":43,"edam":19,"cheddar":33,"amethyst":30,"lipase":23,"stove":37,"garage":42,"barn":40,"piano":43,"ethics":42};
+const OBSCURE_ZIPF=3.0;                                 // a word is chunk-eligible only if at least this common
+function wordZipf(w){ const v=WORD_ZIPF[(w||'').toLowerCase()]; return v===undefined?4.5:v/10; }
+function isObscureWord(w){ return wordZipf(w) < OBSCURE_ZIPF; }
+function midSplit(word){ const h=Math.ceil(word.length/2); return [word.slice(0,h), word.slice(h)]; }   // simple split near the middle (Closet → Clo-set)
 // Move budget = multiplier × required moves (categories×3). 180% ≤L10, −10pts/5 levels, 150% floor.
 function moveMult(n){ return n<=10 ? 1.8 : Math.max(1.5, 1.8-0.1*Math.ceil((n-10)/5)); }
 function rebuildLevel(shipped,n){
@@ -1250,15 +1235,16 @@ function rebuildLevel(shipped,n){
   const L=blankLevel();
   L.categories=newCats;
   // Chunk / split words — gated to L11+ (SeparatedWords unlock). Match the shipped level's
-  // chunk count, but only pick words that contain an intuitive "hidden word" (Closet→Clo-set),
-  // never obscure ones split into gibberish (Taffeta→Taff-eta). True compounds (Foot-ball) rank first.
+  // chunk count, but only chunk EASY, recognizable words (Closet, Football) — never obscure ones
+  // (Taffeta, Baobab) that confuse players. Split near the middle (Clo-set).
   const shippedChunks = (shipped.categories||[]).reduce((a,c)=>a+c.words.filter(w=>(w.chunks||[]).length).length,0);
   const chunkTarget = n>=11 ? shippedChunks : 0;
   if(chunkTarget){
     const cands=[];
-    newCats.forEach(c=>c.words.forEach(w=>{ if(!/\s/.test(w.fullWord)&&w.fullWord.length>=4){ const cs=commonPieceSplit(w.fullWord); if(cs) cands.push({w,cs}); }}));
-    cands.sort((x,y)=> (y.cs.both-x.cs.both) || (y.cs.score-x.cs.score));   // compounds first, then best split
-    cands.slice(0,chunkTarget).forEach(({w,cs})=>{ w.chunks=cs.split; });   // may fall short of target → fewer, cleaner chunks
+    newCats.forEach(c=>c.words.forEach(w=>{ if(!/[\s-]/.test(w.fullWord)&&w.fullWord.length>=4 && !isObscureWord(w.fullWord)) cands.push(w); }));
+    shuffle(rng, cands);                                                    // random tie-break, deterministic per level
+    cands.sort((a,b)=> wordZipf(b.fullWord)-wordZipf(a.fullWord));          // most familiar words first
+    cands.slice(0,chunkTarget).forEach(w=>{ w.chunks=midSplit(w.fullWord); }); // may fall short → fewer, all-easy chunks
   }
   const flat=[]; newCats.forEach(c=>c.words.forEach(w=>flat.push(cloneWord(w))));
   L.allWordEntries=flat;
@@ -1378,12 +1364,12 @@ async function browseInit(){
   if(BROWSE){ renderBrowse(); return; }
   const status=$('#br-status'); status.textContent='Loading levels…';
   // 1) cached in this browser from a previous load
-  const cached=await idbGet('levels');
+  const cached=await idbGet('levels_v2');
   if(Array.isArray(cached)&&cached.length){ BROWSE=cached; afterLevelsLoaded(); status.textContent=`cached ${cached.length}`; return; }
   // 2) bundled alongside the tool (running from the repo / unified server)
   try{
-    const r=await fetch('levels.json'); if(!r.ok) throw 0;
-    BROWSE=await r.json(); idbSet('levels',BROWSE); afterLevelsLoaded(); status.textContent='';
+    const r=await fetch('levels.json?v=2'); if(!r.ok) throw 0;
+    BROWSE=await r.json(); idbSet('levels_v2',BROWSE); afterLevelsLoaded(); status.textContent='';
     return;
   }catch(e){}
   // 3) hosted build with no bundle → load once from local files
@@ -1393,7 +1379,7 @@ async function browseInit(){
 function afterLevelsLoaded(){ $('#br-picker').hidden=true; $('#br-reload').hidden=false; renderBrowse(); }
 async function cacheAndRender(arr){
   if(!arr.length){ toast('No levels found in that selection'); return; }
-  BROWSE=arr; await idbSet('levels',arr); $('#br-status').textContent='';
+  BROWSE=arr; await idbSet('levels_v2',arr); $('#br-status').textContent='';
   afterLevelsLoaded();
   toast(`Cached ${arr.length} levels — they'll load automatically next time.`);
 }
@@ -1415,7 +1401,7 @@ async function onBrowseBundle(e){
     cacheAndRender(arr);
   }catch(err){ toast('Not a valid levels.json bundle'); }
 }
-async function browseReload(){ await idbDel('levels'); BROWSE=null; $('#br-reload').hidden=true; browseInit(); }
+async function browseReload(){ await idbDel('levels_v2'); BROWSE=null; $('#br-reload').hidden=true; browseInit(); }
 function levelSummary(L){
   const cats=(L.categories||[]).map(c=>c.category);
   return {cats, spawn:(L.allWordEntries||[]).length, moves:L.moveLimit, mb:L.maxBubblesInScene,
