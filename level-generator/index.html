@@ -130,6 +130,8 @@
   .lvl-cat .nm{font-weight:600;font-size:12.5px}
   .lvl-words{font-size:12px;color:var(--muted);line-height:1.6}
   .chunkw{color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:5px;padding:0 5px;font-weight:600;white-space:nowrap}
+  .chainw{color:#b06bff;background:color-mix(in srgb,#b06bff 15%,transparent);border:1px solid color-mix(in srgb,#b06bff 45%,transparent);border-radius:5px;padding:0 5px;font-weight:600;white-space:nowrap}
+  .chain-note{color:#b06bff;font-size:11px;font-weight:600}
   .diffb{font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--muted)}
   .diffb.d1{color:var(--warn);border-color:var(--warn)} .diffb.d2{color:var(--err);border-color:var(--err)}
   .br-empty{padding:28px;text-align:center;color:var(--muted)}
@@ -1236,11 +1238,17 @@ async function rb1Init(){
   for(let n=1;n<=50;n++){ if(byN[n]) RB1.push(rebuildLevel(byN[n],n,{pool:seedPool(), used})); }
   renderRB1();
 }
+function catLabelNode(c){
+  const wrap=el('span',{});
+  wrap.appendChild(el('span',{class:'rb-cat t'+catDifficulty(c)+(c.isImage?' ':'')},(c.isImage?'🖼 ':'')+c.category));
+  if(c.parentCategory) wrap.appendChild(el('span',{class:'chain-note',title:'merging these reforms "'+c.category+'", which belongs to '+c.parentCategory},' ⛓→ '+c.parentCategory));
+  return wrap;
+}
 function rb1DetailNode(L){
   const wrap=el('div',{class:'lvl-detail'});
   (L.categories||[]).forEach(c=>{
     const row=el('div',{class:'lvl-cat'});
-    row.appendChild(el('span',{class:'rb-cat t'+catDifficulty(c)},c.category));
+    row.appendChild(catLabelNode(c));
     row.appendChild(wordsNode(c.words));
     wrap.appendChild(row);
   });
@@ -1366,17 +1374,20 @@ function levelIssues(cats){
   let n=0;
   const names=cats.map(c=>(c.category||'').toLowerCase());
   const nameSet=new Set(names.concat(names.map(singularish)));
-  const doms=new Set();
+  const childOf={}; cats.forEach(c=>{ if(c.parentCategory) childOf[(c.category||'').toLowerCase()]=(c.parentCategory||'').toLowerCase(); });
+  const chainPair=(a,b)=> childOf[a]===b || childOf[b]===a;                    // intended parent↔child chain
+  const doms={};
   for(let i=0;i<cats.length;i++){
     const di=catDomain(cats[i].category);
-    if(doms.has(di)) n++; else doms.add(di);                                  // two categories, same domain (geo×2, time×2…)
-    for(let j=i+1;j<cats.length;j++) if(CONFLICT_SET.has([names[i],names[j]].sort().join('|'))) n++;
+    if(doms[di]!=null){ if(!chainPair(names[i],names[doms[di]])) n++; } else doms[di]=i;   // same domain (unless it's the chain)
+    for(let j=i+1;j<cats.length;j++) if(CONFLICT_SET.has([names[i],names[j]].sort().join('|')) && !chainPair(names[i],names[j])) n++;
   }
   const seen=new Set();
-  cats.forEach(c=>{ const cn=singularish(c.category);
+  cats.forEach(c=>{ const cn=singularish(c.category), cnl=(c.category||'').toLowerCase();
     c.words.forEach(w=>{ const wl=(w.fullWord||'').toLowerCase();
-      if((nameSet.has(wl)||nameSet.has(singularish(wl))) && singularish(wl)!==cn) n++;   // word == another on-board category
-      if(seen.has(wl)) n++; else seen.add(wl);                                            // same word in two categories
+      const intended = childOf[wl]===cnl;                                      // this word IS my chain child → not a collision
+      if(!intended && (nameSet.has(wl)||nameSet.has(singularish(wl))) && singularish(wl)!==cn) n++;
+      if(seen.has(wl)) n++; else seen.add(wl);
     });
   });
   return n;
@@ -1410,29 +1421,57 @@ const IMAGE_CATS=[
 function imageCat(idx){ const [name,words]=IMAGE_CATS[idx%IMAGE_CATS.length]; const c=newCat(name,words); c.isImage=true; c.difficulty=1; c.words.forEach(w=>{w.icon=w.fullWord;}); return c; } // image categories are common & concrete → always Easy
 
 // One category-selection attempt (a given RNG variant). Returns the chosen category objects.
+// Chained-category pairs available in a pool: [parent, child, linkWord] where linkWord is a word of
+// the parent AND the name of a real category (child). Merging the child reforms linkWord into the parent.
+function chainsIn(pool){
+  if(pool.__chains) return pool.__chains;
+  const byName={}; pool.forEach(c=>{ if((c.words||[]).length>=4) byName[c.category.toLowerCase()]=c; });
+  const chains=[];
+  pool.forEach(parent=>{ (parent.words||[]).forEach(w=>{ const child=byName[(w.fullWord||'').toLowerCase()]; if(child&&child!==parent) chains.push([parent,child,w.fullWord]); }); });
+  try{Object.defineProperty(pool,'__chains',{value:chains,enumerable:false,configurable:true});}catch(e){}
+  return chains;
+}
 function selectCats(shipped,n,opts,variant){
   const pool=opts.pool||bank.categories;
   const catCount=catCountFor(n,shipped);
   const spikeTier=levelTierFor(n);
   const rng=makeRng(((n*97+7)^(variant*0x9e3779b1))>>>0);
+  const usedCat=new Set(), usedDom=new Set();
+  const take=c=>{ usedCat.add(c.category.toLowerCase()); usedDom.add(catDomain(c.category)); };
+  const chosen=[]; let chain=null;
+  // 1) seed a parent→child chain (they share a theme by design); introduced from L3, like the shipped levels
+  if(opts.chains!==false && catCount>=3 && n>=3){
+    for(const [parent,child,word] of shuffle(rng, chainsIn(pool).slice())){ chosen.push(parent,child); take(parent); take(child); chain={parent:parent.category, child:child.category, word}; break; }
+  }
+  // 2) difficult (spike) categories — domain-unique, not already used
   let difficultCount=0;
   if(spikeTier>1) difficultCount=Math.max(1, Math.min(Math.floor(catCount/2), Math.round(difficultFrac(n)*catCount)));
-  const easyCount=catCount-difficultCount;
-  let diff=shuffle(rng, poolByTier(spikeTier,pool)).slice(0,difficultCount);
-  for(let t=spikeTier-1; t>=2 && diff.length<difficultCount; t--){
-    const have=new Set(diff);
-    diff=diff.concat(shuffle(rng, poolByTier(t,pool)).filter(c=>!have.has(c)).slice(0,difficultCount-diff.length));
-  }
-  const usedSet=new Set(diff);
-  let easyPool=shuffle(rng, poolByTier(1,pool)).filter(c=>!usedSet.has(c));
-  if(n<=5) easyPool.sort((a,b)=> (a.medZipf==null?0:1)-(b.medZipf==null?0:1)); // super-easy start: curated categories first
-  const chosen=easyPool.slice(0,easyCount).concat(diff);
-  const newCats=chosen.map(src=>{ const c=newCat(src.category, pickWords(rng, src.words.map(w=>w.fullWord))); c.medZipf=src.medZipf; c.nameZipf=src.nameZipf; return c; });
-  if(opts.images && newCats.length){                                         // ≥1 image category (New set)
+  const pickTier=(tier,count)=>{ const out=[]; for(const c of shuffle(rng, poolByTier(tier,pool))){ if(out.length>=count)break; if(usedCat.has(c.category.toLowerCase())||usedDom.has(catDomain(c.category)))continue; out.push(c); take(c); } return out; };
+  for(let t=spikeTier;t>=2;t--){ if(chosen.length>=catCount)break; const need=Math.min(difficultCount-(chosen.length-(chain?2:0)-0), catCount-chosen.length); if(need>0) chosen.push(...pickTier(t,need)); }
+  // 3) fill the rest with easy categories — domain-unique
+  let easyList=shuffle(rng, poolByTier(1,pool)).filter(c=>!usedCat.has(c.category.toLowerCase())&&!usedDom.has(catDomain(c.category)));
+  if(n<=5) easyList.sort((a,b)=> (a.medZipf==null?0:1)-(b.medZipf==null?0:1));
+  for(const c of easyList){ if(chosen.length>=catCount)break; if(usedDom.has(catDomain(c.category)))continue; chosen.push(c); take(c); }
+  // 4) build categories; force the link word into the parent, mark the child's parentCategory
+  const newCats=chosen.map(src=>{
+    let words;
+    if(chain && src.category===chain.parent){
+      const rest=pickWords(rng, src.words.map(w=>w.fullWord).filter(x=>x.toLowerCase()!==chain.word.toLowerCase()));
+      words=[chain.word].concat(rest).slice(0,4);
+    } else words=pickWords(rng, src.words.map(w=>w.fullWord));
+    const c=newCat(src.category, words); c.medZipf=src.medZipf; c.nameZipf=src.nameZipf;
+    if(chain && src.category===chain.child) c.parentCategory=chain.parent;
+    if(chain && src.category===chain.parent) c.words.forEach(w=>{ if(w.fullWord.toLowerCase()===chain.word.toLowerCase()) w.isChainLink=true; });
+    return c;
+  });
+  // image category (New set) — replace a plain (non-chain) slot so the chain survives
+  if(opts.images && newCats.length){
     const nm=new Set(newCats.map(c=>c.category.toLowerCase()));
-    for(let k=0;k<IMAGE_CATS.length;k++){ const ic=imageCat(n+k); if(!nm.has(ic.category.toLowerCase())){ newCats[0]=ic; break; } }
+    let slot=newCats.findIndex(c=>!c.parentCategory && (!chain||c.category!==chain.parent) && !c.isImage);
+    if(slot<0) slot=newCats.length-1;
+    for(let k=0;k<IMAGE_CATS.length;k++){ const ic=imageCat(n+k); if(!nm.has(ic.category.toLowerCase())){ newCats[slot]=ic; break; } }
   }
-  return {newCats, catCount, spikeTier, rng};
+  return {newCats, catCount, spikeTier, rng, chain};
 }
 function rebuildLevel(shipped,n,opts){
   opts=opts||{};
@@ -1463,7 +1502,7 @@ function rebuildLevel(shipped,n,opts){
                        || (b.w.fullWord.length-a.w.fullWord.length);
     const perCat=[];                                                          // one splittable candidate per category
     newCats.forEach(c=>{
-      const cands=c.words.filter(w=>!w.icon&&!/[\s-]/.test(w.fullWord)&&w.fullWord.length>=5&&!isObscureWord(w.fullWord))
+      const cands=c.words.filter(w=>!w.icon&&!w.isChainLink&&!/[\s-]/.test(w.fullWord)&&w.fullWord.length>=5&&!isObscureWord(w.fullWord))
                           .map(w=>({w, split:readableSplit(w.fullWord, banned)})).filter(o=>o.split);
       if(!cands.length) return;
       shuffle(rng, cands); cands.sort(better);
@@ -1491,7 +1530,7 @@ function rebuildLevel(shipped,n,opts){
   }
   const oldMix={1:0,2:0,3:0,4:0}; (shipped.categories||[]).forEach(c=>{oldMix[catDifficulty(c)]++;});
   const totalMoves=required+L.moveLimit;
-  return {n, level:L, old:shipped, json:buildLevelJson(L), oldMix, tier:spikeTier, issues:best.issues, catCount, chunkedWords, totalMoves, mult:moveMult(n)};
+  return {n, level:L, old:shipped, json:buildLevelJson(L), oldMix, tier:spikeTier, issues:best.issues, chain:best.chain, catCount, chunkedWords, totalMoves, mult:moveMult(n)};
 }
 function mixLabel(m){ return [1,2,3,4].filter(t=>m[t]).map(t=>m[t]+'EMHX'[t-1]).join(' ')||'—'; }
 function cmpColNode(title,L){
@@ -1499,7 +1538,7 @@ function cmpColNode(title,L){
   col.appendChild(el('div',{class:'cmp-h'},title));
   (L.categories||[]).forEach(c=>{
     const row=el('div',{class:'lvl-cat'});
-    row.appendChild(el('span',{class:'rb-cat t'+catDifficulty(c)},(c.isImage?'🖼 ':'')+c.category));
+    row.appendChild(catLabelNode(c));
     row.appendChild(wordsNode(c.words));
     col.appendChild(row);
   });
@@ -1650,7 +1689,9 @@ function wordsNode(words){
   const wrap=el('span',{class:'lvl-words'});
   (words||[]).forEach((w,i)=>{
     if(i) wrap.appendChild(document.createTextNode(' · '));
-    if((w.chunks||[]).length)
+    if(w.isChainLink)
+      wrap.appendChild(el('span',{class:'chainw',title:'chained sub-category — this word is itself a category on this board'}, '⛓ '+w.fullWord));
+    else if((w.chunks||[]).length)
       wrap.appendChild(el('span',{class:'chunkw',title:'split / chunk word'}, w.fullWord+' ('+w.chunks.join('-')+')'));
     else
       wrap.appendChild(document.createTextNode(w.fullWord));
