@@ -128,7 +128,8 @@
   .lvl-cat{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:baseline}
   @media(max-width:640px){.lvl-cat{grid-template-columns:1fr}}
   .lvl-cat .nm{font-weight:600;font-size:12.5px}
-  .lvl-words{font-size:12px;color:var(--muted);line-height:1.5}
+  .lvl-words{font-size:12px;color:var(--muted);line-height:1.6}
+  .chunkw{color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:5px;padding:0 5px;font-weight:600;white-space:nowrap}
   .diffb{font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--muted)}
   .diffb.d1{color:var(--warn);border-color:var(--warn)} .diffb.d2{color:var(--err);border-color:var(--err)}
   .br-empty{padding:28px;text-align:center;color:var(--muted)}
@@ -1261,7 +1262,7 @@ function cmpColNode(title,L){
   (L.categories||[]).forEach(c=>{
     const row=el('div',{class:'lvl-cat'});
     row.appendChild(el('span',{class:'rb-cat t'+catDifficulty(c)},c.category));
-    row.appendChild(el('span',{class:'lvl-words'},(c.words||[]).map(w=>w.fullWord).join(' · ')));
+    row.appendChild(wordsNode(c.words));
     col.appendChild(row);
   });
   return col;
@@ -1396,12 +1397,24 @@ function levelSummary(L){
 }
 const browseExpanded=new Set();
 // Inline level contents (categories + their words) — no bubble board.
+// Render a category's words; a split/chunk word shows its pieces in brackets, hyphen-separated, highlighted.
+function wordsNode(words){
+  const wrap=el('span',{class:'lvl-words'});
+  (words||[]).forEach((w,i)=>{
+    if(i) wrap.appendChild(document.createTextNode(' · '));
+    if((w.chunks||[]).length)
+      wrap.appendChild(el('span',{class:'chunkw',title:'split / chunk word'}, w.fullWord+' ('+w.chunks.join('-')+')'));
+    else
+      wrap.appendChild(document.createTextNode(w.fullWord));
+  });
+  return wrap;
+}
 function levelDetailNode(L){
   const wrap=el('div',{class:'lvl-detail'});
   (L.categories||[]).forEach(c=>{
     const row=el('div',{class:'lvl-cat'});
     row.appendChild(el('span',{class:'nm'},c.category));
-    row.appendChild(el('span',{class:'lvl-words'},(c.words||[]).map(w=>w.fullWord).join(' · ')));
+    row.appendChild(wordsNode(c.words));
     wrap.appendChild(row);
   });
   return wrap;
