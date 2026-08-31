@@ -352,7 +352,7 @@
       <span class="sp"></span>
       <button class="mini primary" id="rb-exportall">⭳ Export all 50</button>
     </div>
-    <div class="hint">Rebuilt with: a <b>category-count ramp</b> (3 → 10 by L15, then the shipped count); <b>difficulty spikes</b> every 5 levels from L11 — Medium, then Hard after L25, Expert after L35 — all other levels Easy; a <b>move budget</b> of 180% of the required moves (categories × 3) through L10, easing −10 pts every 5 levels to a 150% floor. 4 words per category; specials preserved. <b>Click a level</b> for the original-vs-rebuilt comparison. ▶ playtest · ⭳ export.</div>
+    <div class="hint">Rebuilt with: a <b>category-count ramp</b> (3 → 10 by L15, then the shipped count); <b>difficulty spikes</b> every 5 levels from L11 — Medium, then Hard after L25, Expert after L35; a spike mixes a <b>capped share of harder categories into an ≥50% Easy base</b> (20% at L11, +5% each difficulty level, max 50%), all other levels all-Easy; a <b>move budget</b> of 180% of the required moves (categories × 3) through L10, easing −10 pts every 5 levels to a 150% floor. 4 words per category; specials preserved. <b>Click a level</b> for the original-vs-rebuilt comparison. ▶ playtest · ⭳ export.</div>
     <div id="rb-chart"></div>
     <div id="rb-list" class="br-list"></div>
   </div>
@@ -1199,19 +1199,29 @@ function poolByTier(t){ return bank.categories.filter(c=>catDifficulty(c)===t &&
 function catCountFor(n,shipped){ return n<=15 ? Math.round(3+(n-1)/14*7) : ((shipped.categories||[]).length||5); }
 // Escalating difficulty spike every 5 levels from L11: Medium (11,16,21) → Hard (26,31) → Expert (36,41,46); else Easy.
 const SPIKE_TIER={11:2,16:2,21:2,26:3,31:3,36:4,41:4,46:4};
+const SPIKES=Object.keys(SPIKE_TIER).map(Number);
 function levelTierFor(n){ return SPIKE_TIER[n]||1; }
+// Share of "difficult" (harder-tier) categories in a spike level: 20% at L11, +5% per difficulty level, capped 50%.
+function difficultFrac(n){ const i=SPIKES.indexOf(n); return i<0?0:Math.min(0.5, 0.20+0.05*i); }
 // Move budget = multiplier × required moves (categories×3). 180% ≤L10, −10pts/5 levels, 150% floor.
 function moveMult(n){ return n<=10 ? 1.8 : Math.max(1.5, 1.8-0.1*Math.ceil((n-10)/5)); }
 function rebuildLevel(shipped,n){
   const catCount=catCountFor(n,shipped);
-  const tier=levelTierFor(n);
+  const spikeTier=levelTierFor(n);                 // 1 (easy) or 2/3/4 on difficulty levels
   const rng=makeRng((n*97+7)>>>0);
-  // pick categories from the target tier, filling from lower tiers if the pool is short
-  let chosen=shuffle(rng, poolByTier(tier)).slice(0,catCount);
-  for(let t=tier-1; t>=1 && chosen.length<catCount; t--){
-    const have=new Set(chosen);
-    chosen=chosen.concat(shuffle(rng, poolByTier(t)).filter(c=>!have.has(c)).slice(0,catCount-chosen.length));
+  // difficult share: capped at 50% so ≥50% easy stays as the base of every level
+  let difficultCount=0;
+  if(spikeTier>1) difficultCount=Math.max(1, Math.min(Math.floor(catCount/2), Math.round(difficultFrac(n)*catCount)));
+  const easyCount=catCount-difficultCount;
+  // difficult categories from the spike tier (fall back to lower harder tiers if the pool is short)
+  let diff=shuffle(rng, poolByTier(spikeTier)).slice(0,difficultCount);
+  for(let t=spikeTier-1; t>=2 && diff.length<difficultCount; t--){
+    const have=new Set(diff);
+    diff=diff.concat(shuffle(rng, poolByTier(t)).filter(c=>!have.has(c)).slice(0,difficultCount-diff.length));
   }
+  const used=new Set(diff);
+  const easy=shuffle(rng, poolByTier(1)).filter(c=>!used.has(c)).slice(0,easyCount);
+  const chosen=easy.concat(diff);                  // easy base first, then the difficult categories
   const newCats=chosen.map(src=>newCat(src.category, shuffle(rng, src.words.map(w=>w.fullWord)).slice(0,4)));
   const L=blankLevel();
   L.categories=newCats;
@@ -1231,7 +1241,7 @@ function rebuildLevel(shipped,n){
   }
   const oldMix={1:0,2:0,3:0,4:0}; (shipped.categories||[]).forEach(c=>{oldMix[catDifficulty(c)]++;});
   const totalMoves=catCount*3+L.moveLimit;
-  return {n, level:L, old:shipped, json:buildLevelJson(L), oldMix, tier, catCount, totalMoves, mult:moveMult(n)};
+  return {n, level:L, old:shipped, json:buildLevelJson(L), oldMix, tier:spikeTier, difficultCount, catCount, totalMoves, mult:moveMult(n)};
 }
 function mixLabel(m){ return [1,2,3,4].filter(t=>m[t]).map(t=>m[t]+'EMHX'[t-1]).join(' ')||'—'; }
 function cmpColNode(title,L){
@@ -1301,7 +1311,8 @@ function renderRebuild(){
     meta.appendChild(el('span',{},'→'));
     meta.appendChild(bandBadge(r.level));
     const tlab=['','Easy','Medium','Hard','Expert'][r.tier];
-    meta.appendChild(el('span',{class:'delta muted',title:'rebuilt level tier · original category mix'}, tlab+' · was '+mixLabel(r.oldMix)));
+    const comp = r.tier>1 ? `${r.difficultCount}/${r.catCount} ${tlab} + easy` : 'all Easy';
+    meta.appendChild(el('span',{class:'delta muted',title:'rebuilt composition · original category mix'}, comp+' · was '+mixLabel(r.oldMix)));
     meta.appendChild(el('span',{}, r.catCount+' cats · '+r.totalMoves+' moves ('+Math.round(r.mult*100)+'%)'));
     if((r.level.frozenBubbles||[]).length) meta.appendChild(el('span',{title:'frozen'},'❄'));
     if(r.level.useBubbleSeparator) meta.appendChild(el('span',{title:'separator'},'⛓'));
