@@ -352,7 +352,7 @@
       <span class="sp"></span>
       <button class="mini primary" id="rb-exportall">⭳ Export all 50</button>
     </div>
-    <div class="hint">Rebuilt with: a <b>category-count ramp</b> (3 → 10 by L15, then the shipped count); <b>difficulty spikes</b> every 5 levels from L11 — Medium, then Hard after L25, Expert after L35; a spike mixes a <b>capped share of harder categories into an ≥50% Easy base</b> (20% at L11, +5% each difficulty level, max 50%), all other levels all-Easy; a <b>move budget</b> of 180% of the required moves (categories × 3) through L10, easing −10 pts every 5 levels to a 150% floor. 4 words per category; specials preserved. <b>Click a level</b> for the original-vs-rebuilt comparison. ▶ playtest · ⭳ export.</div>
+    <div class="hint">Rebuilt with: a <b>category-count ramp</b> (3 → 10 by L15, then the shipped count); <b>difficulty spikes</b> every 5 levels from L11 — Medium, then Hard after L25, Expert after L35; a spike mixes a <b>capped share of harder categories into an ≥50% Easy base</b> (20% at L11, +5% each difficulty level, max 50%), all other levels all-Easy; a <b>move budget</b> of 180% of the required moves (categories × 3) through L10, easing −10 pts every 5 levels to a 150% floor. 4 words per category. Feature gating respected: chunk/split words only from L11, separator from L21, frozen from L31 — and the move budget counts each split word (moves = mult × (categories×3 + chunk words)). <b>Click a level</b> for the original-vs-rebuilt comparison. ▶ playtest · ⭳ export.</div>
     <div id="rb-chart"></div>
     <div id="rb-list" class="br-list"></div>
   </div>
@@ -1225,23 +1225,34 @@ function rebuildLevel(shipped,n){
   const newCats=chosen.map(src=>newCat(src.category, shuffle(rng, src.words.map(w=>w.fullWord)).slice(0,4)));
   const L=blankLevel();
   L.categories=newCats;
+  // Chunk / split words — gated to L11+ (SeparatedWords unlock). Match the shipped level's
+  // chunk count; auto-split each chosen word in half.
+  const shippedChunks = (shipped.categories||[]).reduce((a,c)=>a+c.words.filter(w=>(w.chunks||[]).length).length,0);
+  const chunkTarget = n>=11 ? shippedChunks : 0;
+  if(chunkTarget){
+    const splittable=[]; newCats.forEach(c=>c.words.forEach(w=>{ if(!/\s/.test(w.fullWord) && w.fullWord.length>=4) splittable.push(w); }));
+    shuffle(rng, splittable).slice(0,chunkTarget).forEach(w=>{ const s=w.fullWord, h=Math.ceil(s.length/2); w.chunks=[s.slice(0,h), s.slice(h)]; });
+  }
   const flat=[]; newCats.forEach(c=>c.words.forEach(w=>flat.push(cloneWord(w))));
   L.allWordEntries=flat;
+  const chunkedWords = flat.filter(w=>(w.chunks||[]).length).length;
+  const required = catCount*3 + chunkedWords;                          // merges to clear = cats×3 + split words
   L.maxBubblesInScene=Math.max(shipped.maxBubblesInScene||24, 0);
-  L.moveLimit=Math.max(0, Math.round(catCount*3*(moveMult(n)-1)));   // total moves = mult × (cats×3)
+  L.moveLimit=Math.max(0, Math.round(required*(moveMult(n)-1)));       // total moves = mult × required
   L.randomSeed=shipped.randomSeed||0;
   L.levelDifficulty=shipped.levelDifficulty||0;
   const spawn=flat.map(w=>w.fullWord);
   const fz=shipped.frozenBubbles||[];
-  if(fz.length && spawn.length) L.frozenBubbles=fz.map((f,i)=>({word:spawn[i%spawn.length], mergesNeeded:f.mergesNeeded||5}));
-  if(shipped.useBubbleSeparator){
+  if(n>=31 && fz.length && spawn.length)                              // Frozen gated to L31+
+    L.frozenBubbles=fz.map((f,i)=>({word:spawn[i%spawn.length], mergesNeeded:f.mergesNeeded||5}));
+  if(n>=21 && shipped.useBubbleSeparator){                            // Separator gated to L21+
     const sd=shipped.bubbleSeparatorData||{}; const cnt=(sd.linkedWords||[]).length||Math.min(4,spawn.length);
     L.useBubbleSeparator=true;
     L.bubbleSeparatorData={breakThreshold:sd.breakThreshold||3, linkedWords:spawn.slice(0,cnt)};
   }
   const oldMix={1:0,2:0,3:0,4:0}; (shipped.categories||[]).forEach(c=>{oldMix[catDifficulty(c)]++;});
-  const totalMoves=catCount*3+L.moveLimit;
-  return {n, level:L, old:shipped, json:buildLevelJson(L), oldMix, tier:spikeTier, difficultCount, catCount, totalMoves, mult:moveMult(n)};
+  const totalMoves=required+L.moveLimit;
+  return {n, level:L, old:shipped, json:buildLevelJson(L), oldMix, tier:spikeTier, difficultCount, catCount, chunkedWords, totalMoves, mult:moveMult(n)};
 }
 function mixLabel(m){ return [1,2,3,4].filter(t=>m[t]).map(t=>m[t]+'EMHX'[t-1]).join(' ')||'—'; }
 function cmpColNode(title,L){
@@ -1314,8 +1325,9 @@ function renderRebuild(){
     const comp = r.tier>1 ? `${r.difficultCount}/${r.catCount} ${tlab} + easy` : 'all Easy';
     meta.appendChild(el('span',{class:'delta muted',title:'rebuilt composition · original category mix'}, comp+' · was '+mixLabel(r.oldMix)));
     meta.appendChild(el('span',{}, r.catCount+' cats · '+r.totalMoves+' moves ('+Math.round(r.mult*100)+'%)'));
-    if((r.level.frozenBubbles||[]).length) meta.appendChild(el('span',{title:'frozen'},'❄'));
-    if(r.level.useBubbleSeparator) meta.appendChild(el('span',{title:'separator'},'⛓'));
+    if(r.chunkedWords) meta.appendChild(el('span',{title:r.chunkedWords+' split/chunk words (unlocks L11)'},'⧉ '+r.chunkedWords));
+    if((r.level.frozenBubbles||[]).length) meta.appendChild(el('span',{title:'frozen (unlocks L31)'},'❄'));
+    if(r.level.useBubbleSeparator) meta.appendChild(el('span',{title:'separator (unlocks L21)'},'⛓'));
     mid.appendChild(meta);
     head.appendChild(mid);
     const oc=el('div',{class:'open'});
