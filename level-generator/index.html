@@ -1212,6 +1212,9 @@ const OBSCURE_ZIPF=3.0;                                 // a word is chunk-eligi
 function wordZipf(w){ const v=WORD_ZIPF[(w||'').toLowerCase()]; return v===undefined?4.5:v/10; }
 function isObscureWord(w){ return wordZipf(w) < OBSCURE_ZIPF; }
 function midSplit(word){ const h=Math.ceil(word.length/2); return [word.slice(0,h), word.slice(h)]; }   // simple split near the middle (Closet → Clo-set)
+// Chunk density: 0 before L11 (SeparatedWords unlock), then 10% (rounded up) of the level's words at L11
+// ramping to 25% by L100 (flat after). 25% = one chunk per 4-word category — the one-per-category ceiling.
+function chunkPct(n){ return n<11 ? 0 : 0.10 + 0.15*Math.min(1,(n-11)/89); }
 // Move budget = multiplier × required moves (categories×3). 180% ≤L10, −10pts/5 levels, 150% floor.
 function moveMult(n){ return n<=10 ? 1.8 : Math.max(1.5, 1.8-0.1*Math.ceil((n-10)/5)); }
 function rebuildLevel(shipped,n){
@@ -1234,11 +1237,11 @@ function rebuildLevel(shipped,n){
   const newCats=chosen.map(src=>newCat(src.category, shuffle(rng, src.words.map(w=>w.fullWord)).slice(0,4)));
   const L=blankLevel();
   L.categories=newCats;
-  // Chunk / split words — gated to L11+ (SeparatedWords unlock). Match the shipped level's
-  // chunk count. Rules: chunk only EASY words (never Taffeta/Baobab); 5+ letters, preferring 6+;
-  // at most ONE chunk word per category. Split near the middle (Clo-set).
-  const shippedChunks = (shipped.categories||[]).reduce((a,c)=>a+c.words.filter(w=>(w.chunks||[]).length).length,0);
-  const chunkTarget = n>=11 ? shippedChunks : 0;
+  // Chunk / split words — gated to L11+ (SeparatedWords unlock). Density ramps 10% (rounded up)
+  // of the level's words at L11 up to 25% by L100. Rules: chunk only EASY words (never
+  // Taffeta/Baobab); 5+ letters, preferring 6+; at most ONE per category. Split mid (Clo-set).
+  const totalWords = newCats.reduce((a,c)=>a+c.words.length,0);   // = catCount × 4
+  const chunkTarget = Math.min(newCats.length, Math.ceil(chunkPct(n)*totalWords));
   if(chunkTarget){
     const better=(a,b)=> ((b.fullWord.length>=6)-(a.fullWord.length>=6))     // prefer 6+ letters over exactly 5
                        || (wordZipf(b.fullWord)-wordZipf(a.fullWord))          // then the more familiar word
