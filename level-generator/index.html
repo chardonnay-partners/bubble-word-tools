@@ -1518,7 +1518,9 @@ function rebuildLevel(shipped,n,opts){
     shuffle(rng, perCat); perCat.sort(better);
     perCat.slice(0,chunkTarget).forEach(o=>{ o.w.chunks=o.split; });          // readable, collision-free splits only
   }
-  const flat=[]; newCats.forEach(c=>c.words.forEach(w=>flat.push(cloneWord(w))));
+  // The chain link word is a category MEMBER but must NOT spawn individually — it's produced by
+  // promoting the child sub-category. Excluding it from the spawn pool prevents an unsolvable duplicate.
+  const flat=[]; newCats.forEach(c=>c.words.forEach(w=>{ if(!w.isChainLink) flat.push(cloneWord(w)); }));
   L.allWordEntries=flat;
   const chunkedWords = flat.filter(w=>(w.chunks||[]).length).length;
   const required = catCount*3 + chunkedWords;                          // merges to clear = cats×3 + split words
