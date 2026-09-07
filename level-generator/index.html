@@ -132,7 +132,8 @@
   .chunkw{color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:5px;padding:0 5px;font-weight:600;white-space:nowrap}
   .chainw{color:#b06bff;background:color-mix(in srgb,#b06bff 15%,transparent);border:1px solid color-mix(in srgb,#b06bff 45%,transparent);border-radius:5px;padding:0 5px;font-weight:600;white-space:nowrap}
   .chain-note{color:#b06bff;font-size:11px;font-weight:600}
-  .iconw{border-bottom:1px dotted #3fbf9f;cursor:help}
+  .iconw{border-bottom:1px dotted #3fbf9f;cursor:help;white-space:nowrap}
+  .wicon{width:20px;height:20px;object-fit:contain;vertical-align:-5px;margin-right:3px}
   .diffb{font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--muted)}
   .diffb.d1{color:var(--warn);border-color:var(--warn)} .diffb.d2{color:var(--err);border-color:var(--err)}
   .br-empty{padding:28px;text-align:center;color:var(--muted)}
@@ -209,6 +210,8 @@
   .play-board{position:absolute;left:0;top:0;right:0;touch-action:none}
   .porb{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;cursor:grab;user-select:none;box-shadow:0 3px 10px rgba(0,0,0,.3);border:2px solid rgba(0,0,0,.18);touch-action:none}
   .porb .w{font-weight:700;color:#12233a;padding:2px;line-height:1.05;pointer-events:none;word-break:break-word}
+  .porb .pimg{width:50%;height:50%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+  .porb.has-img{flex-direction:column;gap:1px;padding-top:3px}
   .porb .tier{position:absolute;bottom:4px;font-family:var(--mono);font-size:9px;color:rgba(0,0,0,.5);pointer-events:none}
   .porb .ice{position:absolute;top:3px;font-size:11px;font-family:var(--mono);color:#12233a;pointer-events:none}
   .porb.frozen{filter:grayscale(.35) brightness(1.08);cursor:not-allowed;border-color:#bfe3ff}
@@ -926,7 +929,7 @@ function renderBoard(){
   const svg=$('#board'); const W=560,H=380; svg.innerHTML='';
   const idx=wordCatIndexMap();
   // render the actual spawn pool (allWordEntries), coloured by resolved category
-  const words=(state.allWordEntries||[]).map(w=>{const ci=idx.has((w.fullWord||'').toLowerCase())?idx.get(w.fullWord.toLowerCase()):-1;return {w:w.fullWord,ci};});
+  const words=(state.allWordEntries||[]).map(w=>{const ci=idx.has((w.fullWord||'').toLowerCase())?idx.get(w.fullWord.toLowerCase()):-1;return {w:w.fullWord,ci,icon:iconSrc(w.icon,ci>=0?state.categories[ci].category:'')};});
   const specialMap={}; // word -> marker
   const mark=(k,arr,fld)=>{(arr||[]).forEach(x=>{const v=x[fld||'word'];if(v)specialMap[v]=(specialMap[v]||'')+k;});};
   mark('❄',state.frozenBubbles); mark('💥',state.burstBubbles); mark('🔡',state.crypticBubbles);
@@ -945,7 +948,8 @@ function renderBoard(){
     const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('opacity',queued?'0.28':'1');
     g.appendChild(svgEl('circle',{cx,cy,r,fill:it.ci<0?'#4a5573':catColor(it.ci),stroke:sepSet.has(it.w)?'#ffcc66':'rgba(0,0,0,.25)','stroke-width':sepSet.has(it.w)?2.5:1}));
     const label=it.w.length>8?it.w.slice(0,7)+'…':it.w;
-    g.appendChild(svgEl('text',{x:cx,y:cy+3,'text-anchor':'middle','font-size':Math.max(7,r*0.42),fill:'#1a2338','font-weight':600},label));
+    if(it.icon){ const s=r*1.05; const im=svgEl('image',{x:cx-s/2,y:cy-r*0.78,width:s,height:s,href:it.icon,preserveAspectRatio:'xMidYMid meet'}); im.setAttributeNS('http://www.w3.org/1999/xlink','href',it.icon); im.addEventListener('error',()=>im.remove()); g.appendChild(im); }
+    g.appendChild(svgEl('text',{x:cx,y:cy+(it.icon?r*0.62:3),'text-anchor':'middle','font-size':Math.max(7,r*(it.icon?0.34:0.42)),fill:'#1a2338','font-weight':600},label));
     if(specialMap[it.w])g.appendChild(svgEl('text',{x:cx+r*0.7,y:cy-r*0.55,'text-anchor':'middle','font-size':Math.max(9,r*0.6)},specialMap[it.w]));
     svg.appendChild(g);
   });
@@ -1288,6 +1292,7 @@ function rb1DetailNode(L){
   (L.categories||[]).forEach(c=>{
     const row=el('div',{class:'lvl-cat'});
     row.appendChild(catLabelNode(c));
+    try{Object.defineProperty(c.words,'__cat',{value:c.category,enumerable:false,configurable:true});}catch(e){}
     row.appendChild(wordsNode(c.words));
     wrap.appendChild(row);
   });
@@ -1522,6 +1527,12 @@ const CURATED_NEW={
 // Share of a level's categories that carry pictures (New set). round(0.3×cats): 3–4 cats → 1, 5–8 → 2, 9–11 → 3.
 const IMAGE_SHARE=0.30;
 function imageCountFor(catCount){ return Math.max(1, Math.round(IMAGE_SHARE*catCount)); }
+/* Thumbnails of every sprite the levels reference live in icons/ (96px, built from the Word Solitaire library and the
+   game's WordIcons). A pinned icon is a full `set__word` file name; a legacy bare icon (`Pizza`) resolves the way the
+   game's importer re-keys it: <category>__<word>. */
+const iconSlug=t=>(t||'').trim().toLowerCase().replace(/\s+/g,'_').replace(/&/g,'and');
+function iconSrc(icon,category){ if(!icon) return ''; return 'icons/'+(icon.includes('__')?icon:iconSlug(category)+'__'+iconSlug(icon))+'.png'; }
+function iconImg(src,cls){ if(!src) return null; const im=el('img',{class:cls,src,alt:'',draggable:'false'}); im.onerror=()=>im.remove(); return im; }
 // Build a curated level's categories in the same shape selectCats() returns, or null if n isn't curated.
 function curatedNewLevel(n){
   const spec=CURATED_NEW[n]; if(!spec) return null;
@@ -1676,6 +1687,7 @@ function cmpColNode(title,L){
   (L.categories||[]).forEach(c=>{
     const row=el('div',{class:'lvl-cat'});
     row.appendChild(catLabelNode(c));
+    try{Object.defineProperty(c.words,'__cat',{value:c.category,enumerable:false,configurable:true});}catch(e){}
     row.appendChild(wordsNode(c.words));
     col.appendChild(row);
   });
@@ -1832,8 +1844,9 @@ function wordsNode(words){
       wrap.appendChild(el('span',{class:'chainw',title:'chained sub-category — this word is itself a category on this board'}, '⛓ '+w.fullWord));
     else if((w.chunks||[]).length)
       wrap.appendChild(el('span',{class:'chunkw',title:'split / chunk word'}, w.fullWord+' ('+w.chunks.join('-')+')'));
-    else if(w.icon)
-      wrap.appendChild(el('span',{class:'iconw',title:'picture: '+w.icon}, w.fullWord));
+    else if(w.icon){
+      const sp=el('span',{class:'iconw',title:'picture: '+w.icon}); const im=iconImg(iconSrc(w.icon,words.__cat||''),'wicon'); if(im) sp.appendChild(im); sp.appendChild(document.createTextNode(w.fullWord)); wrap.appendChild(sp);
+    }
     else
       wrap.appendChild(document.createTextNode(w.fullWord));
   });
@@ -1916,7 +1929,7 @@ function truncate(s,n){s=String(s||'');return s.length>n?s.slice(0,n-1)+'…':s;
 function computeMoves(L){const cats=L.categories||[];const chunked=cats.reduce((a,c)=>a+(c.words||[]).filter(w=>(w.chunks||[]).length>0).length,0);return cats.length*3+chunked+(+L.moveLimit||0);}
 function buildPlay(L){
   const cats=L.categories||[]; const idx=new Map();
-  cats.forEach((c,i)=>(c.words||[]).forEach(w=>{const k=(w.fullWord||'').toLowerCase();if(k&&!idx.has(k))idx.set(k,{id:c.category,color:i});}));
+  cats.forEach((c,i)=>(c.words||[]).forEach(w=>{const k=(w.fullWord||'').toLowerCase();if(k&&!idx.has(k))idx.set(k,{id:c.category,color:i,icon:iconSrc(w.icon,c.category)});}));
   const frozenMap=new Map((L.frozenBubbles||[]).map(f=>[f.word,f.mergesNeeded||1]));
   const sepOn=!!L.useBubbleSeparator;
   const linkedSet=new Set(sepOn?((L.bubbleSeparatorData&&L.bubbleSeparatorData.linkedWords)||[]):[]);
@@ -1925,10 +1938,10 @@ function buildPlay(L){
     const word=w.fullWord; if(!word)return;
     const meta=idx.get(word.toLowerCase())||{id:'?',color:-1};
     if((w.chunks||[]).length>0){ w.chunks.forEach(ch=>spawn.push({word:ch,id:meta.id,color:meta.color,isChunk:true,chunkParent:word,chunksNeeded:w.chunks.length,frozen:0,isLinked:linkedSet.has(word)})); }
-    else spawn.push({word,id:meta.id,color:meta.color,isChunk:false,frozen:frozenMap.get(word)||0,isLinked:linkedSet.has(word)});
+    else spawn.push({word,id:meta.id,color:meta.color,icon:meta.icon||'',isChunk:false,frozen:frozenMap.get(word)||0,isLinked:linkedSet.has(word)});
   });
   const maxB=+L.maxBubblesInScene||spawn.length; const initN=Math.min(maxB,spawn.length); let idc=0;
-  const mk=e=>({id:++idc,words:[e.word],categoryId:e.id,color:e.color,isChunk:!!e.isChunk,chunkParent:e.chunkParent,chunksNeeded:e.chunksNeeded||0,frozen:e.frozen||0,isLinked:!!e.isLinked,slot:-1});
+  const mk=e=>({id:++idc,words:[e.word],categoryId:e.id,color:e.color,icon:e.icon||'',isChunk:!!e.isChunk,chunkParent:e.chunkParent,chunksNeeded:e.chunksNeeded||0,frozen:e.frozen||0,isLinked:!!e.isLinked,slot:-1});
   const moves=computeMoves(L);
   PLAY={mk,queue:spawn.slice(initN),moves,movesRemaining:moves,streak:0,sep:{on:sepOn,linked:linkedSet},ended:false,level:L,orbs:spawn.slice(0,initN).map(mk)};
   PLAY.orbs.forEach((o,i)=>o.slot=i);
@@ -1942,7 +1955,7 @@ function pAttempt(a,b){
   if(PLAY.ended||!a||!b||a===b)return;
   if(PLAY.sep.on&&a.isLinked!==b.isLinked){toast('Blocked by chain');pRender();return;}    // no move spent
   if(pCompatible(a,b)){
-    b.words=b.words.concat(a.words);
+    b.words=b.words.concat(a.words); b.icon=a.icon||'';                     // the orb shows its last word, so its picture too
     PLAY.orbs=PLAY.orbs.filter(x=>x!==a);
     PLAY.orbs.forEach(o=>{if(o.frozen>0)o.frozen--;});                                        // thaw tick
     pSpend(true);
@@ -1966,8 +1979,9 @@ function pRender(){
     const e=el('div',{class:'porb'+(o.frozen>0?' frozen':'')+(o.isLinked&&PLAY.sep.on?' linked':''),'data-id':o.id});
     e.style.width=e.style.height=size+'px';e.style.left=(cx-size/2)+'px';e.style.top=(cy-size/2)+'px';
     e.style.background=o.color<0?'#4a5573':catColor(o.color);
+    const im=iconImg(o.icon,'pimg'); if(im){ e.classList.add('has-img'); e.appendChild(im); }
     const wl=el('div',{class:'w'}, o.isChunk?truncate(o.words[0],8):truncate(o.words[o.words.length-1],9));
-    wl.style.fontSize=Math.max(9,Math.round(size*0.15))+'px';e.appendChild(wl);
+    wl.style.fontSize=Math.max(9,Math.round(size*(im?0.12:0.15)))+'px';e.appendChild(wl);
     if(o.frozen>0)e.appendChild(el('div',{class:'ice'},'❄'+o.frozen));
     else if(!o.isChunk&&o.words.length>1)e.appendChild(el('div',{class:'tier'},o.words.length+'/4'));
     board.appendChild(e);
