@@ -567,6 +567,27 @@ function syncDerived(){if(state.autoDeriveWords)state.allWordEntries=flattenCats
 // first-occurrence, case-insensitive word -> category index (mirrors CategoryWordIndex.Build)
 function wordCatIndexMap(){const m=new Map();state.categories.forEach((c,i)=>c.words.forEach(w=>{const k=(w.fullWord||'').toLowerCase();if(k&&!m.has(k))m.set(k,i);}));return m;}
 function download(name,text){const b=new Blob([text],{type:'application/json'});const u=URL.createObjectURL(b);const a=el('a',{href:u,download:name});document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);}
+/* Minimal store-only ZIP writer (no deps, works offline). Browsers throttle bursts of automatic
+   downloads to ~10 files, so multi-level exports ship as one archive. files: [[name, text], ...] */
+const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC_TABLE[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function makeZip(files){
+  const enc=new TextEncoder(), parts=[], central=[]; let offset=0;
+  const d=new Date(), dosTime=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1), dosDate=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate();
+  const u16=v=>[v&255,(v>>>8)&255], u32=v=>[v&255,(v>>>8)&255,(v>>>16)&255,(v>>>24)&255];
+  for(const [name,text] of files){
+    const nm=enc.encode(name), data=enc.encode(text), crc=crc32(data);
+    const common=[...u16(20),...u16(0x0800),...u16(0),...u16(dosTime),...u16(dosDate),...u32(crc),...u32(data.length),...u32(data.length),...u16(nm.length)];
+    const local=new Uint8Array([...u32(0x04034b50),...common,...u16(0),...nm]);
+    parts.push(local,data);
+    central.push(new Uint8Array([...u32(0x02014b50),...u16(20),...common,...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(offset),...nm]));
+    offset+=local.length+data.length;
+  }
+  const cdSize=central.reduce((a,c)=>a+c.length,0);
+  const eocd=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cdSize),...u32(offset),...u16(0)]);
+  return new Blob([...parts,...central,eocd],{type:'application/zip'});
+}
+function downloadZip(name,files){const u=URL.createObjectURL(makeZip(files));const a=el('a',{href:u,download:name});document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 
 /* ============================ EXPORT (byte-parity) ======================== */
 function buildLevelJson(s){
@@ -1028,23 +1049,23 @@ function modal(title,kids,onOk){
 function openBatch(){
   let from=1,to=20,step=1;
   modal('Batch generate',[
-    el('div',{class:'hint'},'Generates a range of levels using the current Generator params. Generator seed = base + (level−from), so each level differs deterministically. Files download individually.'),
+    el('div',{class:'hint'},'Generates a range of levels using the current Generator params. Generator seed = base + (level−from), so each level differs deterministically. Downloads as one .zip of Level_N.json files.'),
     el('div',{class:'row'},[
       el('label',{},'From'),num(from,v=>from=+v,{min:1}),
       el('label',{},'To'),num(to,v=>to=+v,{min:1}),
       el('label',{},'Δ difficulty every'),num(0,v=>step=+v,{min:0,title:'increase difficulty every N levels (0=off)'}),
     ]),
-    el('div',{class:'hint'},'Tip: browsers may prompt to allow multiple downloads — accept once.')
   ],()=>{
-    const base=+genParams.genSeed;
+    const base=+genParams.genSeed, files=[];
     for(let lv=from;lv<=to;lv++){
       genParams.genSeed=(base+(lv-from))>>>0;
       if(step>0)genParams.levelDifficulty=Math.min(2,Math.floor((lv-from)/step));
       generateSilent();
-      download(`Level_${lv}.json`, levelJsonText());
+      files.push([`Level_${lv}.json`, levelJsonText()]);
     }
     genParams.genSeed=base; renderAll();
-    toast(`Batch: exported Level_${from}…Level_${to}.json`);
+    downloadZip(`levels-${from}-${to}.zip`, files);
+    toast(`Batch: exported ${files.length} levels → levels-${from}-${to}.zip`);
   });
 }
 function generateSilent(){const t=toast;window.__q=1;try{generate();}finally{window.__q=0;}}
@@ -1212,8 +1233,8 @@ function wireWordContent(){
   $('#wb-add').onclick=()=>{bank.categories.unshift(newCat('New Category',['One','Two','Three','Four']));saveBank();renderWordBank();};
   $('#wb-export').onclick=()=>download('wordbank.json',JSON.stringify(bank,null,2));
   $('#wb-fetchall').onclick=e=>wbFetchAll(e.target);
-  $('#rb-exportall').onclick=()=>{ if(!REBUILT.length){toast('Nothing to export yet');return;} REBUILT.forEach(r=>download('Level_'+r.n+'.json',JSON.stringify(r.nw.json,null,2))); toast('Exporting NEW set: Level_1 … Level_50.json'); };
-  $('#rb1-exportall').onclick=()=>{ if(!RB1.length){toast('Nothing to export yet');return;} RB1.forEach(r=>download('Level_'+r.n+'.json',JSON.stringify(r.json,null,2))); toast('Exporting v1: Level_1 … Level_50.json'); };
+  $('#rb-exportall').onclick=()=>{ if(!REBUILT.length){toast('Nothing to export yet');return;} downloadZip('levels-new-1-50.zip', REBUILT.map(r=>['Level_'+r.n+'.json',JSON.stringify(r.nw.json,null,2)])); toast('Exported NEW set: '+REBUILT.length+' levels → levels-new-1-50.zip'); };
+  $('#rb1-exportall').onclick=()=>{ if(!RB1.length){toast('Nothing to export yet');return;} downloadZip('levels-v1-1-50.zip', RB1.map(r=>['Level_'+r.n+'.json',JSON.stringify(r.json,null,2)])); toast('Exported v1: '+RB1.length+' levels → levels-v1-1-50.zip'); };
   $('#wb-import').onclick=()=>$('#wb-file').click();
   $('#wb-file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const b=normalizeBank(JSON.parse(r.result));const rep=confirm('OK = replace bank, Cancel = merge into current bank');mergeBank(b,rep);refreshMeanings();renderWordBank();toast(`Imported ${b.categories.length} categories`);}catch(err){alert('Import failed: '+err.message);}};r.readAsText(f);e.target.value='';};
 }
