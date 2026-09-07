@@ -1460,9 +1460,9 @@ const IMAGE_CATS=[
   ['Gear',['Shoes','Sneakers','Helmet','Battery']],
   ['Sea & Sky',['Whale','Boat','Plane','Balloon']],
   ['Snacks',['Nuts','Salad','Candy','Milk']],
-  ['Countries',['Germany','Italy','Spain','Europe']],
+  ['Countries',['Germany','Italy','Spain','Japan'],['countries__germany','countries__italy','countries__spain','countries__japan_flag']],   // Europe had no art anywhere; entries may pin sprites like CURATED_NEW
 ];
-function imageCat(idx){ const [name,words]=IMAGE_CATS[idx%IMAGE_CATS.length]; const c=newCat(name,words); c.isImage=true; c.difficulty=1; c.words.forEach(w=>{w.icon=w.fullWord;}); return c; } // image categories are common & concrete → always Easy
+function imageCat(idx){ const [name,words,pins]=IMAGE_CATS[idx%IMAGE_CATS.length]; const c=newCat(name,words); c.isImage=true; c.difficulty=1; c.words.forEach((w,i)=>{w.icon=(pins&&pins[i])||w.fullWord;}); return c; } // image categories are common & concrete → always Easy
 /* Curated NEW-set levels 1–10 (design-reviewed 2026-09-07). Rule: every word is a KIND OF its category —
    no compounds, puns, synonyms or parts. Picture categories = round(30% of categories); each picture word
    pins the exact Word Solitaire sprite (set__word) so the importer copies it instead of guessing.
