@@ -1233,9 +1233,22 @@ function switchView(view){
 
 /* ===================== REBUILT v1 (curated-only single variant) ========== */
 let RB1=[]; const rb1Expanded=new Set();
+// Both rebuild tabs download the 12MB level dump on first open and then generate 50 levels
+// synchronously, so paint a status line and let the browser render it before we block the thread.
+// A backgrounded tab paints nothing and throttles both rAF and timers, so don't wait there at all;
+// when visible, give up after one frame in case rAF is starved.
+const paintTick=()=> document.visibilityState==='hidden' ? Promise.resolve()
+  : new Promise(r=>{ let done=false; const fin=()=>{ if(!done){ done=true; r(); } };
+      requestAnimationFrame(()=>requestAnimationFrame(fin)); setTimeout(fin,50); });
+async function rebuildBusy(host,countEl,msg){
+  host.innerHTML='<div class="br-empty">'+msg+'</div>';
+  if(countEl) countEl.textContent='';
+  await paintTick();
+}
 async function rb1Init(){
-  const lv=await ensureLevels();
   const host=$('#rb1-list');
+  await rebuildBusy(host, $('#rb1-count'), BROWSE?'Building 50 levels…':'Loading level data…');
+  const lv=await ensureLevels();
   if(!lv){ host.innerHTML='<div class="br-empty">Open the <b>Game Levels</b> tab once (it loads the shipped levels), then come back.</div>'; $('#rb1-count').textContent=''; return; }
   const byN={}; lv.forEach(x=>byN[x.n]=x.level);
   RB1=[]; const used={};
@@ -1446,9 +1459,13 @@ function selectCats(shipped,n,opts,variant){
   // 1) seed a parent→child chain (they share a theme by design); introduced from L3, like the shipped levels
   if(opts.chains!==false && catCount>=3 && n>=3){
     const u=opts.used||{}, uc=c=>(u[c.category.toLowerCase()]||0);
-    const cand=shuffle(rng, chainsIn(pool).slice());
-    cand.sort((a,b)=> (uc(a[0])+uc(a[1])) - (uc(b[0])+uc(b[1])));    // prefer least-used chain across the set (variety)
-    for(const [parent,child,word] of cand){ chosen.push(parent,child); take(parent); take(child); chain={parent:parent.category, child:child.category, word}; break; }
+    // prefer least-used chain across the set (variety). Equivalent to shuffling then stable-sorting by
+    // usage and taking the first, but as a single O(n) min-scan — the gated pool has ~15k chains and a
+    // full sort here (16 variants x 50 levels) cost ~250ms per level.
+    const cand=shuffle(rng, chainsIn(pool));
+    let pick=null, pickScore=Infinity;
+    for(const t of cand){ const sc=uc(t[0])+uc(t[1]); if(sc<pickScore){ pickScore=sc; pick=t; if(sc===0) break; } }
+    if(pick){ const [parent,child,word]=pick; chosen.push(parent,child); take(parent); take(child); chain={parent:parent.category, child:child.category, word}; }
   }
   // 2) difficult (spike) categories — domain-unique, not already used
   let difficultCount=0;
@@ -1587,8 +1604,10 @@ function renderRebuildChart(){
   <div class="cv-legend"><span class="cv-k"><span class="cv-sw old"></span>Default</span><span class="cv-k"><span class="cv-sw" style="background:#8a7bd8"></span>Current</span><span class="cv-k"><span class="cv-sw new"></span>New (gated)</span><span class="muted">difficulty = category familiarity + count + specials · dashed line = L15</span></div>`;
 }
 async function rebuildInit(){
-  const lv=await ensureLevels();
   const host=$('#rb-list');
+  $('#rb-chart').innerHTML='';
+  await rebuildBusy(host, $('#rb-count'), BROWSE?'Building 100 levels (2 sets \u00d7 50)\u2026':'Loading level data\u2026');
+  const lv=await ensureLevels();
   if(!lv){ host.innerHTML='<div class="br-empty">Level data isn’t loaded yet. Open the <b>Game Levels</b> tab once (it loads/caches the shipped levels), then come back.</div>'; $('#rb-count').textContent=''; $('#rb-chart').innerHTML=''; return; }
   const byN={}; lv.forEach(x=>byN[x.n]=x.level);
   REBUILT=[];
