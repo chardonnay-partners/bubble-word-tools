@@ -132,6 +132,7 @@
   .chunkw{color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:5px;padding:0 5px;font-weight:600;white-space:nowrap}
   .chainw{color:#b06bff;background:color-mix(in srgb,#b06bff 15%,transparent);border:1px solid color-mix(in srgb,#b06bff 45%,transparent);border-radius:5px;padding:0 5px;font-weight:600;white-space:nowrap}
   .chain-note{color:#b06bff;font-size:11px;font-weight:600}
+  .iconw{border-bottom:1px dotted #3fbf9f;cursor:help}
   .diffb{font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--muted)}
   .diffb.d1{color:var(--warn);border-color:var(--warn)} .diffb.d2{color:var(--err);border-color:var(--err)}
   .br-empty{padding:28px;text-align:center;color:var(--muted)}
@@ -1457,6 +1458,88 @@ const IMAGE_CATS=[
   ['Countries',['Germany','Italy','Spain','Europe']],
 ];
 function imageCat(idx){ const [name,words]=IMAGE_CATS[idx%IMAGE_CATS.length]; const c=newCat(name,words); c.isImage=true; c.difficulty=1; c.words.forEach(w=>{w.icon=w.fullWord;}); return c; } // image categories are common & concrete → always Easy
+/* Curated NEW-set levels 1–10 (design-reviewed 2026-09-07). Rule: every word is a KIND OF its category —
+   no compounds, puns, synonyms or parts. Picture categories = round(30% of categories); each picture word
+   pins the exact Word Solitaire sprite (set__word) so the importer copies it instead of guessing.
+   Entry: [name, words, {icons:[sprite×4]} | {parent:'Parent'}]. A child's name must be a word of its parent. */
+const CURATED_NEW={
+  1:[['Fruits',['Apple','Banana','Grape','Pear'],{icons:['grove__apple','produce__banana','pit__grape','grove__pear']}],
+     ['Family',['Mom','Dad','Sister','Brother']],
+     ['Sports',['Soccer','Tennis','Golf','Hockey']]],
+  2:[['Vehicles',['Car','Bus','Train','Boat'],{icons:['transport__car','transport__bus','transport__train','transport__boat']}],
+     ['Flowers',['Rose','Tulip','Daisy','Lily']],
+     ['Drinks',['Tea','Coffee','Juice','Milk']],
+     ['Colors',['Red','Blue','Green','Yellow']]],
+  3:[['Insects',['Bee','Ant','Butterfly','Ladybug'],{icons:['bugs__bee','bugs__ant','bugs__butterfly','bugs__ladybug']}],
+     ['Seasons',['Spring','Summer','Autumn','Winter']],
+     ['Winter',['Snow','Ice','Frost','Blizzard'],{parent:'Seasons'}],
+     ['Body',['Hand','Foot','Arm','Leg']]],
+  4:[['Furniture',['Chair','Table','Sofa','Bed'],{icons:['chairs__chair','furniture__table','chairs__sofa','furniture__bed']}],
+     ['Animals',['Dog','Cat','Horse','Cow'],{icons:['quadrupeds__dog','quadrupeds__cat','quadrupeds__horse','quadrupeds__cow']}],
+     ['Dog',['Poodle','Beagle','Husky','Bulldog'],{parent:'Animals'}],
+     ['Planets',['Mars','Venus','Earth','Jupiter']],
+     ['Weather',['Rain','Wind','Fog','Storm']]],
+  5:[['Clothes',['Shirt','Pants','Dress','Jacket'],{icons:['apparel__shirt','clothing__pants','apparel__dress','apparel__jacket']}],
+     ['Jobs',['Teacher','Pilot','Nurse','Firefighter'],{icons:['occupations__teacher','occupations__pilot','occupations__nurse','occupations__firefighter']}],
+     ['Games',['Chess','Cards','Bingo','Dominoes']],
+     ['Cards',['King','Queen','Jack','Ace'],{parent:'Games'}],
+     ['Kitchen',['Spoon','Fork','Knife','Plate']]],
+  6:[['Instruments',['Piano','Guitar','Trumpet','Violin'],{icons:['instruments__piano','instruments__guitar','instruments__trumpet','instruments__violin']}],
+     ['Gems',['Ruby','Emerald','Sapphire','Diamond'],{icons:['gems__ruby','gems__emerald','gems__sapphire','gems__diamond']}],
+     ['Food',['Pizza','Pasta','Soup','Salad']],
+     ['Pasta',['Spaghetti','Penne','Lasagna','Ravioli'],{parent:'Food'}],
+     ['Rooms',['Kitchen','Bedroom','Bathroom','Garage']],
+     ['Months',['January','March','June','October']]],
+  7:[['Sea',['Whale','Shark','Dolphin','Jellyfish'],{icons:['marine__whale','marine__shark','marine__dolphin','marine__jellyfish']}],
+     ['Sky',['Sun','Moon','Rainbow','Cloud'],{icons:['above__sun','above__moon','above__rainbow','rainy_day__cloud']}],
+     ['Snacks',['Popcorn','Nuts','Chips','Pretzel']],
+     ['Nuts',['Walnut','Cashew','Peanut','Pistachio'],{parent:'Snacks'}],
+     ['Metals',['Gold','Silver','Iron','Copper']],
+     ['Trees',['Oak','Pine','Maple','Palm']]],
+  8:[['Tools',['Hammer','Wrench','Drill','Screwdriver'],{icons:['workshop__hammer','workshop__wrench','workshop__drill','workshop__screwdriver']}],
+     ['Computer',['Keyboard','Mouse','Screen','Printer'],{icons:['computer__keyboard','pc__mouse','notebook__screen','peripherals__printer']}],
+     ['Keyboard',['Enter','Escape','Tab','Shift'],{parent:'Computer'}],
+     ['Vegetables',['Carrot','Potato','Onion','Tomato']],
+     ['Cities',['Paris','Rome','Tokyo','London']],
+     ['Oceans',['Atlantic','Pacific','Indian','Arctic']],
+     ['Shoes',['Boots','Sneakers','Sandals','Heels']]],
+  9:[['Birds',['Parrot','Owl','Penguin','Swan'],{icons:['birds__parrot','birds__owl','birds__penguin','birds__swan']}],
+     ['Cheese',['Gouda','Brie','Cheddar','Mozzarella'],{icons:['fromage__gouda','fromage__brie','fromage__cheddar','fromage__mozzarella']}],
+     ['Subjects',['Math','Science','History','Art']],
+     ['Science',['Biology','Physics','Chemistry','Geology'],{parent:'Subjects'}],
+     ['Math',['Algebra','Geometry','Addition','Fractions'],{parent:'Subjects'}],
+     ['Dances',['Salsa','Tango','Waltz','Ballet']],
+     ['Toys',['Doll','Kite','Ball','Robot']]],
+ 10:[['Zoo',['Lion','Tiger','Elephant','Giraffe'],{icons:['creatures__lion','creatures__tiger','creatures__elephant','creatures__giraffe']}],
+     ['Reptiles',['Lizard','Turtle','Chameleon','Alligator'],{icons:['reptilian__lizard','reptilian__turtle','reptilian__chameleon','reptilian__alligator']}],
+     ['Places',['City','Country','State','Island']],
+     ['City',['Madrid','Berlin','Sydney','Toronto'],{parent:'Places'}],
+     ['Country',['France','Italy','Spain','Japan'],{parent:'Places'}],
+     ['Fabrics',['Silk','Cotton','Wool','Denim']],
+     ['Coffee',['Espresso','Latte','Mocha','Cappuccino']],
+     ['Zodiac',['Aries','Leo','Taurus','Scorpio']]],
+};
+// Share of a level's categories that carry pictures (New set). round(0.3×cats): 3–4 cats → 1, 5–8 → 2, 9–11 → 3.
+const IMAGE_SHARE=0.30;
+function imageCountFor(catCount){ return Math.max(1, Math.round(IMAGE_SHARE*catCount)); }
+// Build a curated level's categories in the same shape selectCats() returns, or null if n isn't curated.
+function curatedNewLevel(n){
+  const spec=CURATED_NEW[n]; if(!spec) return null;
+  const newCats=spec.map(([name,words,o])=>{
+    const c=newCat(name,words); o=o||{};
+    if(o.icons){ c.isImage=true; c.difficulty=1; c.words.forEach((w,i)=>{ w.icon=o.icons[i]||''; }); }
+    if(o.parent) c.parentCategory=o.parent;
+    return c;
+  });
+  const chains=[];
+  newCats.forEach(child=>{ if(!child.parentCategory) return;
+    const parent=newCats.find(c=>c.category===child.parentCategory);
+    const link=parent&&parent.words.find(w=>w.fullWord.toLowerCase()===child.category.toLowerCase());
+    if(!link){ console.warn('CURATED_NEW L'+n+': "'+child.category+'" is not a word of "'+child.parentCategory+'"'); return; }
+    link.isChainLink=true; chains.push({parent:parent.category, child:child.category, word:link.fullWord});
+  });
+  return {newCats, catCount:newCats.length, spikeTier:levelTierFor(n), rng:makeRng((n*97+7)>>>0), chain:chains[0]||null, chains, sc:0, issues:levelIssues(newCats), curated:true};
+}
 
 // One category-selection attempt (a given RNG variant). Returns the chosen category objects.
 // Chained-category pairs available in a pool: [parent, child, linkWord] where linkWord is a word of
@@ -1509,12 +1592,19 @@ function selectCats(shipped,n,opts,variant){
     if(chain && src.category===chain.parent) c.words.forEach(w=>{ if(w.fullWord.toLowerCase()===chain.word.toLowerCase()) w.isChainLink=true; });
     return c;
   });
-  // image category (New set) — replace a plain (non-chain) slot so the chain survives
+  // picture categories (New set): round(30% of categories), each replacing a plain (non-chain) slot so chains survive
   if(opts.images && newCats.length){
     const nm=new Set(newCats.map(c=>c.category.toLowerCase()));
-    let slot=newCats.findIndex(c=>!c.parentCategory && (!chain||c.category!==chain.parent) && !c.isImage);
-    if(slot<0) slot=newCats.length-1;
-    for(let k=0;k<IMAGE_CATS.length;k++){ const ic=imageCat(n+k); if(!nm.has(ic.category.toLowerCase())){ newCats[slot]=ic; break; } }
+    const want=imageCountFor(newCats.length); let k=0;
+    for(let placed=0; placed<want; placed++){
+      let slot=newCats.findIndex(c=>!c.parentCategory && (!chain||c.category!==chain.parent) && !c.isImage);
+      if(slot<0) break;                                                    // no plain slot left
+      let ic=null;
+      for(; k<IMAGE_CATS.length; k++){ const cand=imageCat(n+k); if(!nm.has(cand.category.toLowerCase())){ ic=cand; k++; break; } }
+      if(!ic) break;                                                       // list exhausted
+      nm.delete(newCats[slot].category.toLowerCase()); nm.add(ic.category.toLowerCase());
+      newCats[slot]=ic;
+    }
   }
   return {newCats, catCount, spikeTier, rng, chain};
 }
@@ -1522,8 +1612,8 @@ function rebuildLevel(shipped,n,opts){
   opts=opts||{};
   const used=opts.used||{};
   // Try several variants; keep the board with the fewest structural problems + least cross-level repetition.
-  let best=null;
-  for(let v=0; v<16; v++){
+  let best=opts.images ? curatedNewLevel(n) : null;                  // NEW set L1–10 are hand-designed
+  if(!best) for(let v=0; v<16; v++){
     const cand=selectCats(shipped,n,opts,v);
     const issues=levelIssues(cand.newCats);
     const rep=cand.newCats.reduce((a,c)=>a+(used[(c.category||'').toLowerCase()]||0),0);
@@ -1577,7 +1667,7 @@ function rebuildLevel(shipped,n,opts){
   }
   const oldMix={1:0,2:0,3:0,4:0}; (shipped.categories||[]).forEach(c=>{oldMix[catDifficulty(c)]++;});
   const totalMoves=required+L.moveLimit;
-  return {n, level:L, old:shipped, json:buildLevelJson(L), oldMix, tier:spikeTier, issues:best.issues, chain:best.chain, catCount, chunkedWords, totalMoves, mult:moveMult(n)};
+  return {n, level:L, old:shipped, json:buildLevelJson(L), oldMix, tier:spikeTier, issues:best.issues, chain:best.chain, curated:!!best.curated, catCount, chunkedWords, totalMoves, mult:moveMult(n)};
 }
 function mixLabel(m){ return [1,2,3,4].filter(t=>m[t]).map(t=>m[t]+'EMHX'[t-1]).join(' ')||'—'; }
 function cmpColNode(title,L){
@@ -1662,7 +1752,7 @@ function renderRebuild(){
     meta.appendChild(el('span',{class:'muted',title:'difficulty band of each set'},'default→current→new'));
     meta.appendChild(el('span',{}, nw.catCount+' cats · '+nw.totalMoves+' moves ('+Math.round(nw.mult*100)+'%)'));
     if(nw.chunkedWords) meta.appendChild(el('span',{title:nw.chunkedWords+' split/chunk words (unlocks L11)'},'⧉ '+nw.chunkedWords));
-    meta.appendChild(el('span',{title:'includes an image category'},'🖼 1'));
+    { const ni=nw.level.categories.filter(c=>c.isImage).length; meta.appendChild(el('span',{title:ni+' picture categor'+(ni===1?'y':'ies')+' (30% of categories)'+(nw.curated?' · curated':'')},'🖼 '+ni+(nw.curated?' ✎':''))); }
     if((nw.level.frozenBubbles||[]).length) meta.appendChild(el('span',{title:'frozen (unlocks L31)'},'❄'));
     if(nw.level.useBubbleSeparator) meta.appendChild(el('span',{title:'separator (unlocks L21)'},'⛓'));
     mid.appendChild(meta);
@@ -1742,6 +1832,8 @@ function wordsNode(words){
       wrap.appendChild(el('span',{class:'chainw',title:'chained sub-category — this word is itself a category on this board'}, '⛓ '+w.fullWord));
     else if((w.chunks||[]).length)
       wrap.appendChild(el('span',{class:'chunkw',title:'split / chunk word'}, w.fullWord+' ('+w.chunks.join('-')+')'));
+    else if(w.icon)
+      wrap.appendChild(el('span',{class:'iconw',title:'picture: '+w.icon}, w.fullWord));
     else
       wrap.appendChild(document.createTextNode(w.fullWord));
   });
