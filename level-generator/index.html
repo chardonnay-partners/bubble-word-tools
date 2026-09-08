@@ -1259,6 +1259,12 @@ function switchView(view){
 
 /* ===================== REBUILT v1 (curated-only single variant) ========== */
 let RB1=[]; const rb1Expanded=new Set();
+// Level lists open one level at a time (accordion): opening a level closes the others so the page stays short.
+// After re-rendering, the opened row is scrolled into view because collapsing rows above it shifts the page.
+function toggleLevel(set, key, render, host){
+  const wasOpen=set.has(key); set.clear(); if(!wasOpen) set.add(key); render();
+  if(!wasOpen && host){ const row=host.querySelector('.lvl.open'); if(row) row.scrollIntoView({block:'nearest'}); }
+}
 // Both rebuild tabs download the 12MB level dump on first open and then generate 50 levels
 // synchronously, so paint a status line and let the browser render it before we block the thread.
 // A backgrounded tab paints nothing and throttles both rAF and timers, so don't wait there at all;
@@ -1304,7 +1310,7 @@ function renderRB1(){
   RB1.forEach(r=>{
     const open=rb1Expanded.has(r.n);
     const row=el('div',{class:'lvl'+(open?' open':'')});
-    const head=el('div',{class:'lvl-head',onclick:()=>{open?rb1Expanded.delete(r.n):rb1Expanded.add(r.n);renderRB1();}});
+    const head=el('div',{class:'lvl-head',onclick:()=>toggleLevel(rb1Expanded, r.n, renderRB1, $('#rb1-list'))});
     head.appendChild(el('div',{class:'no'},[document.createTextNode(r.n+''),el('small',{},'LEVEL')]));
     const mid=el('div',{});
     const cats=el('div',{class:'cats'}); r.level.categories.forEach(c=>cats.appendChild(el('span',{class:'rb-cat t'+catDifficulty(c)},c.category))); mid.appendChild(cats);
@@ -1788,7 +1794,7 @@ function renderRebuild(){
     const nw=r.nw;
     const open=rebuildExpanded.has(r.n);
     const row=el('div',{class:'lvl'+(open?' open':'')});
-    const head=el('div',{class:'lvl-head',onclick:()=>{open?rebuildExpanded.delete(r.n):rebuildExpanded.add(r.n);renderRebuild();}});
+    const head=el('div',{class:'lvl-head',onclick:()=>toggleLevel(rebuildExpanded, r.n, renderRebuild, $('#rb-list'))});
     head.appendChild(el('div',{class:'no'},[document.createTextNode(r.n+''),el('small',{},'LEVEL')]));
     const mid=el('div',{});
     const catsLine=el('div',{class:'cats'});
@@ -1902,7 +1908,7 @@ function levelDetailNode(L){
 function browseRow(item,s){
   const open=browseExpanded.has(item.n);
   const row=el('div',{class:'lvl'+(open?' open':'')});
-  const head=el('div',{class:'lvl-head',onclick:()=>{open?browseExpanded.delete(item.n):browseExpanded.add(item.n);renderBrowse();}});
+  const head=el('div',{class:'lvl-head',onclick:()=>toggleLevel(browseExpanded, item.n, renderBrowse, $('#br-list'))});
   head.appendChild(el('div',{class:'no'},[document.createTextNode(item.n+''),el('small',{},'LEVEL')]));
   const mid=el('div',{});
   mid.appendChild(el('div',{class:'cats'}, s.cats.slice(0,6).join(' · ')+(s.cats.length>6?' …':'')));
