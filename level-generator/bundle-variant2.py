@@ -6,7 +6,7 @@ byte-for-byte, so the tool always reflects what the game actually loads. Re-run 
 change in the game repo, then bump VARIANT2_VERSION in index.html so browsers refetch it.
 
 Usage:
-  python3 bundle-variant2.py [--repo ../../bubble-word] [--ref origin/feature/CPBAWG-175-levels] [--levels 1-50]
+  python3 bundle-variant2.py [--repo ../../bubble-word] [--ref origin/develop] [--levels 1-50]
 Reads the files straight from git (the game checkout can be on any branch).
 """
 import argparse, json, os, subprocess
@@ -18,7 +18,7 @@ def main():
     here = os.path.dirname(os.path.abspath(__file__))
     ap = argparse.ArgumentParser()
     ap.add_argument('--repo', default=os.path.join(here, '..', '..', 'bubble-word'))
-    ap.add_argument('--ref', default='origin/feature/CPBAWG-175-levels')
+    ap.add_argument('--ref', default='origin/develop')
     ap.add_argument('--levels', default='1-50')
     ap.add_argument('--out', default=os.path.join(here, 'variant2.json'))
     a = ap.parse_args()

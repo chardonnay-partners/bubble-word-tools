@@ -392,7 +392,7 @@
       <button class="mini primary" id="rb-exportall">⭳ Export NEW set (50)</button>
     </div>
     <div id="rb-syncbox" class="hint" hidden style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:8px 10px">
-      <span>Branch</span><input id="rb-sync-branch" type="text" value="feature/CPBAWG-175-levels" style="width:220px">
+      <span>Branch</span><input id="rb-sync-branch" type="text" value="develop" style="width:220px">
       <span>GitHub token</span><input id="rb-sync-token" type="password" placeholder="fine-grained token, Contents: read" style="width:230px" autocomplete="off">
       <label style="cursor:pointer"><input id="rb-sync-remember" type="checkbox" checked> remember in this browser</label>
       <button class="mini primary" id="rb-sync-go">Sync now</button>
@@ -1807,7 +1807,7 @@ function rebuildLevel(shipped,n,opts){
 /* ---- variant_2: the level set that actually ships in Unity (variant2.json, bundled from the game repo by
    bundle-variant2.py). When present it replaces the generated NEW set in the Compare tab, so the tool shows
    exactly what the game loads — including hand edits made on the Unity side (interleaved boards, swaps). ---- */
-const VARIANT2_VERSION='26c070ba';                                  // bump when variant2.json is regenerated
+const VARIANT2_VERSION='d28475f2';                                  // bump when variant2.json is regenerated
 let VARIANT2=null, VARIANT2_BUNDLED=null;
 const GH_REPO='chardonnay-partners/bubble-word', V2_PATH='Assets/Resources/LevelSets/variant_2';
 async function loadVariant2Bundled(){
