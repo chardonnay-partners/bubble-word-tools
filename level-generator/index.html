@@ -389,7 +389,7 @@
       <span class="sp"></span>
       <button class="mini primary" id="rb-exportall">⭳ Export NEW set (50)</button>
     </div>
-    <div class="hint">Rebuilt with: a <b>category-count ramp</b> (3 → 10 by L15, then the shipped count); <b>difficulty spikes</b> every 5 levels from L11 — Medium, then Hard after L25, Expert after L35; a spike mixes a <b>capped share of harder categories into an ≥50% Easy base</b> (20% at L11, +5% each difficulty level, max 50%), all other levels all-Easy; a <b>move budget</b> of 180% of the required moves (categories × 3) through L10, easing −10 pts every 5 levels to a 150% floor. 4 words per category. Feature gating respected: chunk/split words only from L11, separator from L21, frozen from L31 — and the move budget counts each split word (moves = mult × (categories×3 + chunk words)). <b>Click a level</b> for the original-vs-rebuilt comparison. ▶ playtest · ⭳ export.</div>
+    <div class="hint">Rebuilt with: a <b>category-count ramp</b> (3 → 10 by L15, then the shipped count); <b>difficulty spikes</b> every 5 levels from L11 — Medium, then Hard after L25, Expert after L35; a spike mixes a <b>capped share of harder categories into an ≥50% Easy base</b> (20% at L11, +5% each difficulty level, max 50%), all other levels all-Easy; a <b>move budget</b> of 180% of the required moves (categories × 3) through L10, easing −10 pts every 5 levels to a 150% floor. 4 words per category. Feature gating respected: chunk/split words only from L11, separator from L21, frozen from L31 — and the move budget counts each split word (moves = mult × (categories×3 + chunk words)). <b>Click a level</b> for the original-vs-rebuilt comparison. ▶ playtest · ⭳ export. The third column is <b>variant_2 exactly as committed in Unity</b> (<code class="k">variant2.json</code>, refreshed with <code class="k">bundle-variant2.py</code>); exports are byte-identical to the game files. Any edits made in Unity, like the interleaved starting boards, show here without being re-generated.</div>
     <div id="rb-chart"></div>
     <div id="rb-list" class="br-list"></div>
   </div>
@@ -1239,7 +1239,7 @@ function wireWordContent(){
   $('#wb-add').onclick=()=>{bank.categories.unshift(newCat('New Category',['One','Two','Three','Four']));saveBank();renderWordBank();};
   $('#wb-export').onclick=()=>download('wordbank.json',JSON.stringify(bank,null,2));
   $('#wb-fetchall').onclick=e=>wbFetchAll(e.target);
-  $('#rb-exportall').onclick=()=>{ if(!REBUILT.length){toast('Nothing to export yet');return;} downloadZip('levels-new-1-50.zip', REBUILT.map(r=>['Level_'+r.n+'.json',JSON.stringify(r.nw.json,null,2)])); toast('Exported NEW set: '+REBUILT.length+' levels → levels-new-1-50.zip'); };
+  $('#rb-exportall').onclick=()=>{ if(!REBUILT.length){toast('Nothing to export yet');return;} const zn=VARIANT2?'levels-variant2-1-50.zip':'levels-new-1-50.zip'; downloadZip(zn, REBUILT.map(r=>['Level_'+r.n+'.json',newSetText(r.nw)])); toast('Exported '+REBUILT.length+' levels → '+zn); };
   $('#rb1-exportall').onclick=()=>{ if(!RB1.length){toast('Nothing to export yet');return;} downloadZip('levels-v1-1-50.zip', RB1.map(r=>['Level_'+r.n+'.json',JSON.stringify(r.json,null,2)])); toast('Exported v1: '+RB1.length+' levels → levels-v1-1-50.zip'); };
   $('#wb-import').onclick=()=>$('#wb-file').click();
   $('#wb-file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const b=normalizeBank(JSON.parse(r.result));const rep=confirm('OK = replace bank, Cancel = merge into current bank');mergeBank(b,rep);refreshMeanings();renderWordBank();toast(`Imported ${b.categories.length} categories`);}catch(err){alert('Import failed: '+err.message);}};r.readAsText(f);e.target.value='';};
@@ -1792,6 +1792,39 @@ function rebuildLevel(shipped,n,opts){
   const totalMoves=required+L.moveLimit;
   return {n, level:L, old:shipped, json:buildLevelJson(L), oldMix, tier:spikeTier, issues:best.issues, chain:best.chain, curated:!!best.curated, catCount, chunkedWords, totalMoves, mult:moveMult(n)};
 }
+/* ---- variant_2: the level set that actually ships in Unity (variant2.json, bundled from the game repo by
+   bundle-variant2.py). When present it replaces the generated NEW set in the Compare tab, so the tool shows
+   exactly what the game loads — including hand edits made on the Unity side (interleaved boards, swaps). ---- */
+const VARIANT2_VERSION='26c070ba';                                  // bump when variant2.json is regenerated
+let VARIANT2=null;
+async function loadVariant2(){
+  if(VARIANT2) return VARIANT2;
+  try{
+    const r=await fetch('variant2.json?v='+VARIANT2_VERSION); if(!r.ok) throw 0;
+    const b=await r.json(); const byN={}; (b.levels||[]).forEach(x=>byN[x.n]=x.level);
+    VARIANT2={source:b.source||{}, byN};
+  }catch(e){ VARIANT2=null; }
+  return VARIANT2;
+}
+// Wrap a shipped variant_2 level file in the shape renderRebuild() expects (the fields rebuildLevel() returns).
+function fromUnityLevel(json,n,shipped,pool){
+  const L=JSON.parse(JSON.stringify(json));
+  const spawn=new Set((L.allWordEntries||[]).map(w=>w.fullWord));
+  const children=new Set((L.categories||[]).filter(c=>c.parentCategory).map(c=>c.category.toLowerCase()));
+  (L.categories||[]).forEach(c=>{
+    const src=(pool||[]).find(p=>p.category.toLowerCase()===(c.category||'').toLowerCase());
+    if(src) c.difficulty=src.difficulty;                                    // tier colour from the curated pool
+    c.isImage=c.words.length>0 && c.words.every(w=>w.icon);
+    c.words.forEach(w=>{ if(children.has(w.fullWord.toLowerCase()) && !spawn.has(w.fullWord)) w.isChainLink=true; });
+  });
+  const catCount=(L.categories||[]).length;
+  const chunkedWords=(L.allWordEntries||[]).filter(w=>(w.chunks||[]).length).length;
+  const required=catCount*3+chunkedWords, totalMoves=required+(+L.moveLimit||0);
+  const oldMix={1:0,2:0,3:0,4:0}; ((shipped&&shipped.categories)||[]).forEach(c=>{oldMix[catDifficulty(c)]++;});
+  return {n, level:L, old:shipped, json, oldMix, tier:0, issues:0, chain:(L.categories||[]).some(c=>c.parentCategory),
+          curated:true, unity:true, catCount, chunkedWords, totalMoves, mult:required?totalMoves/required:1};
+}
+function newSetText(r){ return r.unity ? JSON.stringify(r.json) : JSON.stringify(r.json,null,2); }   // Unity files are single-line
 function mixLabel(m){ return [1,2,3,4].filter(t=>m[t]).map(t=>m[t]+'EMHX'[t-1]).join(' ')||'—'; }
 function cmpColNode(title,L){
   const col=el('div',{class:'cmp-col'});
@@ -1809,7 +1842,7 @@ function rebuildDetailNode(r){
   return el('div',{class:'lvl-detail cmp cmp3'},[
     cmpColNode('Default (shipped)',r.old),
     cmpColNode('Current (168 cats)',r.cur.level),
-    cmpColNode('New (gated + images)',r.nw.level),
+    cmpColNode(r.nw.unity?'variant_2 (as in Unity)':'New (gated + images)',r.nw.level),
   ]);
 }
 function meanTier(cats){ const a=(cats||[]).map(c=>catDifficulty(c)); return a.length? a.reduce((x,y)=>x+y,0)/a.length : 0; }
@@ -1848,17 +1881,21 @@ async function rebuildInit(){
   REBUILT=[];
   const sp=seedPool(), gp=curatedPool();                   // New set: vetted pool (was the gated Word Solitaire pool)
   const usedCur={}, usedNew={};                            // cross-level usage → reduce category repetition
+  const v2=await loadVariant2();                           // the set as committed in Unity, when bundled
   for(let n=1;n<=50;n++){ if(byN[n]){
     const cur=rebuildLevel(byN[n],n,{pool:sp, used:usedCur});             // Current: original curated pool
-    const nw =rebuildLevel(byN[n],n,{pool:gp,images:true,curated:true, used:usedNew});  // New: curated pool, 30% pictures, harder from L11
+    const nw = v2&&v2.byN[n] ? fromUnityLevel(v2.byN[n],n,byN[n],gp)        // New: Unity variant_2 (source of truth)
+             : rebuildLevel(byN[n],n,{pool:gp,images:true,curated:true, used:usedNew});  // …or generated: curated pool, 30% pictures, harder from L11
     REBUILT.push({n, old:byN[n], cur, nw});
   }}
+  $('#rb-exportall').textContent = v2 ? '⭳ Export variant_2 (50)' : '⭳ Export NEW set (50)';
   renderRebuildChart();
   renderRebuild();
 }
 function renderRebuild(){
   const host=$('#rb-list'); host.innerHTML='';
-  $('#rb-count').textContent=REBUILT.length+' levels · 3 sets: default · current · new';
+  const src=VARIANT2&&VARIANT2.source;
+  $('#rb-count').textContent=REBUILT.length+' levels · 3 sets: default · current · '+(src?'variant_2 (Unity '+(src.branch||'')+' @ '+(src.commit||'?')+', '+(src.date||'')+')':'new (generated)');
   REBUILT.forEach(r=>{
     const nw=r.nw;
     const open=rebuildExpanded.has(r.n);
@@ -1883,7 +1920,7 @@ function renderRebuild(){
     head.appendChild(mid);
     const oc=el('div',{class:'open'});
     oc.appendChild(el('button',{class:'mini',title:'Playtest NEW level',onclick:ev=>{ev.stopPropagation();playLevel(nw.json,r.n);}},'▶'));
-    oc.appendChild(el('button',{class:'mini',title:'Export NEW level',onclick:ev=>{ev.stopPropagation();download('Level_'+r.n+'.json',JSON.stringify(nw.json,null,2));}},'⭳'));
+    oc.appendChild(el('button',{class:'mini',title:'Export NEW level',onclick:ev=>{ev.stopPropagation();download('Level_'+r.n+'.json',newSetText(nw));}},'⭳'));
     oc.appendChild(el('span',{class:'caret'}, open?'▾':'▸'));
     head.appendChild(oc);
     row.appendChild(head);
