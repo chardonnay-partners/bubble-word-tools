@@ -387,9 +387,20 @@
       <span class="tier t1">Easy</span><span class="tier t2">Medium</span><span class="tier t3">Hard</span><span class="tier t4">Expert</span>
       <span class="muted" id="rb-count"></span>
       <span class="sp"></span>
+      <button class="mini" id="rb-sync" title="Pull the variant_2 level files from the game repo on GitHub">⟳ Sync from Unity</button>
+      <label class="mini" style="cursor:pointer;display:inline-block" title="Load Assets/Resources/LevelSets/variant_2 from a local checkout"><button class="mini" type="button" style="pointer-events:none">📁 Load variant_2 folder…</button><input id="rb-folder" type="file" webkitdirectory multiple hidden></label>
       <button class="mini primary" id="rb-exportall">⭳ Export NEW set (50)</button>
     </div>
-    <div class="hint">Rebuilt with: a <b>category-count ramp</b> (3 → 10 by L15, then the shipped count); <b>difficulty spikes</b> every 5 levels from L11 — Medium, then Hard after L25, Expert after L35; a spike mixes a <b>capped share of harder categories into an ≥50% Easy base</b> (20% at L11, +5% each difficulty level, max 50%), all other levels all-Easy; a <b>move budget</b> of 180% of the required moves (categories × 3) through L10, easing −10 pts every 5 levels to a 150% floor. 4 words per category. Feature gating respected: chunk/split words only from L11, separator from L21, frozen from L31 — and the move budget counts each split word (moves = mult × (categories×3 + chunk words)). <b>Click a level</b> for the original-vs-rebuilt comparison. ▶ playtest · ⭳ export. The third column is <b>variant_2 exactly as committed in Unity</b> (<code class="k">variant2.json</code>, refreshed with <code class="k">bundle-variant2.py</code>); exports are byte-identical to the game files. Any edits made in Unity, like the interleaved starting boards, show here without being re-generated.</div>
+    <div id="rb-syncbox" class="hint" hidden style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:8px 10px">
+      <span>Branch</span><input id="rb-sync-branch" type="text" value="feature/CPBAWG-175-levels" style="width:220px">
+      <span>GitHub token</span><input id="rb-sync-token" type="password" placeholder="fine-grained token, Contents: read" style="width:230px" autocomplete="off">
+      <label style="cursor:pointer"><input id="rb-sync-remember" type="checkbox" checked> remember in this browser</label>
+      <button class="mini primary" id="rb-sync-go">Sync now</button>
+      <button class="mini" id="rb-sync-reset" title="Forget the synced copy and show the bundled snapshot">Use bundled snapshot</button>
+      <span id="rb-sync-status" class="muted"></span>
+      <span class="muted" style="flex-basis:100%">The repo is private, so a token is needed: GitHub → Settings → Developer settings → Fine-grained tokens → repository <code class="k">chardonnay-partners/bubble-word</code>, permission <b>Contents: Read-only</b>. It is stored only in this browser and sent only to api.github.com.</span>
+    </div>
+    <div class="hint">Rebuilt with: a <b>category-count ramp</b> (3 → 10 by L15, then the shipped count); <b>difficulty spikes</b> every 5 levels from L11 — Medium, then Hard after L25, Expert after L35; a spike mixes a <b>capped share of harder categories into an ≥50% Easy base</b> (20% at L11, +5% each difficulty level, max 50%), all other levels all-Easy; a <b>move budget</b> of 180% of the required moves (categories × 3) through L10, easing −10 pts every 5 levels to a 150% floor. 4 words per category. Feature gating respected: chunk/split words only from L11, separator from L21, frozen from L31 — and the move budget counts each split word (moves = mult × (categories×3 + chunk words)). <b>Click a level</b> for the original-vs-rebuilt comparison. ▶ playtest · ⭳ export. The third column is <b>variant_2 exactly as committed in Unity</b> (<code class="k">variant2.json</code>, refreshed with <code class="k">bundle-variant2.py</code>); exports are byte-identical to the game files. Any edits made in Unity, like the interleaved starting boards, show here without being re-generated. <b>⟳ Sync from Unity</b> pulls the current files from the game repo on GitHub (any branch) and keeps them in this browser; <b>📁 Load variant_2 folder</b> does the same from a local checkout. Levels that differ from the bundled snapshot are tagged <i>changed</i>.</div>
     <div id="rb-chart"></div>
     <div id="rb-list" class="br-list"></div>
   </div>
@@ -1239,6 +1250,7 @@ function wireWordContent(){
   $('#wb-add').onclick=()=>{bank.categories.unshift(newCat('New Category',['One','Two','Three','Four']));saveBank();renderWordBank();};
   $('#wb-export').onclick=()=>download('wordbank.json',JSON.stringify(bank,null,2));
   $('#wb-fetchall').onclick=e=>wbFetchAll(e.target);
+  initVariant2Sync();
   $('#rb-exportall').onclick=()=>{ if(!REBUILT.length){toast('Nothing to export yet');return;} const zn=VARIANT2?'levels-variant2-1-50.zip':'levels-new-1-50.zip'; downloadZip(zn, REBUILT.map(r=>['Level_'+r.n+'.json',newSetText(r.nw)])); toast('Exported '+REBUILT.length+' levels → '+zn); };
   $('#rb1-exportall').onclick=()=>{ if(!RB1.length){toast('Nothing to export yet');return;} downloadZip('levels-v1-1-50.zip', RB1.map(r=>['Level_'+r.n+'.json',JSON.stringify(r.json,null,2)])); toast('Exported v1: '+RB1.length+' levels → levels-v1-1-50.zip'); };
   $('#wb-import').onclick=()=>$('#wb-file').click();
@@ -1796,15 +1808,97 @@ function rebuildLevel(shipped,n,opts){
    bundle-variant2.py). When present it replaces the generated NEW set in the Compare tab, so the tool shows
    exactly what the game loads — including hand edits made on the Unity side (interleaved boards, swaps). ---- */
 const VARIANT2_VERSION='26c070ba';                                  // bump when variant2.json is regenerated
-let VARIANT2=null;
-async function loadVariant2(){
-  if(VARIANT2) return VARIANT2;
+let VARIANT2=null, VARIANT2_BUNDLED=null;
+const GH_REPO='chardonnay-partners/bubble-word', V2_PATH='Assets/Resources/LevelSets/variant_2';
+async function loadVariant2Bundled(){
+  if(VARIANT2_BUNDLED) return VARIANT2_BUNDLED;
   try{
     const r=await fetch('variant2.json?v='+VARIANT2_VERSION); if(!r.ok) throw 0;
     const b=await r.json(); const byN={}; (b.levels||[]).forEach(x=>byN[x.n]=x.level);
-    VARIANT2={source:b.source||{}, byN};
-  }catch(e){ VARIANT2=null; }
+    VARIANT2_BUNDLED={source:b.source||{}, byN};
+  }catch(e){ VARIANT2_BUNDLED=null; }
+  return VARIANT2_BUNDLED;
+}
+// The set shown = the last synced copy (GitHub or local folder, kept in this browser) else the bundled snapshot.
+async function loadVariant2(){
+  if(VARIANT2) return VARIANT2;
+  const bundled=await loadVariant2Bundled();
+  const synced=await idbGet('variant2_sync');
+  VARIANT2 = (synced&&synced.byN) ? synced : bundled;
+  if(VARIANT2 && bundled && VARIANT2!==bundled){                          // which levels differ from the committed snapshot
+    const ns=new Set([...Object.keys(VARIANT2.byN),...Object.keys(bundled.byN)].map(Number));
+    VARIANT2.changed=[...ns].filter(n=>JSON.stringify(VARIANT2.byN[n]||null)!==JSON.stringify(bundled.byN[n]||null)).sort((a,b)=>a-b);
+  }
   return VARIANT2;
+}
+async function ghFetch(url, token, raw){
+  const headers={Accept: raw?'application/vnd.github.raw+json':'application/vnd.github+json'};
+  if(token) headers.Authorization='Bearer '+token;
+  const r=await fetch(url,{headers});
+  if(!r.ok){
+    if(r.status===401) throw new Error('GitHub rejected the token (401)');
+    if(r.status===403) throw new Error('GitHub refused (403): token lacks Contents: read, or rate-limited');
+    if(r.status===404) throw new Error('Not found (404): private repo without a valid token, or no such branch/folder');
+    throw new Error('GitHub error '+r.status);
+  }
+  return raw ? r.text() : r.json();
+}
+async function syncVariant2FromGitHub(branch, token, onProgress){
+  const base='https://api.github.com/repos/'+GH_REPO;
+  const c=await ghFetch(base+'/commits/'+encodeURIComponent(branch), token);
+  const dir=await ghFetch(base+'/contents/'+V2_PATH+'?ref='+encodeURIComponent(c.sha), token);
+  const files=(Array.isArray(dir)?dir:[]).filter(f=>/^Level_\d+\.json$/.test(f.name)).map(f=>({n:+f.name.match(/\d+/)[0], url:f.url})).sort((a,b)=>a.n-b.n);
+  if(!files.length) throw new Error('No Level_N.json files under '+V2_PATH+' on '+branch);
+  const byN={}; let done=0; const B=8;
+  for(let i=0;i<files.length;i+=B){
+    await Promise.all(files.slice(i,i+B).map(async f=>{ byN[f.n]=JSON.parse(await ghFetch(f.url, token, true)); done++; if(onProgress) onProgress(done,files.length); }));
+  }
+  const when=((c.commit&&c.commit.committer&&c.commit.committer.date)||'').slice(0,10);
+  return {source:{repo:GH_REPO, branch, commit:c.sha.slice(0,7), date:when, path:V2_PATH, via:'github', syncedAt:new Date().toISOString().slice(0,16).replace('T',' ')}, byN};
+}
+async function syncVariant2FromFiles(fileList){
+  const files=[...fileList].filter(f=>/^Level_\d+\.json$/.test(f.name));
+  if(!files.length) throw new Error('No Level_N.json files in that folder');
+  const byN={}; let newest=0;
+  for(const f of files){ byN[+f.name.match(/\d+/)[0]]=JSON.parse(await f.text()); newest=Math.max(newest,f.lastModified||0); }
+  const rel=(files[0].webkitRelativePath||files[0].name).split('/').slice(0,-1).join('/');
+  return {source:{repo:'local checkout', branch:rel||'folder', commit:'', date:newest?new Date(newest).toISOString().slice(0,10):'', path:rel, via:'folder', syncedAt:new Date().toISOString().slice(0,16).replace('T',' ')}, byN};
+}
+async function applyVariant2Sync(v2){
+  await idbSet('variant2_sync', v2);
+  VARIANT2=null; REBUILT=[];
+  await rebuildInit();
+  const ch=(VARIANT2&&VARIANT2.changed)||[];
+  toast(Object.keys(v2.byN).length+' levels loaded'+(ch.length?' · '+ch.length+' differ from the bundled snapshot':' · identical to the bundled snapshot'));
+}
+function variant2SourceLabel(v){
+  if(!v||!v.source) return 'new (generated)';
+  const s=v.source;
+  if(s.via==='github') return 'variant_2 synced from GitHub '+(s.branch||'')+' @ '+(s.commit||'?')+' ('+(s.date||'')+', synced '+(s.syncedAt||'')+')';
+  if(s.via==='folder') return 'variant_2 from local folder '+(s.path||'')+' (files dated '+(s.date||'?')+', loaded '+(s.syncedAt||'')+')';
+  return 'variant_2 bundled snapshot · '+(s.branch||'')+' @ '+(s.commit||'?')+' ('+(s.date||'')+')';
+}
+function initVariant2Sync(){
+  const box=$('#rb-syncbox'), tok=$('#rb-sync-token'), br=$('#rb-sync-branch'), st=$('#rb-sync-status');
+  try{ const saved=localStorage.getItem('bw_gh_token'); if(saved) tok.value=saved; const b=localStorage.getItem('bw_gh_branch'); if(b) br.value=b; }catch(e){}
+  $('#rb-sync').onclick=()=>{ box.hidden=!box.hidden; if(!box.hidden) (tok.value?br:tok).focus(); };
+  $('#rb-sync-go').onclick=async ()=>{
+    const branch=br.value.trim()||'develop', token=tok.value.trim();
+    try{ if($('#rb-sync-remember').checked){ localStorage.setItem('bw_gh_token',token); localStorage.setItem('bw_gh_branch',branch); } else { localStorage.removeItem('bw_gh_token'); } }catch(e){}
+    $('#rb-sync-go').disabled=true; st.textContent='Contacting GitHub…';
+    try{
+      const v2=await syncVariant2FromGitHub(branch, token, (d,t)=>{ st.textContent='Fetching levels '+d+'/'+t+'…'; });
+      st.textContent='Synced '+Object.keys(v2.byN).length+' levels @ '+v2.source.commit;
+      await applyVariant2Sync(v2);
+    }catch(e){ st.textContent='✗ '+(e.message||e); }
+    $('#rb-sync-go').disabled=false;
+  };
+  $('#rb-sync-reset').onclick=async ()=>{ await idbDel('variant2_sync'); VARIANT2=null; REBUILT=[]; st.textContent='Showing the bundled snapshot'; await rebuildInit(); };
+  $('#rb-folder').onchange=async ev=>{
+    const files=ev.target.files; ev.target.value='';
+    try{ const v2=await syncVariant2FromFiles(files); box.hidden=false; st.textContent='Loaded '+Object.keys(v2.byN).length+' levels from '+v2.source.path; await applyVariant2Sync(v2); }
+    catch(e){ toast(e.message||String(e)); }
+  };
 }
 // Wrap a shipped variant_2 level file in the shape renderRebuild() expects (the fields rebuildLevel() returns).
 function fromUnityLevel(json,n,shipped,pool){
@@ -1881,21 +1975,22 @@ async function rebuildInit(){
   REBUILT=[];
   const sp=seedPool(), gp=curatedPool();                   // New set: vetted pool (was the gated Word Solitaire pool)
   const usedCur={}, usedNew={};                            // cross-level usage → reduce category repetition
-  const v2=await loadVariant2();                           // the set as committed in Unity, when bundled
-  for(let n=1;n<=50;n++){ if(byN[n]){
+  const v2=await loadVariant2();                           // the set as committed in Unity (synced or bundled)
+  const maxN=Math.max(50, ...Object.keys(v2?v2.byN:{}).map(Number));
+  for(let n=1;n<=maxN;n++){ if(byN[n]){
     const cur=rebuildLevel(byN[n],n,{pool:sp, used:usedCur});             // Current: original curated pool
-    const nw = v2&&v2.byN[n] ? fromUnityLevel(v2.byN[n],n,byN[n],gp)        // New: Unity variant_2 (source of truth)
+    const nw = v2&&v2.byN[n] ? Object.assign(fromUnityLevel(v2.byN[n],n,byN[n],gp),{changed:!!(v2.changed&&v2.changed.includes(n))})  // New: Unity variant_2 (source of truth)
              : rebuildLevel(byN[n],n,{pool:gp,images:true,curated:true, used:usedNew});  // …or generated: curated pool, 30% pictures, harder from L11
     REBUILT.push({n, old:byN[n], cur, nw});
   }}
-  $('#rb-exportall').textContent = v2 ? '⭳ Export variant_2 (50)' : '⭳ Export NEW set (50)';
+  $('#rb-exportall').textContent = v2 ? '⭳ Export variant_2 ('+REBUILT.length+')' : '⭳ Export NEW set ('+REBUILT.length+')';
   renderRebuildChart();
   renderRebuild();
 }
 function renderRebuild(){
   const host=$('#rb-list'); host.innerHTML='';
-  const src=VARIANT2&&VARIANT2.source;
-  $('#rb-count').textContent=REBUILT.length+' levels · 3 sets: default · current · '+(src?'variant_2 (Unity '+(src.branch||'')+' @ '+(src.commit||'?')+', '+(src.date||'')+')':'new (generated)');
+  const ch=(VARIANT2&&VARIANT2.changed)||[];
+  $('#rb-count').textContent=REBUILT.length+' levels · default · current · '+variant2SourceLabel(VARIANT2)+(ch.length?' · '+ch.length+' changed vs bundled: '+ch.join(', '):'');
   REBUILT.forEach(r=>{
     const nw=r.nw;
     const open=rebuildExpanded.has(r.n);
@@ -1916,6 +2011,7 @@ function renderRebuild(){
     { const ni=nw.level.categories.filter(c=>c.isImage).length; meta.appendChild(el('span',{title:ni+' picture categor'+(ni===1?'y':'ies')+' (30% of categories)'+(nw.curated?' · curated':'')},'🖼 '+ni+(nw.curated?' ✎':''))); }
     if((nw.level.frozenBubbles||[]).length) meta.appendChild(el('span',{title:'frozen (unlocks L31)'},'❄'));
     if(nw.level.useBubbleSeparator) meta.appendChild(el('span',{title:'separator (unlocks L21)'},'⛓'));
+    if(nw.changed) meta.appendChild(el('span',{class:'pill',style:{borderColor:'var(--accent)',color:'var(--accent)'},title:'differs from the bundled snapshot committed with the tool'},'changed'));
     mid.appendChild(meta);
     head.appendChild(mid);
     const oc=el('div',{class:'open'});
