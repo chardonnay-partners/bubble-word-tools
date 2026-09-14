@@ -7,3 +7,7 @@ wordbank.json
 # WCG game-content pool (real game words) — kept out of the public repo
 word-content-generator/data/categories/*.json
 word-content-generator/data/localization.csv
+
+# fill_meanings.py scratch output (the cache is tracked, the report is not)
+level-generator/meanings_report.txt
+__pycache__/
