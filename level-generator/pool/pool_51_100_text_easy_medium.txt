@@ -1,0 +1,1006 @@
+# Text categories (no pictures) for variant_2 levels 51-100: Easy and Medium.
+#   Name | tier(1-4) | domain
+#   Word=meaning
+
+Bed | 1 | home
+Pillow=the soft cushion under your head
+Sheet=the thin cloth you lie on
+Quilt=a padded stitched cover
+Duvet=a thick fluffy top cover
+Mattress=the thick pad you sleep on
+Headboard=the upright panel at the top end
+
+Animal Sounds | 1 | sound
+Moo=the sound a cow makes
+Woof=the sound a dog makes
+Meow=the sound a cat makes
+Oink=the sound a pig makes
+Quack=the sound a duck makes
+Neigh=the sound a horse makes
+Roar=the sound a lion makes
+
+Birthday | 1 | events
+Cake=the sweet treat topped with candles
+Candles=the little flames you blow out
+Balloons=colorful air-filled decorations
+Gifts=wrapped presents
+Wishes=what you make before blowing out the candles
+Surprise=a party the guest of honor does not expect
+
+Picnic | 1 | outdoors
+Sandwich=bread with a filling, packed to go
+Thermos=a flask that keeps drinks hot or cold
+Ants=the tiny uninvited guests
+Cooler=an insulated box for cold food
+Tablecloth=the cloth spread on the grass
+Frisbee=the flying disc you toss after lunch
+
+Morning | 1 | routine
+Breakfast=the first meal of the day
+Yawn=a big sleepy open-mouthed breath
+Stretch=reaching out to wake up your body
+Sunrise=when the sun comes up
+Commute=the trip to work
+Snooze=the button for five more minutes
+
+Bedtime | 1 | routine
+Pajamas=the clothes you sleep in
+Lullaby=a gentle song to help a baby sleep
+Nightlight=a dim lamp left on in the dark
+Storybook=what a parent reads aloud
+Dreams=the stories your mind tells while you sleep
+Snore=a noisy breath while sleeping
+
+Post Office | 1 | mail
+Stamp=the small sticker that pays for delivery
+Envelope=the paper cover a letter goes in
+Parcel=a wrapped package
+Mailbox=the box where letters are dropped
+Courier=a person who delivers packages
+Postmark=the ink mark showing when it was sent
+
+House Parts | 1 | home
+Basement=the floor below ground
+Porch=a covered area by the front door
+Chimney=the pipe that carries smoke out
+Gutter=the channel that drains rain from the roof
+Staircase=the steps between floors
+Balcony=a platform that juts out from an upper floor
+
+Summer | 1 | weather
+Beach=the sandy shore where people sunbathe
+Vacation=time off for a trip
+Heatwave=a stretch of very hot days
+Popsicle=flavored ice on a stick
+Flipflops=flat sandals with a toe strap
+Tan=skin browned by the sun
+
+Dairy | 1 | food
+Milk=the white drink from cows
+Butter=a yellow spread churned from cream
+Yogurt=a thick tangy cultured food
+Cheese=a solid food pressed from curds
+Kefir=a sour fermented drink
+Whey=the watery part left after curdling
+
+Pet Care | 1 | animal
+Leash=the lead used for walking a dog
+Kennel=a shelter or boarding place for dogs
+Groomer=the person who washes and trims a pet
+Vet=the animal doctor
+Treats=small rewards for good behavior
+Litter=the gravel in a cat's tray
+
+Dog Commands | 1 | animal
+Sit=bottom on the floor
+Stay=do not move
+Fetch=go get it and bring it back
+Heel=walk right beside me
+Shake=give me your paw
+Rollover=turn all the way onto your back and up
+
+Fairy Tales | 1 | culture
+Cinderella=the girl with the glass slipper
+Rapunzel=the girl with the very long hair
+Pinocchio=the wooden puppet whose nose grows
+Aladdin=the boy with the magic lamp
+Goldilocks=the girl who visits three bears
+Thumbelina=the tiny girl born from a flower
+
+Restaurant | 1 | dining
+Menu=the list of dishes
+Waiter=the person who brings your food
+Tip=extra money left for good service
+Appetizer=a small dish before the main course
+Napkin=the cloth for wiping your mouth
+Entree=the main dish
+
+Supermarket | 1 | shopping
+Aisle=a walkway between the shelves
+Cashier=the person who rings you up
+Checkout=where you pay
+Trolley=the wheeled cart you push
+Shelf=where the products are displayed
+Freezer=the cold case for frozen food
+
+Traits | 1 | mind
+Shy=nervous around new people
+Bold=not afraid to take risks
+Witty=quick with clever humor
+Moody=changing feelings often
+Stubborn=refusing to change your mind
+Cheerful=bright and happy
+
+Hair Care | 1 | home
+Hairspray=a mist that holds a style in place
+Gel=a sticky product for shaping hair
+Brush=a bristled tool for smoothing hair
+Curler=a roller that makes waves
+Mousse=a foam that adds volume
+Serum=a smoothing oil for shine
+
+Airport | 2 | transport
+Terminal=the building passengers pass through
+Customs=where your bags are checked at the border
+Boarding=getting onto the plane
+Baggage=the suitcases you travel with
+Security=the checkpoint with scanners
+Layover=a stop between two flights
+
+Hotel | 2 | travel
+Lobby=the entrance hall
+Concierge=the staff member who arranges things for guests
+Suite=a set of connected rooms
+Reception=the front desk
+Minibar=the small fridge of drinks in the room
+Bellhop=the person who carries your bags
+
+At the Movies | 2 | leisure
+Screen=the big surface the film is shown on
+Trailer=a short preview of a coming film
+Usher=the person who shows you to your seat
+Premiere=the first public showing
+Credits=the list of names at the end
+Matinee=an afternoon showing
+
+Filmmaking | 2 | media
+Director=the person in charge of the shoot
+Script=the written dialogue and action
+Casting=choosing the actors
+Stunt=a dangerous action done by a double
+Editing=cutting the footage together
+Cameo=a brief appearance by a famous person
+
+Bank | 2 | money
+Vault=the strongroom where money is kept
+Teller=the clerk at the counter
+Loan=money borrowed and paid back
+Deposit=money put into an account
+Interest=the extra paid on money borrowed or saved
+Account=your record of money held
+
+Gardening | 2 | plants
+Seeds=what you plant to grow something
+Soil=the earth plants grow in
+Compost=rotted scraps that feed the soil
+Weeds=unwanted plants you pull out
+Mulch=a layer spread to keep soil moist
+Prune=to cut back branches
+
+Office Life | 2 | jobs
+Cubicle=a small partitioned work space
+Memo=a short written note to staff
+Meeting=when everyone gathers to talk
+Deadline=the time work must be finished
+Boss=the person you report to
+Intern=a trainee gaining experience
+
+Yoga | 2 | sport
+Asana=a posture
+Mat=the padded strip you practice on
+Namaste=the greeting said with palms together
+Chakra=an energy center in the body
+Mantra=a word repeated to focus the mind
+Warrior=a strong lunging pose
+
+Spa | 2 | wellness
+Massage=rubbing muscles to relax them
+Sauna=a hot dry room for sweating
+Facial=a skin treatment for the face
+Manicure=a treatment for the hands and nails
+Pedicure=a treatment for the feet and nails
+Steam=a hot misty room
+
+Fishing | 2 | outdoors
+Rod=the long pole
+Reel=the spool that winds the line
+Bait=food that attracts the catch
+Lure=a fake bait
+Tackle=the gear an angler carries
+Bobber=the float that shows a bite
+
+Skiing | 2 | sport
+Lift=the chair that carries you up the mountain
+Poles=the sticks held in each hand
+Goggles=eyewear that blocks snow glare
+Mogul=a bump on the slope
+Chalet=a wooden mountain lodge
+Piste=a marked groomed run
+
+Surfing | 2 | sport
+Wave=the moving wall of water you ride
+Wetsuit=a rubber suit that keeps you warm
+Wipeout=a fall off the board
+Reef=the rocky seabed that shapes the break
+Swell=a series of incoming ocean waves
+Longboard=a big stable board
+
+Team Sports | 2 | sport
+Soccer=eleven players kicking a ball into a goal
+Hockey=skaters hitting a puck with sticks
+Rugby=an oval ball carried over the line
+Volleyball=hitting a ball over a high net
+Handball=throwing a ball into a goal
+Lacrosse=a ball carried in a netted stick
+
+Soccer | 2 | sport
+Goal=when the ball crosses the line
+Penalty=a free shot from twelve yards
+Offside=being ahead of the last defender too early
+Corner=a kick from the corner flag
+Striker=the player who scores
+Keeper=the player who guards the net
+
+Hockey | 2 | sport
+Puck=the hard rubber disc
+Rink=the sheet of ice
+Goalie=the player who guards the net
+Faceoff=dropping the puck to start play
+Slapshot=a hard swinging shot
+Zamboni=the machine that smooths the ice
+
+Gaming Terms | 2 | game
+Quest=a mission to complete
+Respawn=coming back to life after dying
+Lag=a delay that slows the game
+Loot=items collected from defeated enemies
+Avatar=the character that represents you
+Checkpoint=a place your progress is saved
+
+Photography | 2 | media
+Shutter=the part that opens to let light in
+Tripod=a three-legged camera stand
+Flash=a burst of light for dark scenes
+Focus=making the subject sharp
+Exposure=how much light reaches the sensor
+Aperture=the opening that controls light
+
+Newspaper | 2 | media
+Headline=the big title of a story
+Editor=the person who decides what gets printed
+Byline=the line naming the writer
+Scoop=a story published before anyone else
+Editorial=an opinion piece by the paper
+Tabloid=a paper full of gossip and scandal
+
+TV Shows | 2 | media
+Sitcom=a comedy with a regular cast
+Episode=one part of a series
+Finale=the last episode of a season
+Rerun=a repeat of an old episode
+Spinoff=a new show based on another
+Cliffhanger=an ending that leaves you in suspense
+
+Social Media | 2 | internet
+Hashtag=a word tagged with a pound sign
+Selfie=a photo you take of yourself
+Follower=someone who subscribes to your posts
+Meme=a joke image shared online
+Viral=spreading very fast online
+Emoji=a small picture that shows a feeling
+
+Internet | 2 | internet
+Browser=the program you use to view websites
+Router=the box that shares your connection
+Password=the secret word that logs you in
+Download=copying a file to your device
+Firewall=a barrier that blocks intruders
+Bandwidth=how much data a connection can carry
+
+Money Matters | 2 | money
+Budget=a plan for spending
+Savings=money set aside
+Salary=regular pay for a job
+Tax=money paid to the government
+Rent=money paid to live somewhere
+Debt=money that is owed
+
+Detective | 2 | law
+Alibi=proof you were somewhere else
+Clue=a piece of evidence
+Motive=the reason for a crime
+Suspect=a person thought to be guilty
+Sleuth=another word for an investigator
+Fingerprint=the mark left by a fingertip
+
+Elections | 2 | politics
+Ballot=the paper you mark your choice on
+Poll=a survey of opinion
+Candidate=a person running for office
+Debate=a public argument between rivals
+Vote=your choice in an election
+Runoff=a second round between the top two
+
+Military Ranks | 2 | military
+General=the highest army officer
+Colonel=the officer who commands a regiment
+Major=the officer above a captain
+Captain=the officer who leads a company
+Sergeant=a senior enlisted soldier
+Private=the lowest soldier
+Admiral=the highest naval officer
+
+Space Travel | 2 | space
+Astronaut=a person trained to fly in space
+Orbit=the path around a planet
+Rocket=the vehicle that blasts off
+Shuttle=a reusable spacecraft
+Launch=the moment of liftoff
+Spacewalk=working outside the craft
+
+Natural Disasters | 2 | weather
+Earthquake=a violent shaking of the ground
+Tsunami=a giant wave caused by an undersea quake
+Wildfire=a blaze that spreads through forest
+Flood=water covering normally dry land
+Drought=a long period without rain
+Landslide=earth and rock sliding down a slope
+
+Mexico | 2 | places
+Mariachi=a band with trumpets and guitars
+Aztec=the empire that built Tenochtitlan
+Cancun=a beach resort on the Caribbean coast
+Tequila=a spirit made from agave
+Fiesta=a lively celebration
+Maya=the people who built Chichen Itza
+
+New York | 2 | places
+Broadway=the street famous for theater
+Harlem=the uptown neighborhood known for jazz
+Bronx=the northern borough, home of the Yankees
+Brooklyn=the borough across the famous bridge
+Manhattan=the island at the heart of the city
+Queens=the largest borough by area
+
+Book Genres | 2 | books
+Fantasy=stories of magic and other worlds
+Mystery=a story built around solving a crime
+Satire=writing that mocks through humor
+Biography=the story of a real person's life
+Dystopia=a story set in a grim future society
+Whodunit=a puzzle about who committed the murder
+
+Book Parts | 2 | books
+Chapter=a main division of a book
+Preface=the author's introduction
+Index=the alphabetical list at the back
+Glossary=a list of terms and meanings
+Epilogue=a short section after the ending
+Appendix=extra material at the back
+
+Greetings | 2 | language
+Hola=hello in Spanish
+Bonjour=hello in French
+Ciao=hello in Italian
+Aloha=hello in Hawaiian
+Shalom=hello in Hebrew
+Hallo=hello in German
+
+Holidays | 2 | events
+Christmas=the December holiday with gifts and trees
+Easter=the spring holiday with eggs
+Halloween=the night of costumes and candy
+Diwali=the festival of lights
+Hanukkah=the eight-night festival of candles
+Passover=the spring holiday of the seder meal
+
+US Presidents | 2 | people
+Lincoln=the president who ended slavery
+Jefferson=the author of the Declaration of Independence
+Kennedy=the young president shot in Dallas
+Obama=the first Black president
+Reagan=the former actor elected in 1980
+Roosevelt=the president of the New Deal
+Truman=the president who ended World War Two
+
+Inventions | 2 | science
+Wheel=the round device that changed transport
+Telephone=the device that carries voices over wires
+Lightbulb=the glass globe that gives electric light
+Radio=the device that receives broadcast sound
+Telescope=the tube that brings distant objects near
+Penicillin=the first antibiotic
+
+States of Matter | 2 | science
+Solid=matter that keeps its shape
+Liquid=matter that flows and takes the shape of its container
+Gas=matter that spreads to fill any space
+Plasma=superheated charged matter, as in stars
+
+Human Organs | 2 | body
+Heart=the pump that moves blood
+Liver=the organ that filters the blood
+Kidney=the organ that makes urine
+Lungs=the organs you breathe with
+Brain=the organ that thinks
+Stomach=the organ that digests food
+Spleen=the organ that stores blood cells
+
+Pharmacy | 2 | medicine
+Pill=a small solid dose of medicine
+Syrup=a sweet liquid medicine
+Dose=the amount to take at one time
+Lozenge=a tablet that soothes the throat
+Inhaler=a puffer for breathing problems
+Refill=a repeat supply of a prescription
+
+Business | 2 | economy
+Startup=a newly founded company
+Merger=two companies joining into one
+Profit=money left after costs
+Brand=the name and image of a product
+Revenue=the money a company takes in
+Investor=a person who puts money into a company
+
+Building Site | 2 | building
+Scaffold=the temporary frame workers stand on
+Hardhat=the protective helmet
+Bulldozer=a machine that pushes earth
+Blueprint=the technical drawing of the plan
+Foreman=the worker in charge of the crew
+Digger=a machine with a scooping arm
+
+Flooring | 2 | home
+Carpet=a soft woven covering
+Tile=a flat square of ceramic
+Parquet=wood blocks laid in a pattern
+Laminate=a printed board that imitates wood
+Linoleum=a smooth washable sheet
+Vinyl=a plastic sheet or plank
+
+Cocktails | 2 | drink
+Mojito=rum with mint and lime
+Martini=gin and vermouth with an olive
+Margarita=tequila and lime with a salted rim
+Daiquiri=rum shaken with lime and sugar
+Negroni=gin, vermouth and bitter red liqueur
+Sangria=wine mixed with chopped fruit
+
+Sandwich | 2 | food
+Panini=a pressed and grilled roll
+Club=three layers with turkey and bacon
+Sub=a long roll with fillings
+Wrap=a filling rolled in a flatbread
+Reuben=corned beef with sauerkraut on rye
+Melt=a filling grilled with cheese on top
+
+Potatoes | 2 | food
+Fries=thin strips deep fried
+Mash=boiled and crushed with butter
+Wedges=thick chunky slices baked or fried
+Gnocchi=small Italian dumplings
+Latke=a fried grated pancake
+Rosti=a Swiss fried grated cake
+
+BBQ | 2 | food
+Ribs=meaty bones cooked low and slow
+Brisket=a tough beef cut smoked for hours
+Coals=the glowing fuel under the grate
+Marinade=a sauce meat soaks in before cooking
+Smoker=a cooker that flavors with wood smoke
+Rub=a dry spice mix pressed onto meat
+
+Baking | 2 | food
+Flour=ground wheat
+Yeast=the fungus that makes dough rise
+Dough=the soft mix before it goes in the oven
+Knead=to work the dough with your hands
+Glaze=a shiny sweet coating
+Sift=to shake through a mesh to remove lumps
+
+Pizza | 2 | food
+Crust=the baked bread edge
+Mozzarella=the stretchy white cheese on top
+Pepperoni=spicy sliced sausage
+Slice=one triangular piece
+Marinara=the tomato sauce
+Calzone=a folded stuffed version
+
+Burger | 2 | food
+Patty=the disc of ground beef
+Bun=the round bread
+Pickle=a sour sliced cucumber
+Bacon=crispy strips of pork
+Sesame=the seeds on top of the bread
+Slider=a mini version
+
+Milk | 2 | food
+Skim=with the fat removed
+Oat=a plant version made from a cereal
+Almond=a plant version made from a nut
+Soy=a plant version made from a bean
+Condensed=thick and sweetened in a can
+Evaporated=canned with much of the water removed
+
+Texas | 2 | places
+Austin=the state capital, known for live music
+Houston=the biggest city, home of mission control
+Alamo=the mission fort remembered in San Antonio
+Rodeo=a contest of riding and roping
+Longhorn=the state's famous cattle
+Panhandle=the square northern part of the state
+
+California | 2 | places
+Hollywood=the home of the film industry
+Napa=the valley famous for wine
+Malibu=a beach city of surfers and stars
+Yosemite=the national park of granite cliffs
+Redwoods=the tallest trees on Earth
+Alcatraz=the island prison in San Francisco Bay
+
+Florida | 2 | places
+Orlando=the city of theme parks
+Tampa=a big city on the Gulf coast
+Everglades=the vast swamp in the south
+Gators=the reptiles that fill the swamps
+Keys=the chain of islands off the southern tip
+Daytona=the beach city famous for car racing
+
+Hawaii | 2 | places
+Luau=a feast with music and dancing
+Hula=the traditional swaying dance
+Lei=a garland of flowers worn round the neck
+Maui=the island with the Haleakala crater
+Oahu=the island where Honolulu is
+Waikiki=the famous beach in Honolulu
+
+Garage | 2 | home
+Car=the vehicle parked inside
+Toolbox=a case for wrenches and screwdrivers
+Workbench=a sturdy table for repairs
+Jack=a device that lifts a vehicle
+Shelves=boards on the wall for storage
+Oilcan=a small can with a long spout
+
+Museum | 2 | building
+Exhibit=a display for visitors
+Curator=the person who looks after the collection
+Gallery=a room where art is shown
+Artifact=an object made by people long ago
+Fossil=the preserved remains of an ancient creature
+Docent=a guide who leads tours
+
+Library | 2 | building
+Librarian=the person who runs the place
+Catalog=the list of everything held
+Archive=a store of old records
+Overdue=returned later than allowed
+Hush=what you are asked to do inside
+Stacks=the rows of shelving
+
+Jeans | 2 | clothing
+Denim=the sturdy blue cotton cloth
+Zipper=the metal fastener at the fly
+Inseam=the length down the inside leg
+Bootcut=a leg that flares slightly at the bottom
+Skinny=a very tight fit
+Stonewash=a faded worn look
+
+Sweater | 2 | clothing
+Cardigan=a knit that buttons down the front
+Pullover=a knit pulled on over the head
+Turtleneck=a knit with a high folded collar
+Cashmere=very soft wool from goats
+Crewneck=a plain round neckline
+Knit=made of looped yarn
+
+Phone | 2 | tech
+Ringtone=the sound of an incoming call
+Voicemail=a recorded spoken message
+Contacts=your saved names and numbers
+Dial=to enter a number
+Signal=the bars that show reception
+Roaming=using a network away from home
+
+Snow | 2 | weather
+Flurry=a brief light fall
+Drift=a pile heaped up by the wind
+Slush=a half-melted wet mess
+Sleet=a mix with rain
+Powder=fresh, dry and light
+Avalanche=a mass sliding down a mountain
+
+Autumn | 2 | weather
+Harvest=gathering the ripe crops
+Leaves=what turns red and gold and falls
+Acorn=the nut of the oak
+Cider=a drink pressed from apples
+Foliage=the colorful tree canopy
+Hayride=a wagon ride on bales
+
+Spring | 2 | weather
+Blossom=flowers opening on trees
+Thaw=ice and snow melting
+Showers=the light rains of April
+Sprout=a new shoot pushing up
+Nest=what birds build for their eggs
+Equinox=the day when light and dark are equal
+
+Angry | 2 | body
+Furious=extremely mad
+Livid=so mad you turn pale
+Irate=very annoyed
+Fuming=silently boiling
+Enraged=pushed into a rage
+Cross=mildly annoyed
+
+Happy | 2 | body
+Glad=pleased
+Merry=full of festive cheer
+Jolly=round and laughing
+Content=peacefully satisfied
+Elated=thrilled and lifted up
+Upbeat=positive and lively
+
+Scared | 2 | body
+Afraid=feeling fear
+Fearful=full of dread
+Spooked=suddenly startled
+Petrified=frozen stiff with fear
+Alarmed=suddenly worried by danger
+Terrified=extremely frightened
+
+Worried | 2 | body
+Anxious=uneasy about what may happen
+Nervous=on edge
+Uneasy=not comfortable
+Tense=tight and unable to relax
+Fretful=constantly fussing
+Restless=unable to keep still
+
+Sad | 2 | body
+Gloomy=dark and low in spirits
+Glum=quietly miserable
+Tearful=close to crying
+Somber=serious and heavy
+Mournful=full of grief
+Downcast=low with eyes lowered
+
+Big | 2 | words
+Huge=very large
+Giant=as large as a fairy-tale ogre
+Vast=stretching far and wide
+Massive=large and heavy
+Colossal=as large as an ancient statue
+Immense=too large to measure
+
+Small | 2 | words
+Tiny=very little
+Mini=a shrunken version
+Petite=small and slim
+Wee=a Scottish word for little
+Compact=neatly fitted into little space
+Little=not big
+
+Fast | 2 | words
+Quick=done in little time
+Rapid=moving at great speed
+Swift=smooth and speedy
+Speedy=going at a high rate
+Brisk=lively and energetic
+Hasty=rushed and careless
+
+Smart | 2 | words
+Clever=quick to understand
+Bright=quick to learn
+Brainy=good at school subjects
+Genius=exceptionally gifted
+Astute=sharp at judging situations
+Savvy=having practical know-how
+
+Ways to Talk | 2 | words
+Chat=a friendly casual exchange
+Gossip=talk about other people's business
+Whisper=very quiet speech
+Mumble=unclear low speech
+Babble=fast meaningless chatter
+Rant=a long angry speech
+
+Ways to Look | 2 | words
+Glance=a quick brief look
+Stare=a long fixed look
+Peek=a quick secret look
+Gaze=a long steady admiring look
+Glimpse=a brief partial view
+Squint=looking through half-closed eyes
+
+Sun Words | 2 | wordplay
+Sunset=when the day ends
+Sunburn=red skin from too many rays
+Sundial=a clock that uses a shadow
+Sunroof=a panel that opens in a car's top
+Sunbeam=a ray of light
+Sunglasses=dark lenses for bright days
+
+Fire Words | 2 | wordplay
+Firefly=a beetle that glows at night
+Fireworks=explosions of color in the sky
+Fireman=a person who puts out blazes
+Firewood=logs for burning
+Firearm=a gun
+Fireball=a blazing sphere
+
+Water Words | 2 | wordplay
+Waterfall=a river dropping over a cliff
+Watermelon=a big green fruit with red flesh
+Waterbed=a mattress filled with liquid
+Waterproof=keeping you dry
+Watercolor=paint thinned for soft washes
+Watermark=a faint design in paper
+
+Snow Words | 2 | wordplay
+Snowball=a packed ball for throwing
+Snowflake=a single six-sided ice crystal
+Snowboard=a single wide board for slopes
+Snowstorm=a heavy fall with wind
+Snowshoe=a wide frame for walking on deep drifts
+Snowplow=a truck that clears the roads
+
+Moon Words | 2 | wordplay
+Moonlight=the glow of the night sky
+Moonwalk=a dance step that glides backward
+Moonshine=illegally made liquor
+Moonbeam=a ray of lunar light
+Moonstone=a milky gem
+Honeymoon=a trip taken by newlyweds
+
+Star Words | 2 | wordplay
+Stardust=glittering cosmic particles
+Starlight=the glow of distant suns
+Starship=a vessel that travels between suns
+Stargazer=a person who watches the night sky
+Superstar=a hugely famous performer
+Starburst=a pattern of rays from a center
+
+Book Words | 2 | wordplay
+Bookmark=a strip that keeps your place
+Bookworm=a person who reads all the time
+Bookstore=a shop that sells reading
+Cookbook=a collection of recipes
+Handbook=a guide with instructions
+Yearbook=a school's annual photo album
+
+House Words | 2 | wordplay
+Greenhouse=a glass building for plants
+Treehouse=a playhouse up in the branches
+Doghouse=a shelter for a pet
+Boathouse=a shed at the water's edge
+Clubhouse=a meeting place for members
+Lighthouse=a tower that guides ships
+
+Foot Words | 2 | wordplay
+Footprint=the mark left by a step
+Footstep=the sound of someone walking
+Footnote=a note at the bottom of a page
+Barefoot=without shoes
+Foothill=a low hill at the base of a mountain
+Footpath=a narrow walking trail
+
+Head Words | 2 | wordplay
+Headache=a pain above the neck
+Headlight=a lamp at the front of a car
+Headband=a strip worn around the hair
+Headstrong=stubborn and determined
+Headway=forward progress
+Headrest=the cushion at the top of a seat
+
+Eye Words | 2 | wordplay
+Eyebrow=the arch of hair above the lid
+Eyelash=a hair on the edge of the lid
+Eyesight=the ability to see
+Eyewitness=a person who saw it happen
+Eyesore=something ugly to look at
+Eyeball=the round organ of sight
+
+Day Words | 2 | wordplay
+Daylight=natural light
+Daydream=a pleasant wandering thought
+Daybreak=dawn
+Payday=when wages arrive
+Weekday=Monday through Friday
+Doomsday=the end of the world
+
+Night Words | 2 | wordplay
+Nightmare=a frightening dream
+Nightfall=when darkness arrives
+Nightclub=a late venue for dancing
+Nightgown=a loose dress for sleeping
+Midnight=twelve o'clock in the dark
+Overnight=lasting until morning
+
+Sea Words | 2 | wordplay
+Seashell=the empty home of a mollusk
+Seaweed=plants that grow in salt water
+Seagull=a noisy white coastal bird
+Seahorse=a tiny fish with a curled tail
+Seaside=the coast as a holiday place
+Seasick=queasy from the waves
+
+Sound Words | 2 | sound
+Buzz=the hum of a bee
+Bang=a sudden loud noise
+Splash=something hitting water
+Sizzle=food frying in a hot pan
+Whoosh=something rushing past
+Thud=a heavy dull landing
+
+Lengths | 2 | math
+Inch=one twelfth of a foot
+Yard=three feet
+Mile=1,760 yards
+Meter=the basic metric unit
+Fathom=six feet of water depth
+Furlong=an eighth of a mile, used in horse racing
+
+Fractions | 2 | math
+Half=one of two equal parts
+Third=one of three equal parts
+Fifth=one of five equal parts
+Sixth=one of six equal parts
+Eighth=one of eight equal parts
+Tenth=one of ten equal parts
+
+Big Numbers | 2 | math
+Thousand=a one followed by three zeros
+Million=a one followed by six zeros
+Billion=a one followed by nine zeros
+Trillion=a one followed by twelve zeros
+Googol=a one followed by a hundred zeros
+Myriad=an old word for ten thousand, or countless
+
+Electricity | 2 | science
+Volt=the unit of electrical pressure
+Amp=the unit of current
+Watt=the unit of power
+Ohm=the unit of resistance
+Current=the flow of charge
+Socket=the wall outlet you plug into
+
+Cyber Threats | 2 | tech
+Malware=software built to cause harm
+Phishing=fake messages that steal your details
+Virus=code that copies itself between files
+Hacker=a person who breaks into systems
+Trojan=a harmful program disguised as a useful one
+Spyware=software that secretly watches you
+
+Athletics | 2 | sport
+Hurdles=a race over barriers
+Javelin=a spear thrown for distance
+Discus=a heavy disc thrown for distance
+Relay=a race where a baton is passed
+Sprint=a short race at full speed
+Marathon=a road race of 26 miles
+
+Water Sports | 2 | sport
+Rowing=racing a boat with oars
+Sailing=racing a boat by wind
+Rafting=riding rapids in an inflatable
+Canoeing=paddling a narrow open boat
+Waterski=being towed on skis behind a boat
+Kitesurf=riding a board pulled by a kite
+
+Magic Show | 2 | magic
+Illusion=a trick that fools the eye
+Trick=a feat that seems impossible
+Vanish=to make something disappear
+Levitate=to float in the air
+Abracadabra=the classic magic word
+Tophat=where the rabbit comes from
+
+College | 2 | school
+Dorm=the building where students live
+Campus=the grounds of a university
+Lecture=a talk given to a large class
+Degree=what you earn by graduating
+Thesis=a long research paper
+Tuition=the fee for teaching
+
+Road Signs | 2 | transport
+Stop=the red octagon
+Yield=let other traffic go first
+Detour=follow a different route
+Merge=lanes are joining
+Crossing=people or animals may be in the road
+Caution=slow down, hazard ahead
+
+Map Terms | 2 | geo
+Legend=the key that explains the symbols
+Scale=the ratio of map distance to real distance
+Atlas=a book of maps
+Latitude=distance north or south of the equator
+Equator=the line around the middle of the Earth
+Meridian=a line running from pole to pole
+
+Arctic | 2 | polar
+Walrus=a large tusked sea mammal
+Narwhal=a whale with a long spiral tusk
+Seal=a sleek flippered sea mammal
+Husky=a sled dog
+Aurora=the northern lights
+Tundra=frozen treeless plain
+
+Animal Homes | 2 | animal
+Den=where a fox or bear lives
+Burrow=a hole dug by a rabbit
+Lair=where a wild beast hides
+Warren=a network of rabbit tunnels
+Lodge=a beaver's home of sticks
+Coop=where chickens are kept
+Roost=where birds perch to sleep
+
+Bee | 2 | animal
+Hive=the home of the colony
+Honey=the sweet food made from nectar
+Pollen=the yellow dust carried between flowers
+Swarm=a flying mass leaving to start a new colony
+Nectar=the sweet liquid collected from flowers
+Sting=the painful defense
+
+Ant | 2 | animal
+Colony=the whole community living together
+Worker=a member that gathers food
+Tunnel=a passage dug underground
+Mound=the heap of earth above the nest
+Antenna=a feeler on the head
+Larva=the grub stage before adulthood
+
+Cow | 2 | animal
+Udder=the bag that holds the milk
+Calf=the baby
+Cud=food brought back up to chew again
+Herd=a group grazing together
+Hoof=the hard split foot
+Heifer=a young female that has not had a calf
+
+Pig | 2 | animal
+Snout=the flat nose used for rooting
+Sty=the pen where it lives
+Piglet=the baby
+Trotter=the foot
+Hog=a large domestic one
+Boar=a wild male with tusks
+
+Rose | 2 | plants
+Thorn=the sharp point on the stem
+Petal=one of the soft colored parts
+Bud=the flower before it opens
+Stem=the stalk that holds the flower
+Rosehip=the red fruit left after flowering
+Bloom=the flower fully open
+
+Pine | 2 | plants
+Cone=the woody seed case
+Needles=the thin pointed leaves
+Resin=the sticky sap that oozes from the bark
+Sap=the liquid that flows inside the tree
+Evergreen=keeping its leaves all year
+Fir=a close relative used as a Christmas tree
+
+Gold | 2 | science
+Nugget=a natural lump found in a stream
+Karat=the measure of purity
+Bullion=bars held as wealth
+Ingot=a block cast in a mould
+Gilt=a thin layer covering a surface
+Prospector=a person who searches for it

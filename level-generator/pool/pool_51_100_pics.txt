@@ -1,0 +1,552 @@
+# Picture categories for variant_2 levels 51-100.  Format per block:
+#   Name | tier(1-4) | domain | default illustration set
+#   Word=meaning            (sprite = <default set>__<word lowercased>)
+#   Word@set=meaning        (sprite from another set)
+# Sprites are Word Solitaire card illustrations; every id is checked against the library by build_pool.py.
+
+Pirates | 1 | pirate | buccaneer
+Cannon=a big ship gun that fires iron balls
+Eyepatch=a patch worn over one eye
+Hook=a curved metal hand
+Skull=the bony head on a pirate flag
+Treasure=gold and jewels hidden in a chest
+
+Firefighter | 1 | rescue | firefighter
+Firetruck=the red truck that carries hoses and ladders
+Helmet=hard headgear that protects from falling debris
+Hose=a long tube that sprays water on flames
+Hydrant=a street pipe that supplies water for fires
+Siren=the loud wail that clears the road
+
+Wedding | 1 | events | marriage
+Altar=the place where a couple says their vows
+Bouquet=the bunch of flowers the bride carries
+Bride=the woman getting married
+Groom=the man getting married
+Veil=sheer fabric worn over the bride's face
+
+Clinic | 1 | medicine | clinic
+Ambulance=the vehicle that rushes patients to care
+Bandage=a strip that covers a wound
+Stethoscope=a tool for listening to the heart
+Stretcher=a bed for carrying an injured person
+Syringe=a needle used to give an injection
+Thermometer=a tool that measures body temperature
+
+Police | 1 | law | law_enforcement
+Badge=the metal emblem an officer wears
+Baton=a short stick an officer carries
+Handcuffs=metal rings that lock around the wrists
+Whistle=a small device blown to get attention
+
+Courtroom | 2 | law | courtroom
+Gavel=the small hammer a judge bangs
+Judge=the person who presides over a trial
+Verdict=the jury's final decision
+Witness=a person who testifies about what they saw
+
+Castle | 2 | medieval | fortresses
+Drawbridge=a bridge that lifts to block the entrance
+Dungeon=an underground prison cell
+Gatehouse=the fortified building over the entrance
+Moat=a water-filled ditch around the walls
+Rampart=a defensive wall with a walkway on top
+Turret=a small tower on the corner of a wall
+
+Armor | 3 | medieval | plate_armor
+Breastplate=the plate that protects the chest
+Chainmail=a shirt made of linked metal rings
+Gauntlet=an armored glove
+Shield=a plate carried to block blows
+Visor@headgear=the hinged face cover on a helmet
+
+Blades | 2 | weapons | blades
+Dagger=a short pointed knife for stabbing
+Katana=a curved Japanese sword
+Machete=a broad heavy knife for cutting brush
+Rapier=a thin sword made for thrusting
+Sabre=a curved cavalry sword
+Scimitar=a curved sword from the Middle East
+
+Ninja | 2 | weapons | shinobi
+Katana=the curved sword a ninja carries
+Mask=the cloth that hides a ninja's face
+Nunchaku=two sticks joined by a chain
+Shuriken=a throwing star
+Sai=a three-pronged metal dagger
+
+Archery | 2 | sport | bowmanship
+Arrow=the pointed shaft that is shot
+Bullseye=the center of the target
+Crossbow=a bow mounted on a stock with a trigger
+Longbow=a tall bow drawn by hand
+Quiver=the case that holds the arrows
+
+Ancient Egypt | 2 | history | ancient_egypt
+Ankh=the looped cross that meant life
+Hieroglyph=a picture symbol used as writing
+Nile=the great river the kingdom grew along
+Scarab=the sacred beetle charm
+Scroll=a rolled sheet of writing
+Tomb=the burial chamber of a ruler
+
+Ancient Rome | 2 | history | eternal_city
+Caesar=the title of the Roman ruler
+Centurion=an officer who led a hundred soldiers
+Chariot=a two-wheeled cart pulled by horses
+Toga=the draped robe of a Roman citizen
+
+Vampires | 2 | horror | bloodsuckers
+Coffin=where a vampire sleeps by day
+Fangs=the long sharp teeth used to bite
+Garlic=the bulb that keeps vampires away
+Sunlight=the daylight that destroys a vampire
+Cape@bloodsucker=the long dark cloak a vampire wears
+Stake@bloodsucker=a sharpened piece of wood through the heart
+
+Witchcraft | 2 | magic | witchcraft
+Cauldron=the big pot a witch stirs
+Potion=a magical drink
+Spell=magic words that make something happen
+Talisman=an object believed to hold magic power
+Wand=the stick used to cast magic
+Broomstick@sorcery=what a witch rides through the sky
+
+Tarot Cards | 3 | magic | arcana
+Fool=the carefree card numbered zero
+Lovers=the card of a couple and a choice
+Empress=the card of a crowned mother figure
+Priestess=the card of hidden wisdom
+Devil=the horned card of temptation
+
+Tavern | 2 | drink | tavern
+Ale=a dark beer served in old inns
+Barkeep=the person who pours the drinks
+Mead=an old drink made from honey
+Keg@pub=a small barrel of beer
+Stout@pub=a very dark heavy beer
+Dartboard@pubs=the round target on the pub wall
+
+Wine | 2 | drink | vino
+Burgundy=a red wine from eastern France
+Corkscrew=the tool that pulls out the cork
+Decanter=a glass vessel for pouring wine
+Grapes=the fruit wine is made from
+Sommelier=a wine expert in a restaurant
+
+Morocco | 3 | places | north_africa
+Couscous=tiny steamed grains served with stew
+Kasbah=an old walled fortress town
+Medina=the old walled quarter of a city
+Tagine=a stew cooked in a cone-lidded pot
+
+Marsh | 2 | terrain | marsh
+Alligator=a large reptile that lurks in swamps
+Cattail=a tall reed with a brown sausage-shaped head
+Lotus=a water flower with wide floating leaves
+Moss=a soft green carpet on damp ground
+Newt=a small salamander that lives near water
+Tadpole=a baby frog with a tail
+
+Desert Sights | 2 | terrain | wastelands
+Cactus=a spiny plant that stores water
+Dune=a hill of windblown sand
+Mesa=a flat-topped hill with steep sides
+Oasis=a green spot with water in dry land
+Tumbleweed=a dry plant that rolls in the wind
+
+Eruption | 3 | terrain | volcano
+Caldera=the huge crater left when a volcano collapses
+Lava=molten rock flowing on the surface
+Magma=molten rock still underground
+Pumice=a light volcanic rock full of holes
+Vent=the opening that gas and lava escape from
+
+Fire | 1 | fire | blaze
+Ash=the grey powder left after burning
+Charcoal=black burnt wood used as fuel
+Ember=a small glowing piece of a dying fire
+Flame=the bright burning part of a fire
+Smoke=the grey cloud that rises from burning
+Spark=a tiny flying bit of fire
+
+Blacksmith | 2 | jobs | smithy
+Anvil=the iron block metal is hammered on
+Bellows=a bag that blows air to heat the fire
+Crucible=a pot for melting metal
+Furnace=the very hot oven that heats metal
+Tongs=the long grips that hold hot metal
+Forge@forge=the workshop hearth where metal is heated
+
+Carpentry | 2 | tools | carpentry
+Clamp=a tool that holds pieces tight together
+Dovetail=an interlocking wedge-shaped wood joint
+Lathe=a machine that spins wood for shaping
+Plank=a long flat piece of timber
+Sandpaper=rough paper that smooths wood
+
+Masonry | 2 | building | brickwork
+Brick=a baked clay block for building walls
+Cement=the grey powder that hardens with water
+Mortar=the paste that holds bricks together
+Plaster=a smooth coating spread on walls
+Gravel@cement=small loose stones mixed into concrete
+Rebar@cement=steel rods that strengthen concrete
+
+Plumbing | 2 | home | fixtures
+Drain=the opening where water runs away
+Faucet=the tap that turns water on and off
+Pipe=a tube that carries water
+Valve=a device that controls the flow
+Plunger@pipework=a rubber cup on a stick that clears clogs
+
+Engine Parts | 3 | transport | motor_parts
+Camshaft=the rotating rod that opens the valves
+Carburetor=the part that mixes fuel with air
+Crankshaft=the shaft that turns piston motion into rotation
+Flywheel=a heavy wheel that smooths the engine's spin
+Piston=the plug that moves up and down in a cylinder
+
+Bicycle | 2 | transport | bike_parts
+Chain=the loop of links that drives the back wheel
+Handlebars=the bar you steer with
+Hub=the center of a wheel
+Pedal=what your foot pushes to move
+Spokes=the thin rods between hub and rim
+
+Railway | 2 | transport | railway
+Boxcar=an enclosed freight wagon
+Caboose=the last car on a freight train
+Conductor=the person who checks the tickets
+Locomotive=the engine that pulls the train
+Platform=where passengers wait to board
+Tracks=the steel rails a train runs on
+
+Bones | 3 | body | skeleton
+Collarbone=the bone between neck and shoulder
+Femur=the thigh bone, the longest in the body
+Humerus=the bone of the upper arm
+Kneecap=the small bone covering the knee joint
+Rib=one of the curved bones around the chest
+Spine=the column of bones down the back
+
+Muscles | 3 | body | musculature
+Biceps=the muscle at the front of the upper arm
+Hamstring=the muscle at the back of the thigh
+Oblique=the muscle along the side of the waist
+Quadriceps=the big muscle at the front of the thigh
+Trapezius=the muscle across the upper back and neck
+Triceps=the muscle at the back of the upper arm
+
+Body Tissues | 3 | body | flesh
+Cartilage=the firm flexible tissue in the nose and ears
+Ligament=the band that ties bone to bone
+Muscle=the tissue that contracts to move the body
+Nerve=a fibre that carries signals to the brain
+Tendon=the cord that ties muscle to bone
+
+Dentist | 2 | medicine | dental
+Cavity=a hole in a tooth caused by decay
+Enamel=the hard outer layer of a tooth
+Filling=material that plugs a hole in a tooth
+Floss=thread for cleaning between teeth
+Gums=the pink flesh around the teeth
+Retainer=a device that keeps teeth in place
+
+Remedies | 3 | medicine | remedy
+Antiseptic=a liquid that kills germs on a wound
+Capsule=a small case of medicine you swallow
+Ointment=a greasy cream rubbed on the skin
+Sling=a cloth loop that supports a hurt arm
+Suture=a stitch that closes a wound
+Vaccine=a shot that protects against a disease
+
+Expressions | 2 | body | expressions
+Gasp=a sudden sharp breath of surprise
+Glare=an angry fixed stare
+Pout=pushed-out lips that show sulking
+Scowl=an angry frown
+Smirk=a smug half smile
+Sneer=a curled lip of contempt
+Wink=closing one eye as a signal
+
+Face | 1 | body | visage
+Cheek=the soft side of the face
+Dimple=a small dent that shows when you smile
+Eyelid=the skin that closes over the eye
+Forehead=the part above the eyebrows
+Lip=one of the two edges of the mouth
+Nostril=one of the two openings of the nose
+
+Chores | 1 | home | housework
+Dishes=plates and cups that need washing
+Dust=wiping fine dirt off surfaces
+Laundry=clothes that need washing
+Scrub=rubbing hard to get something clean
+Sweep=clearing the floor with a broom
+Wipe=cleaning a surface with a cloth
+
+Backyard | 1 | outdoors | garden
+Bench=a long outdoor seat
+Gazebo=a small open-sided garden shelter
+Grill=where you barbecue outside
+Trampoline=a stretched sheet for bouncing
+Shed@patio=a small hut for tools
+Fountain@patio=a garden feature that sprays water
+
+Cozy Night | 1 | leisure | cozy
+Blanket=a warm cover to snuggle under
+Fireplace=where a log fire burns indoors
+Hoodie=a soft sweatshirt with a hood
+Slippers=soft shoes worn around the house
+
+Soft Things | 1 | texture | soft
+Cotton=a fluffy white plant fibre
+Down=the fine feathers inside a puffy jacket
+Feather=the light covering of a bird
+Fur=the thick hair on an animal
+Plush=the velvety fabric of stuffed toys
+Wool=the fleece of a sheep
+
+Slippery | 2 | texture | slick
+Eel=a long fish famous for being hard to hold
+Grease=thick oily fat
+Mud=wet sticky earth
+Oil=a smooth liquid that reduces friction
+
+Spotted | 2 | look | dotted
+Dalmatian=a white dog with black spots
+Dice=cubes marked with dots
+Domino=a tile marked with dots
+Fawn=a young deer with a dappled coat
+Giraffe=the tallest animal, covered in patches
+Leopard=a big cat with a rosette-spotted coat
+
+Striped | 2 | look | bands
+Barcode=the black and white lines scanned at checkout
+Pinstripe=a suit fabric with very thin lines
+Referee=the official in a black and white shirt
+Tiger=a big orange cat with black bands
+Zebra=a horse-like animal in black and white bands
+
+Black and White | 2 | look | bicolor
+Magpie=a noisy bird with a long tail
+Orca=the killer whale
+Skunk=a small animal known for its smell
+Tuxedo=a formal evening suit
+
+Tree Dwellers | 2 | animal | tree-dwelling
+Chameleon=a lizard that changes color
+Koala=a grey animal that eats eucalyptus leaves
+Lemur=a ring-tailed animal from Madagascar
+Sloth=a very slow animal that hangs upside down
+Toucan=a bird with a huge colorful beak
+Woodpecker=a bird that drums on tree trunks
+
+Stingers | 2 | animal | venomous
+Bee=a buzzing insect that makes honey
+Hornet=a large aggressive wasp
+Jellyfish=a sea animal with stinging tentacles
+Nettle=a plant whose leaves burn the skin
+Scorpion=a creature with a curled venomous tail
+Wasp=a thin yellow and black insect
+
+Sheep | 2 | animal | flock
+Bleat=the cry a sheep makes
+Ewe=a female sheep
+Fleece=the woolly coat of a sheep
+Ram=a male sheep
+Shepherd=the person who tends the flock
+
+Harvest | 2 | outdoors | reaping
+Bushel=a large measure of grain or fruit
+Grain=the seeds of cereal crops
+Scythe=a long curved blade for cutting crops
+Sheaf=a bundle of cut stalks tied together
+Wheat=the cereal that flour is made from
+
+Fillings | 2 | food | stuffing
+Caramel=gooey cooked sugar inside a candy
+Cream=a thick whipped dairy centre
+Custard=a smooth egg and milk filling
+Jam=sweet cooked fruit inside a doughnut
+Marzipan=a sweet almond paste
+Nougat=a chewy mix of sugar, honey and nuts
+
+Sound Controls | 2 | music | dials
+Balance=the knob that shifts sound left or right
+Bass=the control for the low notes
+Reverb=the effect that adds an echo
+Tone=the knob that shapes how bright the sound is
+Treble=the control for the high notes
+Volume=the control for loudness
+
+Banners | 3 | heraldry | ensigns
+Bunting=strings of small flags hung for a party
+Ensign=the flag flown by a ship
+Flag=a cloth symbol of a country
+Pennant=a long narrow pointed flag
+Standard=the ceremonial flag of a ruler or army
+
+Tower | 3 | building | towers
+Belfry=the part that holds the bells
+Cupola=a small dome on top of a roof
+Minaret=the slim tower of a mosque
+Spire=a tall pointed top
+Steeple=the tall top of a church
+
+Burial Places | 3 | history | burial_chambers
+Crypt=a chamber under a church
+Mausoleum=a grand building that holds a tomb
+Necropolis=a large ancient cemetery
+Sarcophagus=a carved stone coffin
+Sepulcher=a small room cut in rock for the dead
+Catacomb@labyrinths=an underground tunnel lined with graves
+
+Traps | 2 | danger | snares
+Cage=a box of bars that locks shut
+Mousetrap=a spring device baited with cheese
+Net=a mesh that drops over its catch
+Pitfall=a hidden hole in the ground
+Quicksand=wet sand that sucks you down
+Snare=a wire loop that tightens on a leg
+Tripwire=a low line that sets something off
+
+Made of Glass | 2 | home | glassware
+Jar=a container for jam or pickles
+Mirror=a surface that shows your reflection
+Pane=a single sheet in a window
+Vase=a holder for cut flowers
+Flask=a narrow-necked lab bottle
+
+Laptop | 2 | tech | notebooks
+Charger=the cable that refills the battery
+Hinge=the joint that lets the screen fold
+Keyboard=the rows of keys you type on
+Trackpad=the touch surface that moves the cursor
+Webcam=the small camera above the screen
+
+Wallet | 1 | money | billfold
+Bill=a paper banknote
+Card=a plastic rectangle used to pay
+Cash=coins and notes
+Coupon=a slip that gives a discount
+Receipt=the printed proof of a purchase
+Ticket=a slip that lets you in
+
+Marketplace | 2 | money | trade
+Bargain=something bought for a good price
+Barter=swapping goods without money
+Booth=a small stall where things are sold
+Cart=a wheeled stand for selling goods
+Haggle=arguing over the price
+Merchant=a person who buys and sells
+
+Cowboy | 2 | western | wrangler
+Bandana=a square cloth tied around the neck
+Holster=the leather case for a pistol
+Saddle=the seat strapped on a horse
+Spurs=spiked wheels worn on boot heels
+
+Cryptids | 3 | myth | mythical_beasts
+Bigfoot=the hairy giant of American forests
+Chupacabra=the legendary goat-sucking beast
+Jackalope=a rabbit with antlers from tall tales
+Mothman=a winged creature of West Virginia legend
+Nessie=the monster said to live in a Scottish loch
+Yeti=the abominable snowman of the Himalayas
+
+Sculpture | 2 | art | sculpture
+Bust=a statue of a head and shoulders
+Carving=a shape cut out of wood or stone
+Clay=soft earth that can be moulded
+Marble=a smooth stone prized by sculptors
+Relief=a design raised from a flat background
+Statue=a full carved figure
+
+Calligraphy | 2 | art | penmanship
+Ink=the colored liquid used for writing
+Nib=the metal tip of a pen
+Parchment=writing material made from animal skin
+Quill=a pen made from a feather
+
+Fashion Show | 2 | clothing | fashion
+Boutique=a small stylish clothing shop
+Designer=the person who creates the clothes
+Runway=the long stage models walk down
+Tailor=a person who makes clothes to fit
+Vogue=what is currently in style
+
+Glasses | 3 | clothing | eyewear
+Aviator=teardrop-shaped pilot sunglasses
+Bifocal=a lens with two strengths
+Spectacles=an old word for eyeglasses
+Wayfarer=a classic thick-framed sunglass style
+
+Climbing | 3 | sport | mountaineer
+Belay=holding the rope to catch a falling climber
+Boulder=a large rock climbed without ropes
+Carabiner=a metal clip with a spring gate
+Crampon=spikes strapped to a boot for ice
+Harness=the straps that attach you to the rope
+Rappel=sliding down a rope to descend
+
+Pool Table | 3 | game | billiards
+Baize=the green cloth covering the table
+Chalk=what is rubbed on the cue tip
+Cushion=the padded edge the balls bounce off
+Pocket=the hole a ball drops into
+
+Pinball | 3 | game | arcade
+Bumper=a round post that kicks the ball away
+Flipper=the paddle you press to hit the ball
+Multiball=the mode with several balls in play
+Slingshot=the triangular kicker above the flippers
+Tilt=the penalty for shaking the machine
+
+Prime Numbers | 2 | math | indivisibles
+Two=the only even prime
+Three=the first odd prime
+Five=the prime that ends every multiple in 0 or 5
+Seven=the fourth prime
+Eleven=the first two-digit prime
+Nineteen=the last prime before twenty
+
+Slavic Languages | 3 | language | slavonic
+Belarusian=the language of Minsk
+Czech=the language of Prague
+Polish=the language of Warsaw
+Russian=the language of Moscow
+Serbian=the language of Belgrade
+Ukrainian=the language of Kyiv
+
+Alarms | 2 | sound | alerts
+Alarm=a loud signal that warns of danger
+Bell=a metal cup that rings when struck
+Bugle=a small horn blown to wake soldiers
+Foghorn=a deep horn that warns ships
+Gong=a metal disc struck with a mallet
+Buzzer@siren=a device that makes a harsh buzz
+
+Entrances | 3 | building | entrances
+Foyer=the entrance hall of a building
+Gate=a hinged barrier in a fence or wall
+Threshold=the strip at the bottom of a doorway
+Tollgate=a barrier where a road fee is paid
+Turnstile=a rotating gate that admits one person
+Vestibule=a small room just inside the door
+
+Supports | 3 | building | braces
+Beam=a long horizontal piece that carries weight
+Bracket=an L-shaped piece that holds up a shelf
+Buttress=a mass built against a wall to prop it
+Column=a tall round upright pillar
+Girder=a heavy steel piece in a frame
+Pillar=a sturdy upright that holds up a roof
+
+Shipping | 2 | transport | freight
+Cargo=the goods a ship or plane carries
+Container=the big steel box freight travels in
+Crane=the machine that lifts heavy loads
+Tanker=a ship that carries liquid
+Warehouse=the building where goods are stored

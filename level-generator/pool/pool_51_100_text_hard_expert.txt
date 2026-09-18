@@ -1,0 +1,678 @@
+# Text categories for variant_2 levels 51-100: Hard and Expert.
+# Expert stays guessable: specialised topics whose words an educated adult has met before.
+#   Name | tier(1-4) | domain
+#   Word=meaning
+
+Cricket | 3 | sport
+Wicket=the three stumps the bowler aims at
+Innings=a team's turn to bat
+Umpire=the official who makes the decisions
+Stumps=the upright wooden posts
+Batsman=the player who hits the ball
+Googly=a ball that spins the unexpected way
+
+Motor Racing | 3 | sport
+Lap=one full circuit of the track
+Pitstop=a quick stop for tires and fuel
+Chicane=a tight S-bend that slows the cars
+Grid=the starting positions
+Podium=where the top three stand
+Paddock=the area where teams work on the cars
+
+Apple Varieties | 3 | food
+Gala=a sweet red and yellow striped kind
+McIntosh=a tart red kind from Canada
+Braeburn=a crisp sweet-sharp kind from New Zealand
+Jonagold=a large honey-sweet cross
+Honeycrisp=a juicy explosive-crunch kind from Minnesota
+Pippin=an old English cooking kind
+
+Wine Grapes | 3 | drink
+Merlot=a soft fruity red
+Malbec=the dark red of Argentina
+Riesling=a fragrant German white
+Chardonnay=the most planted white
+Muscat=a sweet perfumed white
+Syrah=a spicy dark red, also called Shiraz
+
+Greek Food | 3 | food
+Gyro=meat shaved from a spit into pita
+Feta=crumbly salty white cheese
+Moussaka=baked eggplant and meat with white sauce
+Souvlaki=grilled meat on a skewer
+Tzatziki=yogurt dip with cucumber and garlic
+Baklava=layered pastry with nuts and syrup
+
+Stock Market | 3 | economy
+Shares=units of ownership in a company
+Dividend=a payout of profits to owners
+Broker=a person who buys and sells for clients
+Rally=a sustained rise in prices
+Crash=a sudden collapse in prices
+Portfolio=the collection of investments you hold
+
+Legal Terms | 3 | law
+Appeal=asking a higher court to review a decision
+Bail=money paid for release before trial
+Jury=the citizens who decide a case
+Plea=the accused's formal answer to a charge
+Oath=a solemn promise to tell the truth
+Statute=a written law
+
+Nobility | 3 | people
+Duke=the highest rank below a prince
+Baron=the lowest rank of peer
+Earl=a British rank equal to a count
+Count=a European noble of middle rank
+Marquis=a rank between duke and earl
+Viscount=a rank between earl and baron
+
+Moon Phases | 3 | space
+Crescent=a thin curved sliver
+Gibbous=more than half but not full
+Waxing=growing larger each night
+Waning=shrinking each night
+Quarter=when exactly half the disc is lit
+
+Canadian Provinces | 3 | places
+Ontario=the home of Toronto and Ottawa
+Quebec=the French-speaking one
+Alberta=the home of Calgary and the oil sands
+Manitoba=the prairie one around Winnipeg
+Yukon=the gold rush territory
+Nunavut=the vast Arctic territory
+
+Alaska | 3 | places
+Anchorage=the largest city
+Denali=the highest peak in North America
+Iditarod=the famous sled dog race
+Juneau=the state capital
+Klondike=the gold rush region next door
+Kodiak=the island of giant brown bears
+
+Brazil | 3 | places
+Samba=the rhythm and dance of the carnival
+Carnival=the giant street festival before Lent
+Amazon=the largest river and rainforest
+Capoeira=a martial art disguised as dance
+Ipanema=the famous beach in Rio
+Maracana=the legendary football stadium
+
+Paris | 3 | places
+Louvre=the museum that holds the Mona Lisa
+Seine=the river through the city
+Eiffel=the iron tower
+Montmartre=the hill of artists and the white basilica
+Sorbonne=the historic university
+Bastille=the prison stormed in 1789
+
+London | 3 | places
+Thames=the river through the city
+Soho=the district of theaters and nightlife
+Camden=the district known for its markets
+Chelsea=a wealthy district with a football club
+Mayfair=the most expensive square on the board
+Wimbledon=the home of the tennis championships
+
+Opera | 3 | music
+Aria=a solo song
+Diva=a celebrated female star
+Libretto=the text that is sung
+Overture=the orchestral opening
+Encore=an extra piece demanded by applause
+Maestro=the respected conductor
+
+Figures of Speech | 3 | language
+Metaphor=saying one thing is another
+Simile=comparing using like or as
+Irony=saying the opposite of what you mean
+Hyperbole=wild exaggeration
+Pun=a joke that plays on double meaning
+Idiom=a phrase that means more than its words
+Oxymoron=two opposite words side by side
+
+Alphabets | 3 | language
+Cyrillic=the script of Russian
+Latin=the script of English
+Arabic=the right-to-left script of the Middle East
+Hebrew=the script of Israel
+Kanji=Chinese characters used in Japanese
+Braille=raised dots read by touch
+
+Empires | 3 | history
+Roman=ruled the Mediterranean from Italy
+Ottoman=ruled from Istanbul for six centuries
+Mongol=the largest land empire, founded by Genghis Khan
+Persian=the ancient power of Cyrus and Darius
+Inca=ruled the Andes from Cusco
+Byzantine=the eastern half that outlived Rome
+
+Lab Equipment | 3 | science
+Beaker=a wide glass cup with a spout
+Pipette=a thin tube for moving drops of liquid
+Microscope=the instrument for seeing tiny things
+Centrifuge=a machine that spins samples apart
+Petri=the shallow dish for growing cultures
+Funnel=a cone for pouring into narrow openings
+
+Simple Machines | 3 | science
+Lever=a bar that pivots to lift a load
+Pulley=a wheel with a rope for lifting
+Axle=the rod a wheel turns on
+Ramp=a slope that eases lifting
+Gear=a toothed wheel that passes on motion
+Winch=a drum that winds a rope
+
+Ice Age | 3 | prehistory
+Mammoth=a woolly elephant with curved tusks
+Sabertooth=a big cat with dagger fangs
+Neanderthal=an extinct cousin of modern humans
+Mastodon=a shaggy elephant relative of America
+Permafrost=ground that stays frozen all year
+Caveman=an early human who sheltered in rock
+
+Biomes | 3 | terrain
+Taiga=the cold northern conifer forest
+Savanna=tropical grassland with scattered trees
+Rainforest=hot wet dense jungle
+Steppe=dry treeless grassland
+Wetland=land soaked with water
+Prairie=the wide grassland of North America
+
+Rainforest | 3 | terrain
+Canopy=the roof of leaves high above
+Vine=a climbing plant that hangs from trees
+Piranha=a river fish with razor teeth
+Anaconda=a giant constricting snake
+Tapir=a pig-like animal with a short trunk
+Bromeliad=a plant that holds water in its leaves
+
+AI Terms | 3 | tech
+Chatbot=a program you can talk to
+Algorithm=a set of steps a computer follows
+Neural=the kind of network modeled on the brain
+Dataset=the collection of examples used for learning
+Prompt=the text you give to get a response
+Token=a small piece of text a model reads
+
+Gymnastics | 3 | sport
+Cartwheel=a sideways wheel on hands and feet
+Somersault=a full forward roll in the air
+Handspring=a flip pushing off the hands
+Pommel=the horse with two handles
+Dismount=the landing off the apparatus
+Backflip=a full backward rotation
+
+Winter Sports | 3 | sport
+Luge=racing feet-first on a small sled
+Curling=sliding stones toward a target on ice
+Biathlon=skiing combined with rifle shooting
+Bobsled=a team racing down an ice chute
+Slalom=weaving between poles on skis
+Skating=gliding on ice with blades
+
+Casino | 3 | game
+Roulette=the spinning wheel with a ball
+Slots=the machines with spinning reels
+Dealer=the person who hands out the cards
+Jackpot=the top prize
+Craps=the dice game
+Baccarat=the card game of player against banker
+
+Medieval Jobs | 3 | medieval
+Squire=a knight's young attendant
+Jester=the fool who entertained the court
+Herald=the announcer of royal news
+Scribe=a person who copied documents by hand
+Minstrel=a travelling singer and musician
+Falconer=a person who trained hunting birds
+
+Camelot | 3 | myth
+Arthur=the legendary king
+Merlin=the wizard adviser
+Lancelot=the greatest knight of the Round Table
+Guinevere=the queen
+Excalibur=the magical sword
+Galahad=the pure knight who found the Grail
+
+Mythic Places | 3 | myth
+Avalon=the island where Arthur was taken to heal
+Camelot=the court of the Round Table
+Eden=the first garden
+Elysium=the Greek paradise of heroes
+Atlantis=the city that sank beneath the sea
+Valhalla=the Norse hall of fallen warriors
+Olympus=the mountain home of the Greek gods
+
+Coral Reef | 3 | water
+Anemone=a flower-like animal with stinging tentacles
+Clownfish=the orange and white striped fish
+Urchin=a spiny ball on the seabed
+Moray=an eel that hides in crevices
+Polyp=the tiny animal that builds the reef
+Lagoon=the calm shallow water inside the reef
+
+Mountain Parts | 3 | terrain
+Peak=the pointed top
+Ridge=a long narrow crest
+Summit=the very highest point
+Crevasse=a deep crack in a glacier
+Cliff=a sheer rock face
+Scree=loose broken rock on a slope
+
+Eye Parts | 3 | body
+Retina=the light-sensing layer at the back
+Cornea=the clear front window
+Iris=the colored ring
+Pupil=the dark opening in the center
+Sclera=the white outer coat
+
+Nutrients | 3 | health
+Protein=what builds and repairs muscle
+Fiber=the roughage that aids digestion
+Calcium=the mineral for strong bones
+Carbs=the body's main fuel
+Omega=the healthy fats found in fish
+Potassium=the mineral bananas are known for
+
+Lizards | 3 | animal
+Gecko=a small wall-climber with sticky toes
+Iguana=a large green plant-eater
+Komodo=the giant dragon of Indonesia
+Skink=a smooth shiny short-legged kind
+Chameleon=the color-changer with swivel eyes
+Anole=a small American kind with a throat fan
+
+Flightless Birds | 3 | animal
+Penguin=the swimmer of the Antarctic
+Ostrich=the biggest bird of all
+Emu=the tall runner of Australia
+Kiwi=the small nocturnal bird of New Zealand
+Rhea=the South American cousin of the ostrich
+Cassowary=the helmeted bird with a dangerous kick
+
+Songbirds | 3 | animal
+Robin=the bird with the red breast
+Finch=a small seed-eater with a stout beak
+Wren=a tiny brown bird with a loud voice
+Lark=the bird that sings while soaring
+Thrush=a speckled-breasted singer
+Warbler=a small bird named for its trilling
+
+Animal Groups | 3 | animal
+Flock=a group of birds or sheep
+Pack=a group of wolves
+Pod=a group of dolphins or whales
+Gaggle=a group of geese
+Colony=a group of ants or penguins
+Troop=a group of monkeys
+
+Statistics | 3 | math
+Mean=the average
+Median=the middle value
+Mode=the most common value
+Variance=how spread out the values are
+Outlier=a value far from the rest
+Sample=a small group taken from the whole
+
+Algebra | 3 | math
+Variable=a letter that stands for a number
+Equation=a statement that two things are equal
+Exponent=the small raised number of a power
+Quadratic=involving a squared term
+Factor=a number that divides another exactly
+Polynomial=an expression of several terms
+
+Economics | 3 | economy
+Inflation=prices rising over time
+Recession=a period of shrinking activity
+Supply=how much is available to buy
+Demand=how much people want to buy
+Tariff=a tax on imports
+Deficit=spending more than is earned
+
+Psychology | 3 | mind
+Ego=the conscious self
+Superego=the inner moral judge
+Phobia=an irrational fear
+Neurosis=a mild long-lasting anxiety
+Therapy=treatment by talking
+Trauma=a deep emotional wound
+
+Palindromes | 3 | wordplay
+Kayak=a paddled boat, the same both ways
+Level=flat and even, the same both ways
+Radar=a detection system, the same both ways
+Civic=about a city, the same both ways
+Rotor=a spinning part, the same both ways
+Madam=a polite title, the same both ways
+Racecar=a fast vehicle, the same both ways
+Noon=midday, the same both ways
+
+Ways to Walk | 3 | words
+Stroll=a slow relaxed pace
+Stride=long confident steps
+Amble=an easy unhurried pace
+Saunter=a leisurely confident pace
+Trudge=slow heavy tired steps
+Strut=a proud stiff swagger
+
+Laughs | 3 | words
+Giggle=a light silly one
+Chuckle=a quiet amused one
+Cackle=a harsh witch-like one
+Snicker=a sly half-hidden one
+Guffaw=a loud hearty burst
+Titter=a nervous restrained one
+
+Diamond | 3 | science
+Carat=the unit of weight
+Facet=one flat polished face
+Clarity=freedom from flaws
+Sparkle=the flash of reflected light
+Rough=the stone before it is shaped
+Cutter=the craftsman who shapes it
+
+Plate Tectonics | 3 | terrain
+Fault=a crack where rock slips
+Mantle=the hot layer beneath the crust
+Rift=where plates pull apart
+Subduction=one plate sliding under another
+Trench=a deep gash in the ocean floor
+Quake=the shaking when plates slip
+
+Knitting | 3 | art
+Yarn=the thread you work with
+Purl=the reverse of a plain stitch
+Skein=a loose coil of thread
+Stitch=a single loop
+Crochet=a related craft using a hook
+Bobble=a small woolly ball
+
+Navy | 3 | military
+Destroyer=a fast escort warship
+Submarine=a vessel that travels underwater
+Carrier=a ship with a flight deck
+Cruiser=a large fast warship
+Fleet=a group of warships
+Torpedo=an underwater missile
+
+Politics | 3 | politics
+Senate=the upper house
+Campaign=the run-up effort to win office
+Veto=the power to reject a bill
+Caucus=a meeting of party members
+Cabinet=the leader's top ministers
+Lobbyist=a person paid to influence lawmakers
+
+Acoustics | 3 | science
+Echo=a reflection that returns to you
+Pitch=how high or low a note is
+Decibel=the unit of loudness
+Frequency=vibrations per second
+Resonance=vibration boosted by matching rhythm
+Timbre=the quality that tells a flute from a violin
+
+Ship Crew | 3 | jobs
+Bosun=the officer in charge of deck crew
+Purser=the officer who handles money
+Deckhand=a worker on the deck
+Navigator=the person who plots the course
+Steward=the person who looks after passengers
+Skipper=an informal name for the captain
+
+Caves | 3 | terrain
+Cavern=a very large chamber
+Grotto=a small picturesque one
+Stalactite=a spike hanging from the ceiling
+Stalagmite=a spike rising from the floor
+Spelunker=a person who explores them
+Bats=the flying residents
+
+Teeth | 3 | body
+Molar=a broad grinder at the back
+Incisor=a flat cutter at the front
+Canine=a pointed tearer
+Premolar=a grinder between the pointed and back ones
+
+Male Animals | 3 | animal
+Stallion=a horse
+Rooster=a chicken
+Buck=a deer or rabbit
+Gander=a goose
+Stag=a red deer
+Tomcat=a cat
+
+Ancient Sites | 4 | history
+Carthage=the rival of Rome in North Africa
+Olympia=the birthplace of the ancient games
+Palmyra=the oasis city of the Syrian desert
+Persepolis=the ceremonial capital of Persia
+Petra=the rose-red city carved in rock
+Pompeii=the town buried by Vesuvius
+Troy=the city of the wooden horse
+
+Eclipse | 4 | space
+Corona=the glowing halo seen round the hidden sun
+Lunar=the kind where Earth's shadow covers the moon
+Totality=the minutes of complete darkness
+Umbra=the darkest central shadow
+Annular=the kind that leaves a ring of fire
+Penumbra=the lighter outer shadow
+
+Heart Anatomy | 4 | body
+Aorta=the main artery leaving the heart
+Atrium=an upper chamber
+Ventricle=a lower pumping chamber
+Septum=the wall between left and right
+Artery=a vessel carrying blood away
+Vein=a vessel carrying blood back
+
+Megaliths | 4 | history
+Dolmen=a stone table over a tomb
+Henge=a circular earthwork with stones
+Menhir=a single tall standing stone
+Monolith=one huge block of stone
+Cromlech=a circle of standing stones
+Stele=an upright carved slab
+
+Cell Parts | 4 | science
+Nucleus=the control center holding the DNA
+Ribosome=the tiny protein factory
+Cytoplasm=the jelly that fills the cell
+Membrane=the thin outer skin
+Golgi=the packaging station
+Vacuole=a storage bubble
+
+Chess Terms | 4 | game
+Castling=moving king and rook together
+Gambit=a sacrifice in the opening
+Checkmate=the king cannot escape
+Stalemate=a draw with no legal move
+Zugzwang=being forced to make a bad move
+Skewer=an attack through one piece to another
+
+Art Movements | 4 | art
+Cubism=Picasso's style of broken geometric views
+Baroque=the dramatic ornate style of the 1600s
+Rococo=the light playful style of the 1700s
+Surrealism=the dreamlike style of Dali
+Realism=showing everyday life as it is
+Fauvism=the wild-color style of Matisse
+
+Dynasties | 4 | history
+Ming=the Chinese house known for porcelain
+Tudor=the English house of Henry the Eighth
+Habsburg=the house that ruled Austria and Spain
+Romanov=the last ruling house of Russia
+Qing=the last imperial house of China
+Medici=the banking family that ruled Florence
+
+Conquerors | 4 | history
+Napoleon=the French emperor beaten at Waterloo
+Alexander=the Macedonian who reached India
+Genghis=the founder of the Mongol empire
+Attila=the leader of the Huns
+Cortes=the Spaniard who toppled the Aztecs
+Hannibal=the general who took elephants over the Alps
+
+Astronauts | 4 | space
+Armstrong=the first person on the Moon
+Aldrin=the second person on the Moon
+Gagarin=the first person in space
+Glenn=the first American to orbit the Earth
+Ride=the first American woman in space
+Tereshkova=the first woman in space
+
+Mars | 4 | space
+Rover=a wheeled robot exploring the surface
+Phobos=the larger of its two moons
+Deimos=the smaller of its two moons
+Crater=a bowl left by an impact
+Curiosity=the car-sized NASA explorer
+Regolith=the loose dusty surface layer
+
+Trigonometry | 4 | math
+Sine=opposite over hypotenuse
+Cosine=adjacent over hypotenuse
+Tangent=opposite over adjacent
+Radian=an angle unit based on the radius
+Hypotenuse=the longest side of a right triangle
+Theta=the Greek letter used for an angle
+
+Acids | 4 | science
+Citric=the kind in lemons
+Acetic=the kind in vinegar
+Nitric=the kind used to make fertilizer
+Sulfuric=the kind in car batteries
+Lactic=the kind that builds up in tired muscles
+Formic=the kind in ant stings
+
+Operas | 4 | music
+Carmen=Bizet's gypsy in Seville
+Tosca=Puccini's singer who leaps from the castle
+Aida=Verdi's Ethiopian princess in Egypt
+Rigoletto=Verdi's hunchbacked jester
+Turandot=Puccini's icy Chinese princess
+Traviata=Verdi's fallen woman of Paris
+
+Musical Forms | 4 | music
+Sonata=a piece for one or two instruments in movements
+Fugue=voices chasing one theme
+Concerto=a soloist set against an orchestra
+Symphony=a large work for full orchestra
+Rondo=a main theme that keeps returning
+Requiem=a mass for the dead
+
+Painting Techniques | 4 | art
+Fresco=painting on wet plaster
+Impasto=paint laid on thickly
+Sfumato=Leonardo's smoky soft blending
+Tempera=pigment mixed with egg yolk
+Gouache=opaque watercolor
+Collage=pieces pasted onto a surface
+
+Architects | 4 | building
+Gaudi=the designer of the Sagrada Familia
+Wright=the designer of Fallingwater
+Gehry=the designer of the Guggenheim Bilbao
+Hadid=the queen of the curve
+Pei=the designer of the Louvre pyramid
+Corbusier=the Swiss pioneer of modernism
+
+Economists | 4 | economy
+Keynes=argued for government spending in slumps
+Smith=wrote The Wealth of Nations
+Marx=wrote Das Kapital
+Friedman=the champion of free markets and monetarism
+Hayek=wrote The Road to Serfdom
+Ricardo=explained comparative advantage
+
+Psychologists | 4 | mind
+Freud=the father of psychoanalysis
+Jung=the thinker of archetypes
+Pavlov=the man with the drooling dogs
+Skinner=the behaviorist with the box
+Piaget=studied how children think
+Maslow=drew the pyramid of needs
+
+Astronomers | 4 | space
+Copernicus=put the sun at the center
+Kepler=found that orbits are ellipses
+Hubble=showed the universe is expanding
+Halley=predicted the return of a comet
+Sagan=the host of Cosmos
+Brahe=the Dane with the metal nose who charted the stars
+
+Jazz Legends | 4 | music
+Coltrane=the saxophonist of A Love Supreme
+Ellington=the Duke who led a big band
+Davis=the trumpeter of Kind of Blue
+Monk=the pianist of quirky angular tunes
+Parker=the saxophonist nicknamed Bird
+Gillespie=the trumpeter with the puffed cheeks
+
+Poets | 4 | culture
+Keats=wrote Ode to a Nightingale
+Byron=the scandalous Romantic lord
+Whitman=wrote Leaves of Grass
+Dickinson=the recluse of Amherst
+Yeats=the Irish Nobel winner
+Plath=wrote Ariel and The Bell Jar
+Eliot=wrote The Waste Land
+
+Roman Emperors | 4 | history
+Nero=said to have fiddled while the city burned
+Augustus=the first emperor
+Caligula=the mad one who honored his horse
+Trajan=took the empire to its greatest size
+Hadrian=built the wall across Britain
+Tiberius=the gloomy successor of the first emperor
+
+Pharaohs | 4 | history
+Tutankhamun=the boy king with the golden mask
+Ramses=the great builder of Abu Simbel
+Cleopatra=the last queen of Egypt
+Khufu=the builder of the Great Pyramid
+Nefertiti=the queen of the famous bust
+Hatshepsut=the woman who ruled as king
+
+Battles | 4 | history
+Waterloo=the final defeat of Napoleon
+Hastings=the Norman conquest of England in 1066
+Gettysburg=the turning point of the American Civil War
+Trafalgar=Nelson's naval victory
+Verdun=the longest fight of World War One
+Agincourt=the victory of English longbows in 1415
+
+African Capitals | 4 | places
+Nairobi=the capital of Kenya
+Accra=the capital of Ghana
+Dakar=the capital of Senegal
+Tunis=the capital of Tunisia
+Rabat=the capital of Morocco
+Kampala=the capital of Uganda
+
+Brain Parts | 4 | body
+Cortex=the wrinkled outer layer
+Cerebellum=the little brain that controls balance
+Amygdala=the almond-shaped center of fear
+Thalamus=the relay station for the senses
+Hippocampus=the seahorse-shaped seat of memory
+Brainstem=the stalk that controls breathing
+
+Hormones | 4 | health
+Insulin=controls blood sugar
+Adrenaline=the fight-or-flight rush
+Cortisol=the stress chemical
+Estrogen=the main female one
+Dopamine=the chemical of reward
+Serotonin=the chemical of mood
+
+Organ Systems | 4 | body
+Nervous=brain, spinal cord and nerves
+Digestive=stomach and intestines
+Immune=the body's defense against infection
+Skeletal=the bones
+Lymphatic=the network that drains fluid
+Endocrine=the glands that release hormones

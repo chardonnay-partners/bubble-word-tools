@@ -1,0 +1,496 @@
+# Second batch for levels 51-100: more Hard picture categories and chain children for existing hubs, added after the
+# first generation pass showed picture and chain slots falling back to Easy past level 70.
+#   Name | tier | domain [| default illustration set]
+
+Sailboat | 3 | transport | seafaring
+Mast=the tall pole that holds the sails
+Keel=the fin along the bottom that keeps it upright
+Rudder=the blade at the back that steers
+Helm=the wheel the skipper steers with
+Rigging=the ropes that support the mast
+Porthole=a small round window
+
+Car Tuning | 3 | transport | car_mods
+Exhaust=the pipe that carries fumes out the back
+Spoiler=a wing that presses the car onto the road
+Suspension=the springs that soak up bumps
+Turbo=a fan that forces extra air into the engine
+Intake=where the engine draws its air
+Diffuser=the shaped panel under the rear bumper
+
+Car Parts | 2 | transport | automobile
+Engine=the machine that powers the wheels
+Hood=the lid over the motor
+Muffler=the part that quiets the exhaust
+Radiator=the grille of tubes that cools the motor
+Steering=the wheel in the driver's hands
+Tire=the rubber ring around a wheel
+
+Exotic Fruits | 3 | food | exotic_fruits
+Dragonfruit=a pink spiky fruit with speckled flesh
+Jackfruit=the largest tree fruit, used as a meat substitute
+Rambutan=a red fruit covered in soft hairs
+Lychee=a small fruit with a rough red shell and white flesh
+Guava=a green fruit with pink seedy flesh
+Papaya=a long orange fruit full of black seeds
+
+Patisserie | 3 | food | dessert
+Cannoli=a fried pastry tube filled with sweet ricotta
+Eclair=a long choux pastry with cream and chocolate
+Strudel=thin rolled pastry filled with apple
+Charlotte=a molded dessert lined with sponge fingers
+Danish=a flaky pastry with fruit or custard
+
+World Dishes | 3 | food | meals
+Empanada=a folded stuffed pastry from Latin America
+Lasagna=layered pasta sheets baked with sauce
+Paella=Spanish saffron rice cooked in a wide pan
+Quiche=a French savory egg tart
+Ramen=Japanese noodles in broth
+
+Onion Family | 3 | food | alliums
+Chives=thin green stalks snipped over dishes
+Leek=a long mild white and green stalk
+Shallot=a small sweet bulb used in sauces
+Cipollini=a small flat Italian bulb
+
+Woodcarving | 3 | tools | whittling
+Adze=an axe with a sideways blade for shaping
+Gouge=a chisel with a curved blade
+Rasp=a coarse file
+Scraper=a flat blade that smooths a surface
+
+Coffee Shop | 2 | drink | coffee
+Barista=the person who makes your drink
+Espresso=a small strong shot
+Foam=the frothy milk on top
+Mug=the big cup with a handle
+
+Funfair | 2 | events | funfair
+Carousel=the ride of painted horses
+Corndog=a sausage fried in batter on a stick
+Balloon=a colorful air-filled toy on a string
+Tightrope@carnival=the high wire an acrobat walks
+Unicycle@carnival=a bike with one wheel
+
+Markers | 3 | geo | signposts
+Beacon=a light that guides from a distance
+Bollard=a short post that blocks vehicles
+Buoy=a float that marks a channel
+Cairn=a pile of stones on a trail
+
+Walls | 3 | building | barriers
+Drywall=plasterboard sheets for interior surfaces
+Palisade=a fence of pointed stakes
+Picket=a low fence of spaced upright boards
+Stucco=a rough cement coating for exteriors
+Concrete=a poured mix of cement and stone
+
+Shrubs | 3 | plants | bushes
+Azalea=a bush covered in bright spring flowers
+Boxwood=the dense evergreen clipped into hedges
+Hawthorn=a thorny bush with red berries
+Hydrangea=a bush with big globes of blue or pink flowers
+Oleander=a poisonous flowering evergreen
+Privet=the classic suburban hedge plant
+
+Furry Critters | 2 | animal | fluffy
+Chinchilla=a rodent with the softest coat of all
+Ferret=a long slim pet related to the weasel
+Otter=a playful river swimmer
+Raccoon=a masked bandit with a ringed tail
+Beaver=the builder of dams
+
+Horned Animals | 2 | animal | antlered
+Antelope=a swift grazer of the African plains
+Bull=a male of cattle
+Goat=a sure-footed climber with a beard
+Moose=the giant deer of the north
+
+Comes in Pairs | 2 | look | duo
+Drumsticks=what a drummer holds
+Eyeglasses=two lenses in a frame
+Gloves=one for each hand
+Sneakers=one for each foot
+
+Old Documents | 3 | books | manuscripts
+Charter=a written grant of rights
+Decree=an official order from a ruler
+Manuscript=a text written by hand
+Papyrus=a sheet made from Nile reeds
+Scripture=sacred writing
+
+Flavors | 2 | food | flavor
+Fruity=tasting of berries or citrus
+Minty=cool and fresh
+Savory=salty and meaty rather than sweet
+Spicy=hot on the tongue
+Tangy=sharp and sour
+
+Rugby | 3 | sport
+Scrum=the packed shove that restarts play
+Try=touching the ball down over the line
+Lineout=the throw-in from the sideline
+Conversion=the kick after a score
+Ruck=the fight for the ball on the ground
+Maul=a standing pile-up around the carrier
+
+Volleyball | 2 | sport
+Spike=a hard smash down over the net
+Serve=the hit that starts a rally
+Dig=saving a low ball
+Block=stopping a smash at the net
+Setter=the player who places the ball for the smash
+Libero=the defensive specialist in a different shirt
+
+Portugal | 3 | places
+Porto=the northern city famous for fortified wine
+Fado=the mournful national song
+Algarve=the sunny southern coast
+Madeira=the Atlantic island of wine and flowers
+Azores=the mid-Atlantic island chain
+Sintra=the hilltop town of fairy-tale palaces
+
+Tokyo | 3 | places
+Shibuya=the district of the famous scramble crossing
+Ginza=the upmarket shopping district
+Harajuku=the district of youth street fashion
+Shinjuku=the district of skyscrapers and the busiest station
+Akihabara=the district of electronics and anime
+Asakusa=the old district around the great temple
+
+Rome | 3 | places
+Vatican=the tiny state of the Pope
+Trevi=the fountain you toss a coin into
+Pantheon=the ancient temple with the open dome
+Forum=the ruined heart of the ancient city
+Tiber=the river through the city
+Trastevere=the old quarter across the river
+
+Cathedral | 3 | building
+Nave=the long central hall
+Apse=the rounded end behind the altar
+Transept=the arms that cross the main hall
+Gargoyle=a carved stone waterspout
+Cloister=a covered walk around a courtyard
+Rosette=a round stained-glass window
+
+Cycling | 3 | sport
+Peloton=the main pack of riders
+Cadence=how fast the pedals turn
+Velodrome=a banked oval track
+Drafting=riding in another's slipstream
+Breakaway=riders who escape the pack
+Criterium=a race of laps on a short circuit
+
+Drone | 3 | tech
+Gimbal=the mount that keeps the camera steady
+Payload=what it carries
+Quadcopter=the kind with four rotors
+Hover=holding still in the air
+Propeller=a spinning blade that gives lift
+Autopilot=flying without a human at the controls
+
+Motorcycle | 3 | transport
+Throttle=the twist grip that gives more gas
+Clutch=the lever pulled to change gear
+Kickstand=the leg it leans on when parked
+Sidecar=a one-wheeled passenger pod
+Chopper=a custom one with long forks
+Scooter=a small step-through kind
+
+Curry | 3 | food
+Korma=a mild creamy one
+Vindaloo=a fiery one from Goa
+Masala=a spiced tomato and cream one
+Madras=a hot red one
+Tikka=made with marinated grilled chunks
+Jalfrezi=a stir-fried one with peppers
+
+Stew | 3 | food
+Goulash=the Hungarian one with paprika
+Chili=the Tex-Mex one with beans
+Ragout=a slow-cooked French one
+Gumbo=the Louisiana one with okra
+Cassoulet=the French one with beans and sausage
+Pottage=a thick medieval one
+
+Cuba | 3 | places
+Havana=the capital of vintage cars
+Cigar=the famous hand-rolled export
+Salsa=the dance and music
+Rum=the spirit distilled from sugarcane
+Mambo=a dance craze of the 1950s
+Malecon=the seafront promenade
+
+Sicily | 3 | places
+Etna=the active volcano
+Palermo=the capital
+Marsala=the town of fortified wine
+Syracuse=the ancient Greek city
+Taormina=the hilltop resort with the ancient theater
+Messina=the city on the strait
+
+Iceland | 3 | places
+Geyser=a hot spring that erupts
+Reykjavik=the capital
+Puffin=the seabird with the colorful beak
+Fjord=a long narrow sea inlet
+Saga=a medieval tale of heroes
+Viking=a Norse seafarer
+
+Skirt | 3 | clothing
+Kilt=the pleated tartan one of Scotland
+Tutu=the stiff one a ballerina wears
+Sarong=a wrapped cloth of Southeast Asia
+Maxi=one that reaches the ankle
+Pleated=one with pressed folds
+Culottes=one split into wide legs
+
+Lawyer | 3 | law
+Attorney=the American word for one
+Counsel=one advising in court
+Barrister=one who argues in British courts
+Solicitor=one who prepares cases in Britain
+Advocate=one who pleads for another
+Paralegal=a trained assistant to one
+
+Engineer | 3 | jobs
+Civil=the kind who builds roads and bridges
+Mechanical=the kind who designs machines
+Chemical=the kind who runs industrial processes
+Software=the kind who writes programs
+Electrical=the kind who works with power and circuits
+Aerospace=the kind who designs aircraft and rockets
+
+Doctor | 3 | medicine
+Surgeon=one who operates
+Physician=a general one
+Medic=one on the battlefield or in an ambulance
+Pediatrician=one for children
+Cardiologist=one for the heart
+Oncologist=one for cancer
+
+Tent | 3 | outdoors
+Peg=a stake that pins it to the ground
+Pole=a rod that holds it up
+Flysheet=the outer rain cover
+Guyline=a cord that steadies it
+Groundsheet=the waterproof floor
+Awning=a porch that extends from the door
+
+Robot | 3 | tech
+Android=one built to look human
+Cyborg=part human, part machine
+Droid=the Star Wars word for one
+Bot=a short name for one, or for a program
+Automaton=an old mechanical figure
+Replicant=an artificial human in Blade Runner
+
+Chemistry | 3 | science
+Atom=the smallest unit of an element
+Molecule=atoms bonded together
+Reaction=substances changing into others
+Catalyst=something that speeds a change without being used up
+Compound=a substance of two or more elements
+Solvent=a liquid that dissolves others
+
+Geology | 3 | science
+Strata=layers of rock
+Sediment=particles that settle and harden
+Igneous=rock formed from cooled magma
+Erosion=wearing away by wind and water
+Mineral=a natural crystal substance
+Bedrock=the solid rock under the soil
+
+Valley | 3 | terrain
+Dale=a broad one in northern England
+Glen=a narrow one in Scotland
+Ravine=a small steep-sided one
+Vale=a poetic word for one
+Hollow=a small sheltered one
+Gulch=a narrow one carved by a flash flood
+
+Chicken | 2 | animal
+Hen=the female
+Chick=the baby
+Rooster=the male that crows at dawn
+Bantam=a miniature breed
+Cluck=the sound it makes
+Wattle=the red flap under the beak
+
+Duck | 3 | animal
+Mallard=the common one with a green head
+Drake=the male
+Duckling=the baby
+Teal=a small one with a blue-green wing patch
+Eider=the sea kind famous for its soft down
+Waddle=how it walks
+
+Saw | 2 | tools
+Hacksaw=the kind for cutting metal
+Chainsaw=the motorized kind for trees
+Bandsaw=the kind with a looped blade
+Handsaw=the basic kind for wood
+Jigsaw=the kind for cutting curves
+Ripsaw=the kind for cutting along the grain
+
+Screw | 3 | tools
+Phillips=the head with a cross
+Flathead=the head with a single slot
+Hex=the head with six sides
+Torx=the head with a star
+Thread=the spiral ridge
+Countersunk=a head that sits flush with the surface
+
+Luggage | 2 | transport
+Suitcase=a rigid case with a handle
+Duffel=a soft cylindrical bag
+Carryon=a bag small enough for the cabin
+Trunk=a large heavy chest
+Rucksack=a bag worn on the back
+Tote=a large open bag with two handles
+
+Western | 3 | western
+Saloon=the bar with swinging doors
+Sheriff=the lawman with a star
+Outlaw=a bandit on the run
+Duel=a showdown at high noon
+Stagecoach=the horse-drawn passenger coach
+Posse=the riders who chase the bandits
+
+Comedy | 2 | culture
+Slapstick=humor of falls and pies in the face
+Parody=a mocking imitation
+Farce=a play of absurd mix-ups
+Sketch=a short funny scene
+Standup=one performer telling jokes to a crowd
+Spoof=a light send-up of a genre
+
+Comic | 2 | books
+Manga=the Japanese kind
+Caption=the text box that narrates
+Strip=a short row of panels in a newspaper
+Superhero=the caped star of many of them
+Sidekick=the hero's helper
+Villain=the bad guy
+
+Printer | 2 | tech
+Toner=the powder a laser one uses
+Cartridge=the replaceable ink container
+Inkjet=the kind that sprays droplets
+Laser=the kind that uses a beam and powder
+Scanner=the part that copies a page
+Duplex=printing on both sides
+
+Reindeer | 2 | events
+Rudolph=the one with the red nose
+Dasher=the first one named in the poem
+Dancer=the second one named in the poem
+Prancer=the third one named in the poem
+Vixen=the fourth one named in the poem
+Blitzen=the last one named in the poem
+
+Doughnut | 2 | food
+Glazed=coated in shiny sugar
+Jelly=filled with fruit jam
+Sprinkles=topped with tiny colored sugar bits
+Cruller=a twisted ridged one
+Fritter=a lumpy one with apple pieces
+Beignet=the square New Orleans one under powdered sugar
+
+Cookies | 2 | food
+Oatmeal=the chewy kind with oats and raisins
+Shortbread=the buttery Scottish kind
+Gingersnap=the crisp spiced kind
+Macaroon=the coconut kind
+Biscotti=the twice-baked Italian kind
+Fortune=the kind with a paper message inside
+
+Candle | 2 | home
+Wick=the string that burns
+Wax=what the body is made of
+Votive=a small one in a glass cup
+Taper=a tall thin one
+Tealight=a tiny one in a metal cup
+Snuffer=the tool that puts it out
+
+Knight | 2 | medieval
+Joust=a contest of charging with lances
+Chivalry=the code of honor
+Steed=a warhorse
+Lance=the long spear carried on horseback
+Crest=the emblem on the helmet and shield
+Tournament=a festival of mock combat
+
+Samurai | 3 | people
+Bushido=the warrior code
+Shogun=the military ruler
+Ronin=one without a master
+Daimyo=a feudal lord
+Dojo=a hall for training
+Honor=what he valued above life
+
+Ghost | 3 | myth
+Phantom=one that appears and vanishes
+Specter=a haunting vision
+Spirit=the soul of the dead
+Spook=an informal word for one
+Wraith=a pale one seen before a death
+Banshee=the wailing one of Irish legend
+
+Rabbit | 2 | animal
+Hutch=the cage it lives in
+Bunny=a child's word for one
+Lop=a breed with drooping ears
+Cottontail=the wild American kind
+Hare=its larger long-eared cousin
+Doe=the female
+
+Lettuce | 3 | food
+Romaine=the long crisp kind in Caesar salad
+Arugula=the peppery kind, also called rocket
+Endive=the pale bitter kind
+Radicchio=the red bitter Italian kind
+Frisee=the frilly curly kind
+Bibb=the small soft buttery kind
+
+Corn | 2 | food
+Cob=the core the kernels grow on
+Kernel=a single grain
+Husk=the leafy outer wrapping
+Maize=another name for the plant
+Silk=the fine threads under the wrapping
+Stalk=the tall stem
+
+Parade | 2 | events
+Float=a decorated moving platform
+Confetti=tiny bits of paper thrown in the air
+Drumline=the marching percussion section
+Mascot=a costumed character
+Majorette=a baton twirler
+Marshal=the honored leader at the front
+
+Conference | 2 | jobs
+Keynote=the main speech
+Panel=a group discussing on stage
+Lanyard=the cord that holds your pass
+Workshop=a hands-on session
+Agenda=the schedule of sessions
+Delegate=a person attending
+
+Barn | 2 | outdoors
+Hayloft=the upper floor where hay is stored
+Stall=a compartment for one animal
+Rafters=the sloping beams of the roof
+Silo=the tall tower for grain
+Trough=the long feeding container
+Weathervane=the rooftop arrow that shows the wind
+
+Taco | 2 | food
+Shell=the crisp folded tortilla
+Carnitas=slow-cooked shredded pork
+Tortilla=the soft flat bread
+Queso=melted cheese
+Pico=the fresh chopped tomato salsa
+Barbacoa=slow-cooked shredded beef

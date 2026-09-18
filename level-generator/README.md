@@ -83,3 +83,14 @@ tool matches this exactly.)
 
 Export writes `Level_N.json`. Drop it into the game's `Resources/Levels/` folder
 (levels are loaded by number).
+
+## Levels 51–100 (variant_2)
+
+Levels past 50 draw on a second, hand-authored category batch:
+
+- `pool/pool_51_100_*.txt` is the source of truth: one block per category (`Name | tier | domain [| illustration set]`, then `Word=meaning` lines; `Word@set=meaning` pins a sprite from another set).
+- `python3 pool/build_pool.py` validates the blocks (word format, name clashes, every sprite id against the Word Solitaire illustration library) and writes `pool51.js`, which `index.html` loads. Categories held back for tone live in its `EXCLUDE` list.
+- The generator only uses this batch for levels above 50, so regenerating 11–50 still gives the shipped levels. Past 50 it keeps the level 41–50 difficulty mix in every decade, counts picture and chain slots toward the tier targets, spaces repeats by 15 levels, limits split words to Easy/Medium categories, keeps frozen bubbles off split words, and lists chunk faces in separator links.
+- `python3 pool/validate_levels.py <dir>` mirrors the game's `LevelSetAssetTests` (unique words per board, mechanic parity with the control level, capitalised words, chain and chunk integrity) and prints the tier, picture and repetition summary.
+- Unity import: `Tools/word_icons_import.py --levels 51-100`, `Tools/word_icons_resize.py`, register sprites in the WordIcons Addressables group, `Tools/level_board_interleave.py --levels 51-100`, then re-bundle with `bundle-variant2.py --levels 1-100` and bump `VARIANT2_VERSION`.
+- `levels.json` (the default set shown in the first column) is refreshed from the game repo's `Assets/Resources/Levels`; the generator mirrors each default level's size and mechanics, so keep it current.
